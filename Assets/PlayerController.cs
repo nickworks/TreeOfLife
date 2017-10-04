@@ -38,7 +38,7 @@ public class PlayerController : MonoBehaviour {
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
 
-        isGrounded = results.hitBottom;
+        isGrounded = results.hitBottom || results.onSlope;
 
         transform.position += results.distance;
     }

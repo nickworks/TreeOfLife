@@ -3,85 +3,106 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class PawnAABB : MonoBehaviour {
-    
+
     public struct CollisionResults
     {
+        /// <summary>
+        /// After collision detection, this stores how far this object may move.
+        /// Before collision detection, this stores how far this object is attempting to move.
+        /// </summary>
         public Vector3 distance;
-        public bool hitTop;
-        public bool hitBottom;
-        public bool hitLeft;
-        public bool hitRight;
-        private Bounds bounds;
 
-        public CollisionResults(Vector3 distance, Bounds bounds, float skinWidth)
+        public bool hitTop { get; private set; }
+        public bool hitBottom { get; private set; }
+        public bool hitLeft { get; private set; }
+        public bool hitRight { get; private set; }
+
+        public bool onSlope;
+
+        private float dx;
+        private float dy;
+
+        private Bounds bounds;
+        private float skinWidth;
+
+        public bool goingLeft { get { return (distance.x <= 0); } }
+        public bool goingDown { get { return (distance.y <= 0); } }
+        public float originX { get { return goingLeft ? this.bounds.min.x : this.bounds.max.x; } }
+        public float originY { get { return goingDown ? this.bounds.min.y : this.bounds.max.y; } }
+
+        public CollisionResults(Vector3 distance, Bounds bounds, float skinWidth, int resolution)
         {
             hitTop = false;
             hitBottom = false;
             hitLeft = false;
             hitRight = false;
+            onSlope = false;
+
+            bounds.Expand(-skinWidth * 2);
+            
             this.distance = distance;
             this.bounds = bounds;
-            this.bounds.Expand(-skinWidth * 2);
+            this.skinWidth = skinWidth;
+
+            dx = bounds.size.x / (resolution - 1);
+            dy = bounds.size.y / (resolution - 1);
         }
-        public Vector3[] GetOriginsH()
+        public void RenderInEditor()
         {
-            Vector3[] origins = new Vector3[3];
-
-            float x = bounds.center.x;
-            if (distance.x < 0) x = bounds.min.x;
-            if (distance.x > 0) x = bounds.max.x;
-
-            origins[0] = new Vector3(x, bounds.min.y, 0);
-            origins[1] = new Vector3(x, bounds.center.y, 0);
-            origins[2] = new Vector3(x, bounds.max.y, 0);
-
-            return origins;
+            Debug.DrawLine(new Vector3(bounds.min.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.min.y));
+            Debug.DrawLine(new Vector3(bounds.max.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.max.y));
+            Debug.DrawLine(new Vector3(bounds.max.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.max.y));
+            Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.min.y));
         }
-        public Vector3[] GetOriginsV()
+        public float GetRayLength(bool isHorizontal)
         {
-            Vector3[] origins = new Vector3[3];
-
-            float y = bounds.center.y;
-            if (distance.y < 0) y = bounds.min.y;
-            if (distance.y > 0) y = bounds.max.y;
-
-            origins[0] = new Vector3(bounds.min.x, y, 0);
-            origins[1] = new Vector3(bounds.center.x, y, 0);
-            origins[2] = new Vector3(bounds.max.x, y, 0);
-
-            return origins;
+            if (isHorizontal)
+            return skinWidth + (goingLeft ? -distance.x : distance.x);
+            return skinWidth + (goingDown ? -distance.y : distance.y);
         }
-        public void Limit(float length, bool isHorizontalAxis)
+        public Vector3 GetCastDirection(bool isHorizontal)
         {
-            if (isHorizontalAxis)
+            if(isHorizontal)
+            return (goingLeft) ? Vector3.left : Vector3.right;
+            return (goingDown) ? Vector3.down : Vector3.up;
+        }
+        public Vector3 GetOrigin(bool isHorizontal, int i)
+        {
+            Vector3 origin = (isHorizontal)
+            ? new Vector3(originX, bounds.min.y + i * dy)
+            : new Vector3(bounds.min.x + i * dx, originY);
+
+            return origin;
+        }
+        public void SetRayLength(float length, bool isHorizontal)
+        {
+            if (isHorizontal)
             {
-                if(distance.x < 0) // moving left
-                {
-                    distance.x = -length;
+                
+                if(goingLeft)
                     hitLeft = true;
-                }
-                else if(distance.x > 0)
-                {
-                    distance.x = length;
+                else
                     hitRight = true;
-                }
+
+                distance.x = goingLeft ? -length : length;
+
             } else {
-                if(distance.y > 0) // moving up
-                {
-                    distance.y = length;
-                    hitTop = true;
-                }
-                else if(distance.y < 0)
-                {
-                    distance.y = -length;
+
+                if (goingDown)
                     hitBottom = true;
-                }
+                else
+                    hitTop = true;
+
+                distance.y = goingDown ? -length : length;
             }
         }
     }
 
     BoxCollider2D aabb;
-    public float skinWidth = 0.1f;
+    public float maxSlopeAngle = 45;
+    [Range(3, 10)] public int resolution = 3;
+    [Range(0.01f, 0.5f)] public float skinWidth = 0.1f;
+    public bool renderInEditor = true;
     public LayerMask collidableWith;
 
     void Start()
@@ -92,32 +113,53 @@ public class PawnAABB : MonoBehaviour {
 	public CollisionResults Move(Vector3 distance)
     {
 
-        CollisionResults result = new CollisionResults(distance, aabb.bounds, skinWidth);
+        CollisionResults results = new CollisionResults(distance, aabb.bounds, skinWidth, resolution);
 
-        DoRaycasts(ref result, false); // vertical
-        DoRaycasts(ref result, true); // horizontal
+        if (renderInEditor) results.RenderInEditor();
 
-        return result;
+        DoRaycasts(ref results, true); // horizontal
+        DoRaycasts(ref results, false); // vertical
+
+        return results;
     }
     private void DoRaycasts(ref CollisionResults results, bool doHorizontal)
     {
-        float sign = Mathf.Sign(doHorizontal ? results.distance.x : results.distance.y);
-        Vector3 dir = sign * (doHorizontal ? Vector3.right : Vector3.up);
-        float rayLength = skinWidth + Mathf.Abs(doHorizontal ? results.distance.x : results.distance.y);
-        Vector3[] origins = doHorizontal ? results.GetOriginsH() : results.GetOriginsV();
+        Vector3 dir = results.GetCastDirection(doHorizontal);
+        float rayLength = results.GetRayLength(doHorizontal);
 
-        foreach (Vector3 origin in origins)
+        for(int i = 0; i < resolution; i++)
         {
-            Debug.DrawRay(origin, dir * rayLength);
+            Vector3 origin = results.GetOrigin(doHorizontal, i);
+
+            if (renderInEditor) Debug.DrawRay(origin, dir * rayLength);
+
             RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
-            if (hit.collider && hit.distance < rayLength)
+            if (hit.collider == null) continue; // if there's no collision, we're done with this raycast
+
+            float hitAngle = Vector2.Angle(hit.normal, Vector3.up);
+            if (doHorizontal && i == 0)
             {
-                rayLength = hit.distance;
-                results.Limit(rayLength - skinWidth, doHorizontal);
+                if(hitAngle < maxSlopeAngle)
+                {
+                    hitAngle *= Mathf.Deg2Rad;
+                    float dis = results.goingLeft ? -results.distance.x : results.distance.x;
+                    float newDistanceY = dis * Mathf.Sin(hitAngle);
+                    if (newDistanceY >= results.distance.y) // prevent a slope from messing up other vertical movmeent
+                    {
+                        results.distance.x = dis * Mathf.Cos(hitAngle) * (results.goingLeft ? -1 : 1);
+                        results.distance.y = newDistanceY;
+                        results.onSlope = true;
+                    }
+                }
             }
 
-        }
-    }
+            if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
+            {
+                if (doHorizontal && results.onSlope && hitAngle < maxSlopeAngle) continue;
+                rayLength = hit.distance;
+                results.SetRayLength(rayLength - skinWidth, doHorizontal);
+            } // if
+        } // for
 
-
+    } // DoRaycasts()
 }
