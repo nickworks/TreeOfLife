@@ -39,6 +39,10 @@ public class PawnAABB : MonoBehaviour {
         /// After collision detection is calculated, this stores whether or not the object is on a slope.
         /// </summary>
         public bool onSlope;
+
+        public float slopeAngle;
+        public float slopeAnglePrevious;
+
         /// <summary>
         /// This resets the values and prepares this struct for re-use.
         /// </summary>
@@ -47,6 +51,8 @@ public class PawnAABB : MonoBehaviour {
         {
             this.distance = distance;
             onSlope = hitTop = hitBottom = hitLeft = hitRight = false;
+            slopeAnglePrevious = slopeAngle;
+            slopeAngle = 0;
         }   
     }
 
@@ -165,18 +171,22 @@ public class PawnAABB : MonoBehaviour {
             RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
             if (hit.collider == null) continue; // if there's no collision, we're done with this raycast
 
-            float hitAngle = Vector2.Angle(hit.normal, Vector3.up);
-            if (doHorizontal && i == 0)
-            {
-                if (hitAngle < maxSlopeAngle) AscendSlope(hitAngle);
-            }
+            float slopeAngle = Vector2.Angle(hit.normal, Vector3.up);
 
+            if (doHorizontal)
+            {
+                if (i == 0 && slopeAngle <= maxSlopeAngle) AscendSlope(slopeAngle);
+
+            }
+            
             if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
             {
-                if (doHorizontal && results.onSlope && hitAngle < maxSlopeAngle) continue;
+                // if this is a horizontal ray AND we're on a slope AND it's a climbable slope:
+                if (doHorizontal && results.onSlope && slopeAngle < maxSlopeAngle) continue;
                 rayLength = hit.distance;
                 SetRayLength(rayLength, doHorizontal);
             } // if
+
         } // for
     } // DoRaycasts()
     /// <summary>
@@ -250,17 +260,19 @@ public class PawnAABB : MonoBehaviour {
     /// This method should be called if the player is attempting to ascend a sloped surface.
     /// The function will use the slope to determine an all new distance for the player to attempt to move.
     /// </summary>
-    /// <param name="slopeAngle">The slope of the surface, in degrees.</param>
-    private void AscendSlope(float slopeAngle)
+    /// <param name="slopeDegrees">The slope of the surface, in degrees.</param>
+    private void AscendSlope(float slopeDegrees)
     {
-        slopeAngle *= Mathf.Deg2Rad;
+        float slopeRadians = slopeDegrees * Mathf.Deg2Rad;
         float dis = goingLeft ? -results.distance.x : results.distance.x;
-        float newDistanceY = dis * Mathf.Sin(slopeAngle);
+        float newDistanceY = dis * Mathf.Sin(slopeRadians);
         if (newDistanceY >= results.distance.y) // prevent a slope from messing up other vertical movmeent
         {
-            results.distance.x = dis * Mathf.Cos(slopeAngle) * (goingLeft ? -1 : 1);
+            results.distance.x = dis * Mathf.Cos(slopeRadians) * (goingLeft ? -1 : 1);
             results.distance.y = newDistanceY;
+            results.slopeAngle = slopeDegrees;
             results.onSlope = true;
+            results.hitBottom = true;
         }
     }
 
