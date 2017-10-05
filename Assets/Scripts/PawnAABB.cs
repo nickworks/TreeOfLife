@@ -70,7 +70,7 @@ public class PawnAABB : MonoBehaviour {
     /// <summary>
     /// This is the maximum angle, in degrees, that this PawnAABB can ascend.
     /// </summary>
-    public float maxSlopeAngle = 45;
+    [Range(0, 90)] public float maxSlopeAngle = 45;
     /// <summary>
     /// This is how many rays we want to cast from each edge.
     /// </summary>
