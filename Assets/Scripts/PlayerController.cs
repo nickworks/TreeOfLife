@@ -6,7 +6,8 @@ using UnityEngine;
 /// This component turns a GameObject into a controllable avatar.
 /// </summary>
 [RequireComponent(typeof(PawnAABB))]
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour
+{
 
     /// <summary>
     /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
@@ -44,13 +45,14 @@ public class PlayerController : MonoBehaviour {
     /// A reference to the PawnAABB component on this object.
     /// </summary>
     private PawnAABB pawn;
-	/// <summary>
+    /// <summary>
     /// This initializes this component.
     /// </summary>
-	void Start () {
+    void Start()
+    {
         pawn = GetComponent<PawnAABB>();
         DeriveJumpValues();
-	}
+    }
     /// <summary>
     /// This is called automatically when the values change in the inspector.
     /// </summary>
@@ -66,10 +68,10 @@ public class PlayerController : MonoBehaviour {
         gravity = (jumpHeight * 2) / (jumpTime * jumpTime);
         jumpVelocity = gravity * jumpTime;
     }
-	/// <summary>
+    /// <summary>
     /// This method is called each frame. 
     /// </summary>
-	void Update ()
+    void Update()
     {
         HandleInput();
         DoCollisions();
@@ -156,5 +158,10 @@ public class PlayerController : MonoBehaviour {
     private void AccelerateX(float amount)
     {
         velocity.x += amount * Time.deltaTime;
+    }
+
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        print("[triggered]");
     }
 }
