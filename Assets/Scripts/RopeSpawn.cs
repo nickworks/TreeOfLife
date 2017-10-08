@@ -7,14 +7,14 @@ public class RopeSpawn : MonoBehaviour {
     private Rigidbody2D playerBody;
     private List<GameObject> linksList = new List<GameObject>();
     public int numberOfSegments = 12;
-    public int totalLength = 4;
+    public float totalLength = 4;
 
-
-    void OnCollisionEnter2D(Collision2D collision){
-        if (collision.collider.tag == "Player")
+    void OnTriggerEnter2D(Collider2D collider){
+        if (collider.tag == "Player")
         {
-            playerBody = collision.rigidbody;
-            LinkRope();
+            playerBody = collider.gameObject.GetComponent<Rigidbody2D>();
+            if (playerBody.bodyType == RigidbodyType2D.Kinematic)
+                LinkRope();
         }
     }
 
@@ -28,7 +28,8 @@ public class RopeSpawn : MonoBehaviour {
         Vector2 pos = transform.position;
         // The position of the player.
         Vector2 playerPos = playerBody.transform.position;
-        float linkDir = Mathf.Atan2(playerPos.y - pos.y, playerPos.x - pos.x);
+        playerBody.gameObject.GetComponent<PlayerController>().SetOriginForRope(transform);
+        float linkDir = Mathf.Atan2(pos.y - playerPos.y, pos.x - playerPos.x);
         float realDistance = Vector2.Distance(pos, playerPos);
         float realLinkLength = realDistance / numberOfSegments;
         for (int i = 0; i < numberOfSegments; i++) {
@@ -47,6 +48,8 @@ public class RopeSpawn : MonoBehaviour {
             else {
                 joint.connectedBody = lastLink;
             }
+            if (i >= numberOfSegments - 1)
+                piece.GetComponent<Rigidbody2D>().bodyType = RigidbodyType2D.Static;
             lastLink = piece.GetComponent<Rigidbody2D>();
         }
 	}
@@ -54,9 +57,8 @@ public class RopeSpawn : MonoBehaviour {
     /// <summary>
     /// Should be called when the player lets go of the rope.
     /// </summary>
-	void UnlinkRope () {
-        playerBody.bodyType = RigidbodyType2D.Kinematic;
-        for (int i = linksList.Count; i >= 0; i--) {
+	public void UnlinkRope () {
+        for (int i = linksList.Count-1; i >= 0; i--) {
             GameObject obj = linksList[i];
             linksList.RemoveAt(i);
             Destroy(obj);

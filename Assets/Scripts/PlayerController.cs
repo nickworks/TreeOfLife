@@ -33,6 +33,10 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     private bool isGrounded = false;
     /// <summary>
+    /// The strength of the swing.
+    /// </summary>
+    public float swingStrength = 5;
+    /// <summary>
     /// Whether or not the player is currently jumping.
     /// </summary>
     private bool isJumping = false;
@@ -44,12 +48,21 @@ public class PlayerController : MonoBehaviour {
     /// A reference to the PawnAABB component on this object.
     /// </summary>
     private PawnAABB pawn;
-	/// <summary>
+    /// <summary>
     /// This initializes this component.
     /// </summary>
-	void Start () {
+    private Rigidbody2D _rigidbody;
+    /// <summary>
+    /// The reference to the transform object of the rope swinging origin thing.
+    /// </summary>
+    private Transform ropeOrigin = null;
+
+    public float letGoSpeed = 20;
+
+    void Start () {
         pawn = GetComponent<PawnAABB>();
         DeriveJumpValues();
+        _rigidbody = GetComponent<Rigidbody2D>();
 	}
     /// <summary>
     /// This is called automatically when the values change in the inspector.
@@ -71,8 +84,15 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
 	void Update ()
     {
-        HandleInput();
-        DoCollisions();
+        if (_rigidbody.bodyType == RigidbodyType2D.Kinematic)
+        {
+            HandleInput();
+            DoCollisions();
+        }
+        if (_rigidbody.bodyType == RigidbodyType2D.Dynamic)
+        {
+            InputForSwing();
+        }
     }
     /// <summary>
     /// Perform collision detection by calling the PawnAABB's collision detection methods.
@@ -131,6 +151,29 @@ public class PlayerController : MonoBehaviour {
         // gravity
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
+
+    /// <summary>
+    /// This is the input for swingning on a rope, bitch!
+    /// </summary>
+    private void InputForSwing()
+    {
+        float axisH = Input.GetAxisRaw("Horizontal");
+        Vector2 dir = transform.position - ropeOrigin.position;
+        dir = new Vector2(-dir.y, dir.x);
+        dir.Normalize();
+        _rigidbody.AddForce(dir * axisH * swingStrength);
+        if (Input.GetButtonDown("Jump"))
+        {
+            RopeSpawn rope = ropeOrigin.gameObject.GetComponent<RopeSpawn>();
+            rope.UnlinkRope();
+            ropeOrigin = null;
+            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
+            velocity = _rigidbody.velocity;
+            _rigidbody.velocity = Vector2.zero;
+            velocity.y += letGoSpeed;
+        }
+    }
+
     /// <summary>
     /// This method decelerates the horizontal speed of the object.
     /// </summary>
@@ -156,5 +199,10 @@ public class PlayerController : MonoBehaviour {
     private void AccelerateX(float amount)
     {
         velocity.x += amount * Time.deltaTime;
+    }
+
+    public void SetOriginForRope(Transform origin)
+    {
+        ropeOrigin = origin;
     }
 }
