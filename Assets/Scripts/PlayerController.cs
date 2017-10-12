@@ -22,6 +22,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public float walkAcceleration = 10;
     /// <summary>
+    /// The vertical velocity to use when the player climbs a rope up or down.
+    /// </summary>
+    public float climbVelocity = 4;
+    /// <summary>
     /// The acceleration to use for gravity. This will be calculated from the jumpTime and jumpHeight fields.
     /// </summary>
     private float gravity;
@@ -37,6 +41,14 @@ public class PlayerController : MonoBehaviour
     /// Whether or not the player is currently jumping.
     /// </summary>
     private bool isJumping = false;
+    /// <summary>
+    /// Whether or not the player is currently climbing on rope.
+    /// </summary>
+    public static bool isClimbing = false;
+    /// <summary>
+    /// This provides a buffer so the player can toggle on/off climbing without accidently turning it from off/on/off again.
+    /// </summary>
+    public static float climbBuffer = 0;
     /// <summary>
     /// The velocity of the player. This is used each frame for Euler physics integration.
     /// </summary>
@@ -93,22 +105,63 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private void HandleInput()
     {
-        GravityAndJumping();
-
-        float axisH = Input.GetAxisRaw("Horizontal");
-
-        if (axisH == 0)
-        {
-            DecelerateX(walkAcceleration);
-        }
+        if (isClimbing) doClimbing();
         else
         {
-            bool movingLeft = (velocity.x <= 0);
-            bool acceleratingLeft = (axisH <= 0);
-            float scaleAcceleration = (movingLeft != acceleratingLeft) ? 5 : 1; // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+            GravityAndJumping();
 
-            AccelerateX(axisH * walkAcceleration * scaleAcceleration);
+            float axisH = Input.GetAxisRaw("Horizontal");
+
+            if (axisH == 0)
+            {
+                DecelerateX(walkAcceleration);
+            }
+            else
+            {
+                bool movingLeft = (velocity.x <= 0);
+                bool acceleratingLeft = (axisH <= 0);
+                float scaleAcceleration = (movingLeft != acceleratingLeft) ? 5 : 1; // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+
+                AccelerateX(axisH * walkAcceleration * scaleAcceleration);
+            }
         }
+    }
+    /// <summary>
+    /// This method takes over movement options if the player is currently climbing on a rope in the environment.
+    /// </summary>
+    private void doClimbing()
+    {
+        climbBuffer -= Time.deltaTime;
+        if (climbBuffer < 0) climbBuffer = 0;
+
+        velocity.x = 0;
+
+        float axisV = Input.GetAxisRaw("Vertical");
+        float axisH = Input.GetAxisRaw("Horizontal");
+
+        if (axisV == 0) velocity.y = 0;
+        else
+        {
+            velocity.y = -axisV * climbVelocity;
+        }
+
+        if (axisH == 0) velocity.x = 0;
+        else
+        {
+            velocity.x = axisH * climbVelocity * 0.2f;
+        }
+
+        if (Input.GetButtonDown("Climb") && climbBuffer == 0)
+        {
+            isClimbing = false;
+        }
+        if (Input.GetButtonDown("Jump") && climbBuffer == 0)
+        {
+            if (axisH != 0) velocity.x += climbVelocity * axisH * 2;
+            if (axisV != 0) velocity.y += climbVelocity * -axisV * 1.5f;
+            isClimbing = false;
+        }
+        
     }
     /// <summary>
     /// This method calculates the vertical physics of this object.

@@ -13,10 +13,6 @@ public class FollowTarget : MonoBehaviour {
     /// </summary>
     [Range(.5f, 10)] public float easing = 1;
 
-	void Start () {
-		
-	}
-	
 	void Update () {
 
         transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * easing);
