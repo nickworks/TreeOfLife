@@ -49,7 +49,7 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     private PawnAABB pawn;
     /// <summary>
-    /// This initializes this component.
+    /// Reference to the rigidbody2D.
     /// </summary>
     private Rigidbody2D _rigidbody;
     /// <summary>
@@ -57,6 +57,9 @@ public class PlayerController : MonoBehaviour {
     /// </summary>
     private Transform ropeOrigin = null;
 
+    /// <summary>
+    /// The vertical speed of the player when they let go of the rope.
+    /// </summary>
     public float letGoSpeed = 20;
 
     void Start () {
@@ -201,6 +204,10 @@ public class PlayerController : MonoBehaviour {
         velocity.x += amount * Time.deltaTime;
     }
 
+    /// <summary>
+    /// This sets an origin for swinging on a rope.
+    /// </summary>
+    /// <param name="origin"></param>
     public void SetOriginForRope(Transform origin)
     {
         ropeOrigin = origin;

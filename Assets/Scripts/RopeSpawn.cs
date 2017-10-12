@@ -3,13 +3,28 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class RopeSpawn : MonoBehaviour {
+    /// <summary>
+    /// The prefab of a segment of rope.
+    /// </summary>
     public GameObject ropePiece;
+    /// <summary>
+    /// Reference to the player Rigidbody2D when it is connected.
+    /// </summary>
     private Rigidbody2D playerBody;
+    /// <summary>
+    /// A reference list to all of the rope segments.
+    /// </summary>
     private List<GameObject> linksList = new List<GameObject>();
+    /// <summary>
+    /// The set number of segments to create for the rope.
+    /// </summary>
     public int numberOfSegments = 12;
+    /// <summary>
+    /// The set max length of the full rope.
+    /// </summary>
     public float totalLength = 4;
 
-    void OnTriggerEnter2D(Collider2D collider){
+    void OnTriggerEnter2D(Collider2D collider) {
         if (collider.tag == "Player")
         {
             playerBody = collider.gameObject.GetComponent<Rigidbody2D>();
