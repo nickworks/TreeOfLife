@@ -723,9 +723,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: cefdaba11ea4b4f4cb6caad97482d6d3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  maxSlopeAngle: 49.3
+  maxSlopeAscend: 80
+  maxSlopeDescend: 70
   resolution: 4
-  skinWidth: 0.1
+  skinWidth: 0.032
   renderInEditor: 1
   collidableWith:
     serializedVersion: 2
@@ -1633,20 +1634,6 @@ Light:
   m_Lightmapping: 4
   m_AreaSize: {x: 1, y: 1}
   m_BounceIntensity: 1
-  m_FalloffTable:
-    m_Table[0]: 0
-    m_Table[1]: 0
-    m_Table[2]: 0
-    m_Table[3]: 0
-    m_Table[4]: 0
-    m_Table[5]: 0
-    m_Table[6]: 0
-    m_Table[7]: 0
-    m_Table[8]: 0
-    m_Table[9]: 0
-    m_Table[10]: 0
-    m_Table[11]: 0
-    m_Table[12]: 0
   m_ColorTemperature: 6570
   m_UseColorTemperature: 0
   m_ShadowRadius: 0
@@ -2198,7 +2185,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 0
+  orthographic: 1
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:

@@ -85,7 +85,7 @@ public class PlayerController : MonoBehaviour
         PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
-        isGrounded = results.hitBottom || results.onSlope;
+        isGrounded = results.hitBottom || results.ascendSlope;
         transform.position += results.distance;
     }
     /// <summary>
@@ -103,7 +103,11 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            AccelerateX(axisH * walkAcceleration);
+            bool movingLeft = (velocity.x <= 0);
+            bool acceleratingLeft = (axisH <= 0);
+            float scaleAcceleration = (movingLeft != acceleratingLeft) ? 5 : 1; // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+
+            AccelerateX(axisH * walkAcceleration * scaleAcceleration);
         }
     }
     /// <summary>
@@ -154,12 +158,15 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// This method accelerates the horizontal speed of the object.
     /// </summary>
-    /// <param name="amount">The scalar value of horizontal acceleration. This should be a positive number.</param>
+    /// <param name="amount">The value of horizontal acceleration.</param>
     private void AccelerateX(float amount)
     {
         velocity.x += amount * Time.deltaTime;
     }
-
+    /// <summary>
+    /// This message is called by the 2D physics engine when the player enters a trigger volume.
+    /// </summary>
+    /// <param name="other">The trigger volume of the other object.</param>
     void OnTriggerEnter2D(Collider2D other)
     {
         print("[triggered]");
