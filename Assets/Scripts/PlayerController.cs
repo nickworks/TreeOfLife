@@ -32,7 +32,7 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// Whether or not this PlayerController is on the ground.
     /// </summary>
-    private bool isGrounded = false;
+	static public bool isGrounded = false;
     /// <summary>
     /// Whether or not the player is currently jumping.
     /// </summary>
@@ -40,6 +40,18 @@ public class PlayerController : MonoBehaviour
     /// <summary>
     /// The velocity of the player. This is used each frame for Euler physics integration.
     /// </summary>
+	static public bool hasPowerUp = true;
+	/// <summary>
+	/// bool to see if the player has the powerup.
+	/// </summary>
+	static public bool canDash = true;
+	/// <summary>
+	/// bool used to see if the player can dash well in flight if false that means the player has already used theri dash.
+	/// </summary>
+	public float impulseJump;
+	/// <summary>
+	/// the power of the airdash.
+	/// </summary>
     private Vector3 velocity = new Vector3();
     /// <summary>
     /// A reference to the PawnAABB component on this object.
@@ -119,6 +131,7 @@ public class PlayerController : MonoBehaviour
 
         // jump
         if (velocity.y < 0) isJumping = false;
+
         if (Input.GetButtonDown("Jump") && isGrounded)
         {
             velocity.y = jumpVelocity;
@@ -133,6 +146,27 @@ public class PlayerController : MonoBehaviour
         {
             isJumping = false;
         }
+		//dash
+		if (Input.GetButtonDown ("Fire1")) {
+			if (isGrounded == false) {
+				if(hasPowerUp){
+					if (canDash) {
+						velocity = DirectionalDash.rot * impulseJump;
+						canDash = false;
+					}
+				}
+			}
+
+
+		
+		
+		}
+		//dash ground check
+		if (isGrounded) {
+			canDash = true;
+		
+		
+		}
 
         // gravity
         velocity.y -= gravity * Time.deltaTime * gravityScale;
