@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -6,9 +7,51 @@ using UnityEngine;
 /// This component turns a GameObject into a controllable avatar.
 /// </summary>
 [RequireComponent(typeof(PawnAABB))]
-public class PlayerController : MonoBehaviour
-{
+public class PlayerController : MonoBehaviour {
+    ///
+    ///A variable to control the players climb speed
+    ///
+    public float climbSpeed = 10.5f;
 
+    /// <summary>
+    /// A transform to hold the spawnpoints transform
+    /// </summary>
+    public Transform spawnTransform;
+    /// <summary>
+    /// A variable used to control when the spawnpoint moves
+    /// </summary>
+    public bool moveSpawn;
+    /// <summary>
+    /// A variable used to hold the amount of Vertical propulsion a player recieves from being shot from a slingshot web
+    /// </summary>
+    public float verticalPropulsion;
+    /// <summary>
+    /// A variable used to hold the amount of Horizontal propulsion a player recieves from being shot from a slingshot web
+    /// </summary>
+    public float horizontalPropulsion;
+    /// <summary>
+    /// A speed to hold the degree by which the propulsion is increased
+    /// </summary>
+    public float propulsionSpeed;
+    /// <summary>
+    /// A variable to hold which way the player should be propelled
+    /// </summary>
+    public int propulsionDirection;
+
+    /// <summary>
+    /// A boolean to hold whether or not the character is being propelled through the air
+    /// </summary>
+    public bool flying;
+
+    ///
+    ///A variable used to give the player jump velocity in the web
+    ///
+    public float webJumpVelocity = 40;
+
+    ///
+    /// A Boolean to dictate when a player is in a web or not
+    /// 
+    public bool inWeb;
     /// <summary>
     /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
     /// </summary>
@@ -51,6 +94,7 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         pawn = GetComponent<PawnAABB>();
+        spawnTransform = GameObject.Find("SpawnPoint").GetComponent<Transform>();
         DeriveJumpValues();
     }
     /// <summary>
@@ -73,8 +117,26 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     void Update()
     {
-        HandleInput();
-        DoCollisions();
+       // print(spawnTransform);
+       // print(propulsionDirection);
+        //If not in web
+        if (!inWeb && !flying)
+        {
+            HandleInput();
+            DoCollisions();
+        }//End of If not in web, If we are in the web movement is handeled by climbing
+        else if (inWeb && !flying)
+        {
+            //Calls climb
+            climb();
+            DoCollisions();
+        } else if (flying)
+        {
+            //Sling shot the player if they are flying through the air
+            SlingShot();
+            DoCollisions();//Do collisions to move the player
+            
+        }
     }
     /// <summary>
     /// Perform collision detection by calling the PawnAABB's collision detection methods.
@@ -94,9 +156,9 @@ public class PlayerController : MonoBehaviour
     private void HandleInput()
     {
         GravityAndJumping();
-
+        Spawning();
         float axisH = Input.GetAxisRaw("Horizontal");
-
+        float axisV = Input.GetAxisRaw("Vertical");
         if (axisH == 0)
         {
             DecelerateX(walkAcceleration);
@@ -109,7 +171,17 @@ public class PlayerController : MonoBehaviour
 
             AccelerateX(axisH * walkAcceleration * scaleAcceleration);
         }
+
     }
+
+    private void Spawning()
+    {
+        if (Input.GetButtonDown("Respawn"))
+        {
+            transform.position = spawnTransform.position;
+        }
+    }
+
     /// <summary>
     /// This method calculates the vertical physics of this object.
     /// </summary>
@@ -137,6 +209,9 @@ public class PlayerController : MonoBehaviour
         // gravity
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
+
+   
+
     /// <summary>
     /// This method decelerates the horizontal speed of the object.
     /// </summary>
@@ -163,12 +238,122 @@ public class PlayerController : MonoBehaviour
     {
         velocity.x += amount * Time.deltaTime;
     }
+
     /// <summary>
-    /// This message is called by the 2D physics engine when the player enters a trigger volume.
+    /// A OnTrigger stay event to handle when the player is inside a trigger
     /// </summary>
-    /// <param name="other">The trigger volume of the other object.</param>
-    void OnTriggerEnter2D(Collider2D other)
+    /// <param name="collision"> This is a collision variable</param>
+    private void OnTriggerStay2D(Collider2D collision)
     {
-        print("[triggered]");
+
+        //If the player is inside of the sticky web
+        if(collision.gameObject.tag == "StickyWeb")
+        {
+           // print("COLLIDING");
+            //Debug.Log("COLLIDING");
+            //Set web to true
+            flying = false;
+            inWeb = true;
+        }
     }
+
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "StickyWeb")
+        {
+            
+            inWeb = false;
+        }
+        else if (collision.gameObject.tag == "Spawn")
+        {
+            print("OUTOFSPAWN");
+            moveSpawn = false;
+        }
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        //If the player collides with the slingshotweb set  flying to true
+        if (collision.gameObject.tag == "SlingShotWeb")
+        {
+            flying = true;
+            
+        } else if (collision.gameObject.tag == "Ground")//If the player collides with the ground flying is false
+        {
+            flying = false;
+        }else if(collision.gameObject.tag == "Stopper")//If the player collides with the stopper flying is false
+        {
+            flying = false;
+            
+        }else if(collision.gameObject.tag == "Spawn")
+        {
+            print("HERE IN SPAWN");
+            moveSpawn = true;
+        }
+    }
+
+    /// <summary>
+    /// A private method to hold the logic for being slingshot
+    /// </summary>
+    private void SlingShot()
+    {
+        //Depending on the propulsion direction it changes the way the player is propelled
+        if (propulsionDirection == 1)
+        {
+            velocity.y += verticalPropulsion * Time.deltaTime;
+            velocity.x += horizontalPropulsion * Time.deltaTime;
+        } else if(propulsionDirection == 2)
+        {
+            velocity.y += verticalPropulsion * Time.deltaTime;
+            velocity.x -= horizontalPropulsion * Time.deltaTime;
+        }
+        else if(propulsionDirection == 3)
+        {
+            //If propulsionDirection is 3 we want the player to be shot straight up
+            velocity.y += (verticalPropulsion + 20) * Time.deltaTime;
+            
+        }
+
+          
+    }
+
+    //This is a method to handle climbing in the web
+    public void climb()
+    {
+        //This is a method call to handle jumping in the web
+        //JumpingInWeb();
+        //Gets the players raw movement axis
+        float axisH = Input.GetAxisRaw("Horizontal");
+        float axisV = Input.GetAxisRaw("Vertical");
+        //sets the velocity x and y to climbspeed times the movement axis
+        velocity.x = climbSpeed * axisH * Time.deltaTime;
+        velocity.y = climbSpeed * axisV * Time.deltaTime;
+        
+    }
+
+    #region OUtdatedCode
+    /// <summary>
+    /// Allowed the player to jump in the web to speed up testing
+    /// </summary>
+    //private void JumpingInWeb()
+    // {
+
+
+
+    //if (Input.GetButtonDown("Jump"))
+    // {
+
+    //  velocity.y = webJumpVelocity;
+    //  isJumping = true;
+    //
+    // }
+
+
+    // transform.position += velocity * Time.deltaTime;
+    // gravity
+    //velocity.y -= gravity * Time.deltaTime * gravityScale;
+    // }
+#endregion
+
 }
