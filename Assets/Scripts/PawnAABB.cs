@@ -36,9 +36,13 @@ public class PawnAABB : MonoBehaviour {
         /// </summary>
         public bool hitRight;
         /// <summary>
-        /// After collision detection is calculated, this stores whether or not the object is on a slope.
+        /// After collision detection is calculated, this stores whether or not the object is going up a slope.
         /// </summary>
-        public bool onSlope;
+        public bool ascendSlope;
+        /// <summary>
+        /// After collision detection is calculated, this stores whether or not the object is going down slope.
+        /// </summary>
+        public bool descendSlope;
 
         public float slopeAngle;
         public float slopeAnglePrevious;
@@ -50,7 +54,7 @@ public class PawnAABB : MonoBehaviour {
         public void Reset(Vector3 distance)
         {
             this.distance = distance;
-            onSlope = hitTop = hitBottom = hitLeft = hitRight = false;
+            ascendSlope = descendSlope = hitTop = hitBottom = hitLeft = hitRight = false;
             slopeAnglePrevious = slopeAngle;
             slopeAngle = 0;
         }   
@@ -70,7 +74,11 @@ public class PawnAABB : MonoBehaviour {
     /// <summary>
     /// This is the maximum angle, in degrees, that this PawnAABB can ascend.
     /// </summary>
-    [Range(0, 90)] public float maxSlopeAngle = 45;
+    [Range(0, 90)] public float maxSlopeAscend = 80;
+    /// <summary>
+    /// This is the maximum angle, in degrees, that the PawnAABB can smoothly descend without falling/skipping.
+    /// </summary>
+    [Range(0, 90)] public float maxSlopeDescend = 70;
     /// <summary>
     /// This is how many rays we want to cast from each edge.
     /// </summary>
@@ -102,6 +110,14 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     private Bounds bounds;
     /// <summary>
+    /// Returns -1 when moving left and +1 when moving right. Also returns -1 if not moving horizontally.
+    /// </summary>
+    private int signX { get { return goingLeft ? -1 : 1; } }
+    /// <summary>
+    /// Returns -1 when moving down and +1 when moving up. Also returns -1 if not moving vertically.
+    /// </summary>
+    private int signY { get { return goingDown ? -1 : 1; } }
+    /// <summary>
     /// Whether or not the PawnAABB is moving to the left. If this value is false, we can assume the PawnAABB is moving to the right.
     /// </summary>
     private bool goingLeft { get { return (results.distance.x <= 0); } }
@@ -120,7 +136,7 @@ public class PawnAABB : MonoBehaviour {
     #endregion
 
     /// <summary>
-    /// This method initializes this component. It is called once.
+    /// This message is called by Unity after the game object spawns. It is called once.
     /// </summary>
     void Start()
     {
@@ -136,18 +152,28 @@ public class PawnAABB : MonoBehaviour {
     {
 
         results.Reset(distance);
+        CalculateEdges();
 
+        if (renderInEditor) RenderBounds();
+
+        if (distance.y < 0) DescendSlope();
+
+        DoRaycasts(true); // horizontal
+        DoRaycasts(false); // vertical
+        if(results.ascendSlope) ExtraRaycastFromToes();
+
+        return results;
+    }
+
+    /// <summary>
+    /// This method uses the skinWidth to create a shrunken copy of the Collider's aabb. Then it calculates and caches the distance to use for spreading out the raycast origins.
+    /// </summary>
+    private void CalculateEdges()
+    {
         bounds = aabb.bounds;
         bounds.Expand(skinWidth * -2);
         spaceBetweenVerticalOrigins = bounds.size.x / (resolution - 1);
         spaceBetweenHorizontalOrigins = bounds.size.y / (resolution - 1);
-
-        if (renderInEditor) RenderBounds();
-
-        DoRaycasts(true); // horizontal
-        DoRaycasts(false); // vertical
-
-        return results;
     }
     /// <summary>
     /// This method performs the raycasting. If collisions are found, it then calls other functions to limit or adjust the players movement.
@@ -171,24 +197,50 @@ public class PawnAABB : MonoBehaviour {
             RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
             if (hit.collider == null) continue; // if there's no collision, we're done with this raycast
 
-            float slopeAngle = Vector2.Angle(hit.normal, Vector3.up);
+            float slopeAngle = GetSlopeAngleFromNormal(hit.normal); ;
 
             if (doHorizontal)
             {
-                if (i == 0 && slopeAngle <= maxSlopeAngle) AscendSlope(slopeAngle);
-
+                if (i == 0 && slopeAngle <= maxSlopeAscend) AscendSlope(slopeAngle);
+                if(!results.ascendSlope || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
+                {
+                    rayLength = hit.distance;
+                    SetRayLength(rayLength, doHorizontal);
+                }
+            } else
+            {
+                //if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
+                { 
+                    rayLength = hit.distance;
+                    SetRayLength(rayLength, doHorizontal);
+                }
             }
             
-            if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
-            {
-                // if this is a horizontal ray AND we're on a slope AND it's a climbable slope:
-                if (doHorizontal && results.onSlope && slopeAngle < maxSlopeAngle) continue;
-                rayLength = hit.distance;
-                SetRayLength(rayLength, doHorizontal);
-            } // if
+            
 
         } // for
     } // DoRaycasts()
+    /// <summary>
+    /// This sends out a raycast forward, out from the player's "toes". It allows us to check for new slopes while ascending.
+    /// </summary>
+    private void ExtraRaycastFromToes()
+    {
+        // check for a yet steeper collision ahead of us
+        float rayLength = GetRayLength(true);
+        Vector2 origin = new Vector2(goingLeft ? bounds.min.x : bounds.max.x, bounds.min.y + results.distance.y); // get origin (player's toe)
+        Vector2 dir = goingLeft ? Vector2.left : Vector2.right;
+        RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
+        if (renderInEditor) Debug.DrawRay(origin, dir * rayLength, Color.blue);
+        if (hit)
+        {
+            float slopeAngle = GetSlopeAngleFromNormal(hit.normal);
+            if (slopeAngle != results.slopeAngle) // we hit a new slope!
+            {
+                results.distance.x = (hit.distance - skinWidth) * signX;
+                results.slopeAngle = slopeAngle;
+            }
+        }
+    }
     /// <summary>
     /// This method renders the bounds in the editor. This draws a rectangle of the shrunken AABB.
     /// </summary>
@@ -226,7 +278,7 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     /// <param name="isHorizontal">Whether or not we want the origins for horizontal rays. If this is false, the function will return an origin for a vertical ray.</param>
     /// <param name="i">Which origin do we want? As this number increases, the function will offset the position and calculate the next origin on the same edge.</param>
-    /// <returns></returns>
+    /// <returns>A raycast origin</returns>
     private Vector3 GetOrigin(bool isHorizontal, int i)
     {
         Vector3 origin = (isHorizontal)
@@ -266,15 +318,67 @@ public class PawnAABB : MonoBehaviour {
         float slopeRadians = slopeDegrees * Mathf.Deg2Rad;
         float dis = goingLeft ? -results.distance.x : results.distance.x;
         float newDistanceY = dis * Mathf.Sin(slopeRadians);
-        if (newDistanceY >= results.distance.y) // prevent a slope from messing up other vertical movmeent
-        {
-            results.distance.x = dis * Mathf.Cos(slopeRadians) * (goingLeft ? -1 : 1);
-            results.distance.y = newDistanceY;
-            results.slopeAngle = slopeDegrees;
-            results.onSlope = true;
-            results.hitBottom = true;
-        }
+
+        if (newDistanceY < results.distance.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
+        
+        results.distance.x = dis * Mathf.Cos(slopeRadians) * signX;
+        results.distance.y = newDistanceY;
+        results.slopeAngle = slopeDegrees;
+        results.ascendSlope = true;
+        results.hitBottom = true;
+        
     }
+    /// <summary>
+    /// This method casts a ray down. If it hits ground, the slope of the ground is calculated.
+    /// If the slope is less than maxSlopeDescend, horizontal movement is translated into movement along the surface.
+    /// </summary>
+    private void DescendSlope()
+    {
+        Vector2 origin = new Vector2(goingLeft ? bounds.max.x : bounds.min.x, bounds.min.y); // cast from the bottom, trailing corner
+        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, float.PositiveInfinity, collidableWith); // cast ray down!
 
+        if (renderInEditor) Debug.DrawRay(origin, Vector2.down * 10, Color.blue);
 
+        if (hit) // there's ground below us!
+        {
+            
+            float slopeDegrees = GetSlopeAngleFromNormal(hit.normal); // get the angle of the slope of that ground below us
+            if(slopeDegrees != 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
+            {
+                bool slopeDescendsLeft = (hit.normal.x <= 0); // whether or not the slope descends to the left (/ true) (\ false)
+                
+                if (slopeDescendsLeft == goingLeft) // If the player is moving down the slope... (either left or right)
+                {
+                    float slopeRadians = slopeDegrees * Mathf.Deg2Rad; // get radians
+                    float distanceX = goingLeft ? -results.distance.x : results.distance.x; // absolute value of horizontal distance
+                    float distanceToHit = hit.distance - skinWidth;
+
+                    float slope = Mathf.Tan(slopeRadians);
+                    float dropFromSlope = slope * distanceX; // if we were moving down this slope, our horizontal "run" would result in how much "rise"?
+
+                    if (distanceToHit <= dropFromSlope) // the ground is closer than the slope's drop in height
+                    {
+
+                        float howFarToDrop = distanceX * Mathf.Sin(slopeRadians); // calculate how far to move DOWN
+                        results.distance.x = distanceX * Mathf.Cos(slopeRadians) * signX; // calculate how far to move LEFT / RIGHT 
+                        results.distance.y -= howFarToDrop; // we subtract here in order to preserve any initial downward movement
+
+                        results.hitBottom = true;
+                        results.slopeAngle = slopeDegrees;
+                        results.descendSlope = true;
+                    }
+                }
+            }
+        }
+
+    }
+    /// <summary>
+    /// Given a surface's normal, get the angle of the surface's slope.
+    /// </summary>
+    /// <param name="normal">The angle of a surface normal.</param>
+    /// <returns>The angle of the slope, in degrees.</returns>
+    private float GetSlopeAngleFromNormal(Vector2 normal)
+    {
+        return Vector2.Angle(normal, Vector3.up);
+    }
 }

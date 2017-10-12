@@ -6,7 +6,8 @@ using UnityEngine;
 /// This component turns a GameObject into a controllable avatar.
 /// </summary>
 [RequireComponent(typeof(PawnAABB))]
-public class PlayerController : MonoBehaviour {
+public class PlayerController : MonoBehaviour
+{
 
     /// <summary>
     /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
@@ -56,17 +57,19 @@ public class PlayerController : MonoBehaviour {
     /// The reference to the transform object of the rope swinging origin thing.
     /// </summary>
     private Transform ropeOrigin = null;
-
     /// <summary>
-    /// The vertical speed of the player when they let go of the rope.
+    /// The speed of jumping off the rope.
     /// </summary>
-    public float letGoSpeed = 20;
-
-    void Start () {
+    public float letGoSpeed = 60;
+    /// <summary>
+    /// This initializes this component.
+    /// </summary>
+    void Start()
+    {
         pawn = GetComponent<PawnAABB>();
         DeriveJumpValues();
         _rigidbody = GetComponent<Rigidbody2D>();
-	}
+    }
     /// <summary>
     /// This is called automatically when the values change in the inspector.
     /// </summary>
@@ -82,10 +85,10 @@ public class PlayerController : MonoBehaviour {
         gravity = (jumpHeight * 2) / (jumpTime * jumpTime);
         jumpVelocity = gravity * jumpTime;
     }
-	/// <summary>
+    /// <summary>
     /// This method is called each frame. 
     /// </summary>
-	void Update ()
+    void Update()
     {
         if (_rigidbody.bodyType == RigidbodyType2D.Kinematic)
         {
@@ -106,7 +109,7 @@ public class PlayerController : MonoBehaviour {
         PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
-        isGrounded = results.hitBottom || results.onSlope;
+        isGrounded = results.hitBottom || results.ascendSlope;
         transform.position += results.distance;
     }
     /// <summary>
@@ -124,7 +127,11 @@ public class PlayerController : MonoBehaviour {
         }
         else
         {
-            AccelerateX(axisH * walkAcceleration);
+            bool movingLeft = (velocity.x <= 0);
+            bool acceleratingLeft = (axisH <= 0);
+            float scaleAcceleration = (movingLeft != acceleratingLeft) ? 5 : 1; // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+
+            AccelerateX(axisH * walkAcceleration * scaleAcceleration);
         }
     }
     /// <summary>
@@ -154,7 +161,6 @@ public class PlayerController : MonoBehaviour {
         // gravity
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
-
     /// <summary>
     /// This is the input for swingning on a rope, bitch!
     /// </summary>
@@ -176,7 +182,6 @@ public class PlayerController : MonoBehaviour {
             velocity.y += letGoSpeed;
         }
     }
-
     /// <summary>
     /// This method decelerates the horizontal speed of the object.
     /// </summary>
@@ -198,10 +203,18 @@ public class PlayerController : MonoBehaviour {
     /// <summary>
     /// This method accelerates the horizontal speed of the object.
     /// </summary>
-    /// <param name="amount">The scalar value of horizontal acceleration. This should be a positive number.</param>
+    /// <param name="amount">The value of horizontal acceleration.</param>
     private void AccelerateX(float amount)
     {
         velocity.x += amount * Time.deltaTime;
+    }
+    /// <summary>
+    /// This message is called by the 2D physics engine when the player enters a trigger volume.
+    /// </summary>
+    /// <param name="other">The trigger volume of the other object.</param>
+    void OnTriggerEnter2D(Collider2D other)
+    {
+        print("[triggered]");
     }
 
     /// <summary>
