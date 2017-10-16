@@ -43,8 +43,13 @@ public class PawnAABB : MonoBehaviour {
         /// After collision detection is calculated, this stores whether or not the object is going down slope.
         /// </summary>
         public bool descendSlope;
-
+        /// <summary>
+        /// The angle of the slope on this frame.
+        /// </summary>
         public float slopeAngle;
+        /// <summary>
+        /// The angle of the slope on the last frame.
+        /// </summary>
         public float slopeAnglePrevious;
 
         /// <summary>
@@ -89,7 +94,13 @@ public class PawnAABB : MonoBehaviour {
     /// the box from getting caught on level geometry.
     /// </summary>
     [Range(0.01f, 0.5f)] public float skinWidth = 0.1f;
+    /// <summary>
+    /// Whether or not to render into the Scene view details about this component. In this case, we draw things like raycasts.
+    /// </summary>
     public bool renderInEditor = true;
+    /// <summary>
+    /// Which layers this object can collide with.
+    /// </summary>
     public LayerMask collidableWith;
     #endregion
 
@@ -157,10 +168,10 @@ public class PawnAABB : MonoBehaviour {
         if (renderInEditor) RenderBounds();
 
         if (distance.y < 0) DescendSlope();
-
         DoRaycasts(true); // horizontal
+        if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
-        if(results.ascendSlope) ExtraRaycastFromToes();
+        
 
         return results;
     }
@@ -181,43 +192,45 @@ public class PawnAABB : MonoBehaviour {
     /// <param name="doHorizontal">Whether or not to cast rays horizontally. If false, the function will cast rays vertically.</param>
     private void DoRaycasts(bool doHorizontal)
     {
-        Vector3 dir = GetCastDirection(doHorizontal);
+        
         float rayLength = GetRayLength(doHorizontal);
 
         for(int i = 0; i < resolution; i++)
         {
+            Vector3 dir = GetCastDirection(doHorizontal);
             Vector3 origin = GetOrigin(doHorizontal, i);
-            // FIXME: when on a slope (or even a slat surface),
-            // the distance.y becomes a negative number.
-            // So the origins switch to the top of the AABB, but the direction does not.
-            // So rays are consequently cast into the object.
 
             if (renderInEditor) Debug.DrawRay(origin, dir * rayLength);
 
             RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
             if (hit.collider == null) continue; // if there's no collision, we're done with this raycast
 
-            float slopeAngle = GetSlopeAngleFromNormal(hit.normal); ;
+            float slopeAngle = GetSlopeAngleFromNormal(hit.normal);
 
             if (doHorizontal)
             {
-                if (i == 0 && slopeAngle <= maxSlopeAscend) AscendSlope(slopeAngle);
-                if(!results.ascendSlope || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
+                if (i == 0 && slopeAngle <= maxSlopeAscend)
+                {
+                    AscendSlope(slopeAngle);
+                    // FIXME: somehow the front toe is getting caught in the slope sometimes
+                    //results.distance.x += (hit.distance - skinWidth) * Mathf.Sign(results.distance.x); // maybe this will help?
+                }
+                if((!results.ascendSlope && !results.descendSlope) || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
                 {
                     rayLength = hit.distance;
                     SetRayLength(rayLength, doHorizontal);
                 }
             } else
             {
-                //if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
-                { 
+                if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
+                {
+                    if (results.descendSlope && !goingLeft && i == 0) continue;
+                    if (results.descendSlope && goingLeft && i == resolution - 1) continue;
+
                     rayLength = hit.distance;
                     SetRayLength(rayLength, doHorizontal);
                 }
             }
-            
-            
-
         } // for
     } // DoRaycasts()
     /// <summary>
@@ -295,6 +308,7 @@ public class PawnAABB : MonoBehaviour {
     private void SetRayLength(float length, bool isHorizontal)
     {
         length -= skinWidth;
+        if (length < 0) length = 0;
         if (isHorizontal)
         {
             results.hitLeft = goingLeft;
@@ -340,17 +354,16 @@ public class PawnAABB : MonoBehaviour {
         if (renderInEditor) Debug.DrawRay(origin, Vector2.down * 10, Color.blue);
 
         if (hit) // there's ground below us!
-        {
-            
+        {            
             float slopeDegrees = GetSlopeAngleFromNormal(hit.normal); // get the angle of the slope of that ground below us
-            if(slopeDegrees != 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
+            if(slopeDegrees > 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
             {
                 bool slopeDescendsLeft = (hit.normal.x <= 0); // whether or not the slope descends to the left (/ true) (\ false)
                 
                 if (slopeDescendsLeft == goingLeft) // If the player is moving down the slope... (either left or right)
                 {
                     float slopeRadians = slopeDegrees * Mathf.Deg2Rad; // get radians
-                    float distanceX = goingLeft ? -results.distance.x : results.distance.x; // absolute value of horizontal distance
+                    float distanceX = Mathf.Abs(results.distance.x); // absolute value of horizontal distance
                     float distanceToHit = hit.distance - skinWidth;
 
                     float slope = Mathf.Tan(slopeRadians);
@@ -361,7 +374,7 @@ public class PawnAABB : MonoBehaviour {
 
                         float howFarToDrop = distanceX * Mathf.Sin(slopeRadians); // calculate how far to move DOWN
                         results.distance.x = distanceX * Mathf.Cos(slopeRadians) * signX; // calculate how far to move LEFT / RIGHT 
-                        results.distance.y -= howFarToDrop; // we subtract here in order to preserve any initial downward movement
+                        results.distance.y = -(distanceToHit + howFarToDrop);
 
                         results.hitBottom = true;
                         results.slopeAngle = slopeDegrees;
