@@ -34,10 +34,6 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     private bool isGrounded = false;
     /// <summary>
-    /// The strength of the swing.
-    /// </summary>
-    public float swingStrength = 5;
-    /// <summary>
     /// Whether or not the player is currently jumping.
     /// </summary>
     private bool isJumping = false;
@@ -53,10 +49,6 @@ public class PlayerController : MonoBehaviour
     /// Reference to the rigidbody2D.
     /// </summary>
     private Rigidbody2D _rigidbody;
-    /// <summary>
-    /// The reference to the transform object of the rope swinging origin thing.
-    /// </summary>
-    private Transform ropeOrigin = null;
     /// <summary>
     /// The speed of jumping off the rope.
     /// </summary>
@@ -94,10 +86,6 @@ public class PlayerController : MonoBehaviour
         {
             HandleInput();
             DoCollisions();
-        }
-        if (_rigidbody.bodyType == RigidbodyType2D.Dynamic)
-        {
-            InputForSwing();
         }
     }
     /// <summary>
@@ -161,27 +149,7 @@ public class PlayerController : MonoBehaviour
         // gravity
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
-    /// <summary>
-    /// This is the input for swingning on a rope, bitch!
-    /// </summary>
-    private void InputForSwing()
-    {
-        float axisH = Input.GetAxisRaw("Horizontal");
-        Vector2 dir = transform.position - ropeOrigin.position;
-        dir = new Vector2(-dir.y, dir.x);
-        dir.Normalize();
-        _rigidbody.AddForce(dir * axisH * swingStrength);
-        if (Input.GetButtonDown("Jump"))
-        {
-            RopeSpawn rope = ropeOrigin.gameObject.GetComponent<RopeSpawn>();
-            rope.UnlinkRope();
-            ropeOrigin = null;
-            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
-            velocity = _rigidbody.velocity;
-            _rigidbody.velocity = Vector2.zero;
-            velocity.y += letGoSpeed;
-        }
-    }
+    
     /// <summary>
     /// This method decelerates the horizontal speed of the object.
     /// </summary>
@@ -218,11 +186,23 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// This sets an origin for swinging on a rope.
+    /// 
     /// </summary>
-    /// <param name="origin"></param>
-    public void SetOriginForRope(Transform origin)
+    /// <param name="typo">The rigidbodytype to change the player to.</param>
+    /// <param name="vel">The velocity to set the player to.</param>
+    public void TransferPhysics(RigidbodyType2D typo)
     {
-        ropeOrigin = origin;
+        _rigidbody.bodyType = typo;
+        if (typo == RigidbodyType2D.Dynamic)
+        {
+            _rigidbody.velocity = velocity;
+            velocity = Vector2.zero;
+        }
+        else if (typo == RigidbodyType2D.Kinematic)
+        {
+            velocity = _rigidbody.velocity;
+            _rigidbody.velocity = Vector2.zero;
+            velocity.y += letGoSpeed;
+        }   
     }
 }

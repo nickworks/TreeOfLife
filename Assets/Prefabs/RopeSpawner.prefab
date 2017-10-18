@@ -91,3 +91,4 @@ MonoBehaviour:
   ropePiece: {fileID: 1409672829139870, guid: ed43eaa84983a9c48aa17c1d25d01b77, type: 2}
   numberOfSegments: 12
   totalLength: 4
+  swingStrength: 10
