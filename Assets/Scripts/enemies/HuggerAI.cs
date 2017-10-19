@@ -68,6 +68,8 @@ public class HuggerAI : MonoBehaviour
     /// </summary>
     private int playerLockDirection = 0;
 
+    private bool isHugging = false;
+
     // Use this for initialization
     void Start ()
     {
@@ -79,7 +81,11 @@ public class HuggerAI : MonoBehaviour
     {
         GravityAndStuff();
 
-        if (isBurrowing)
+        if (isHugging)
+        {
+
+        }
+        else if (isBurrowing)
             BurrowHandler();
         else if (isLeaping)
             HandleLeaping();
@@ -98,13 +104,21 @@ public class HuggerAI : MonoBehaviour
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
 
-        if (isGrounded && Vector2.Distance(PlayerController.main.transform.position, transform.position) < MAX_DISTANCE)
-        {
-            isBurrowing = true;
-            preBurrowPoint = transform.position;
-        }
+        float distanceFromPlayer = Vector2.Distance(PlayerController.main.transform.position, transform.position);
 
-        transform.position += results.distance;
+        if (isGrounded)
+        {
+            if (distanceFromPlayer < MAX_DISTANCE)
+            {
+                isBurrowing = true;
+                preBurrowPoint = transform.position;
+            }
+        }
+        else if (distanceFromPlayer < 1)
+            SetHugging();
+
+        if (!isHugging)
+            transform.position += results.distance;
     }
 
     /// <summary>
@@ -114,6 +128,16 @@ public class HuggerAI : MonoBehaviour
     {
         if (!isGrounded && !isBurrowing && !isLeaping)
             velocity.y -= gravity;
+    }
+
+    /// <summary>
+    /// Sets the enemy up so that it hugs the player.
+    /// </summary>
+    void SetHugging()
+    {
+        isHugging = true;
+        isLeaping = false;
+        transform.SetParent(PlayerController.main.transform);
     }
 
     /// <summary>
@@ -157,6 +181,10 @@ public class HuggerAI : MonoBehaviour
         velocity.y -= gravity;
 
         transform.position += (Vector3)velocity * Time.deltaTime;
+
+        float distanceFromPlayer = Vector2.Distance(PlayerController.main.transform.position, transform.position);
+        if (distanceFromPlayer < 1)
+            SetHugging();
 
         if (velocity.y <= 0)
             isLeaping = false;
