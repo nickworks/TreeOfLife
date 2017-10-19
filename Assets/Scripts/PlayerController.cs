@@ -8,7 +8,7 @@ using UnityEngine;
 [RequireComponent(typeof(PawnAABB))]
 public class PlayerController : MonoBehaviour
 {
-
+    static public GameObject main;
     /// <summary>
     /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
     /// </summary>
@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour
         pawn = GetComponent<PawnAABB>();
         DeriveJumpValues();
         _rigidbody = GetComponent<Rigidbody2D>();
+        main = gameObject;
     }
     /// <summary>
     /// This is called automatically when the values change in the inspector.

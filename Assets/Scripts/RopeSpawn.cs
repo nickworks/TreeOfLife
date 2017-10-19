@@ -51,7 +51,7 @@ public class RopeSpawn : MonoBehaviour
             dir = new Vector2(-dir.y, dir.x);
             dir.Normalize();
             playerBody.AddForce(dir * axisH * swingStrength);
-            if (Input.GetButtonDown("Jump"))
+            if (Input.GetButtonUp("Fire1"))
                 UnlinkRope();
         }
     }

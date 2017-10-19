@@ -14,11 +14,17 @@ public class HuggerAI : MonoBehaviour
     private Vector2 velocity = Vector2.zero;
     private PawnAABB pawn;
     private bool isGrounded = false;
+    public bool isBurrowed = false;
     public bool isBurrowing = false;
     private bool isLeaping = false;
     private float timeUnderground = 0;
+    private Vector2 preBurrowPoint;
     private const float SURFACE_AT = 2;
-    private const Vector2 JUMP_VELOCITY = new Vector2(20, 40);
+    private Vector2 jumpVelocity = new Vector2(5, 10);
+    private const float BURROW_SPEED = 2.0f;
+    private const float MAX_DISTANCE = 3.0f;
+    private const float BURROW_DEPTH = 1;
+    private int playerLockDirection = 0;
 
     // Use this for initialization
     void Start ()
@@ -49,33 +55,64 @@ public class HuggerAI : MonoBehaviour
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
+
+        if (isGrounded && Vector2.Distance(PlayerController.main.transform.position, transform.position) < MAX_DISTANCE)
+        {
+            isBurrowing = true;
+            preBurrowPoint = transform.position;
+        }
+
         transform.position += results.distance;
     }
 
     void GravityAndStuff()
     {
-        if (!isGrounded && !isBurrowing)
+        if (!isGrounded && !isBurrowing && !isLeaping)
             velocity.y -= gravity;
     }
 
     void BurrowHandler()
     {
-        pawn.Move(velocity * Time.deltaTime);
-        isGrounded = false;
+        if (isBurrowed)
+        {
+            velocity = Vector2.right * BURROW_SPEED * PlayerDirection();
+            isGrounded = false;
 
-        if (timeUnderground < SURFACE_AT)
-            timeUnderground += timeUnderground.deltaTime;
+            if (timeUnderground < SURFACE_AT)
+                timeUnderground += Time.deltaTime;
+            else
+            {
+                isBurrowing = false;
+                isBurrowed = false;
+                isLeaping = true;
+                velocity = jumpVelocity;
+                playerLockDirection = PlayerDirection();
+            }
+        }
         else
         {
-            isBurrowing = false;
-            isLeaping = true;
+            if (transform.position.y > preBurrowPoint.y - BURROW_DEPTH)
+                velocity.y = -1;
+            else
+                isBurrowed = true;
         }
+
+        transform.position += (Vector3)velocity * Time.deltaTime;
     }
 
     void HandleLeaping()
-    {
-        pawn.Move(velocity * Time.deltaTime);
-        velocity.y = JUMP_SPEED;
+    {        
+        velocity.x = Mathf.Abs(velocity.x) * playerLockDirection;
+        velocity.y -= gravity;
 
+        transform.position += (Vector3)velocity * Time.deltaTime;
+
+        if (velocity.y <= 0)
+            isLeaping = false;
+    }
+
+    int PlayerDirection()
+    {
+        return PlayerController.main.transform.position.x > transform.position.x ? 1 : -1;
     }
 }
