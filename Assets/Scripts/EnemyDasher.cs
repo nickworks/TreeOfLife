@@ -8,55 +8,55 @@ using UnityEngine;
 public class EnemyDasher : MonoBehaviour
 {
     /// <summary>
-    /// bool
+    /// bool used to tell if the target is in range 
     /// </summary>
     public bool inRange = false;
     /// <summary>
-    /// vector3
+    /// vector3 used to tore the targets position 
     /// </summary>
     public Vector3 targetPos;
     /// <summary>
-    /// float
+    /// float used to store the throw power 
     /// </summary>
     public float enemeyImpulse;
     /// <summary>
-    /// vector3
+    /// vector3 used to store and change the objects veloscity 
     /// </summary>
     private Vector3 velocity = new Vector3();
     /// <summary>
-    /// pawnAABB
+    /// pawnAABB used for collition detection
     /// </summary>
     private PawnAABB pawn;
     /// <summary>
-    /// float
+    /// float used to give gravity to the object
     /// </summary>
     private float gravity = 10;
     /// <summary>
-    /// bool
+    /// bool used to see if the opbject is grounded
     /// </summary>
     static public bool isGrounded = false;
     /// <summary>
-    /// bool
+    /// bool used to tell whether or not the object can be thrown
     /// </summary>
     public bool canDash = true;
     /// <summary>
-    /// bool
+    /// bool used to tell if the object has been hit
     /// </summary>
     public bool isHit = true;
     /// <summary>
-    /// bool
+    /// boolused to determin what direction to move the object ehn t is alive
     /// </summary>
     private bool moveRight = true;
     /// <summary>
-    /// float
+    /// float used to determin the number of seconds untill the directioin is changed
     /// </summary>
     private float moveCount;
     /// <summary>
-    /// float
+    /// float used to determin the number of seconds untill the directioin is changed
     /// </summary>
     public float moveCountReset = 10;
     /// <summary>
-    /// float
+    /// float used to determin the speed of the object
     /// </summary>
     public float speed = 10;
 
