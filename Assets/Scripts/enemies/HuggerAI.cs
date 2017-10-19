@@ -11,19 +11,61 @@ public class HuggerAI : MonoBehaviour
     /// </summary>
     private float gravity = .5f;
 
+    /// <summary>
+    /// The velocity of the enemy.
+    /// </summary>
     private Vector2 velocity = Vector2.zero;
+    /// <summary>
+    /// The reference to the pawnAABB component.
+    /// </summary>
     private PawnAABB pawn;
+    /// <summary>
+    /// Whether the enemy is grounded.
+    /// </summary>
     private bool isGrounded = false;
+    /// <summary>
+    /// Whether the enemy is fully underground.
+    /// </summary>
     public bool isBurrowed = false;
+    /// <summary>
+    /// Whether the enemy is burrowing or is burrowed.
+    /// </summary>
     public bool isBurrowing = false;
+    /// <summary>
+    /// Whether the enemy is leaping upward. Turns to false when falling.
+    /// </summary>
     private bool isLeaping = false;
+    /// <summary>
+    /// Currently unused variable for how long the enemy has been underground.
+    /// </summary>
     private float timeUnderground = 0;
+    /// <summary>
+    /// The point that the enemy starts before burrowing.
+    /// </summary>
     private Vector2 preBurrowPoint;
+    /// <summary>
+    /// Unused constant for when the enemy should surface and leap when burrowed.
+    /// </summary>
     private const float SURFACE_AT = 2;
+    /// <summary>
+    /// Temporary velocity to jump at the player with.
+    /// </summary>
     private Vector2 jumpVelocity = new Vector2(5, 10);
+    /// <summary>
+    /// The speed to burrow through the ground.
+    /// </summary>
     private const float BURROW_SPEED = 2.0f;
-    private const float MAX_DISTANCE = 3.0f;
+    /// <summary>
+    /// The maximum distance from the player to trigger activation.
+    /// </summary>
+    private const float MAX_DISTANCE = 5.0f;
+    /// <summary>
+    /// How far to burrow into the ground.
+    /// </summary>
     private const float BURROW_DEPTH = 1;
+    /// <summary>
+    /// The remembered x direction that the player was.
+    /// </summary>
     private int playerLockDirection = 0;
 
     // Use this for initialization
@@ -65,12 +107,18 @@ public class HuggerAI : MonoBehaviour
         transform.position += results.distance;
     }
 
+    /// <summary>
+    /// Handles gravity.
+    /// </summary>
     void GravityAndStuff()
     {
         if (!isGrounded && !isBurrowing && !isLeaping)
             velocity.y -= gravity;
     }
 
+    /// <summary>
+    /// Handsles bburrowing into the ground.
+    /// </summary>
     void BurrowHandler()
     {
         if (isBurrowed)
@@ -100,6 +148,9 @@ public class HuggerAI : MonoBehaviour
         transform.position += (Vector3)velocity * Time.deltaTime;
     }
 
+    /// <summary>
+    /// Handles leaping into the air at the player.
+    /// </summary>
     void HandleLeaping()
     {        
         velocity.x = Mathf.Abs(velocity.x) * playerLockDirection;
@@ -111,6 +162,10 @@ public class HuggerAI : MonoBehaviour
             isLeaping = false;
     }
 
+    /// <summary>
+    /// Finds the direction the player is at.
+    /// </summary>
+    /// <returns></returns>
     int PlayerDirection()
     {
         return PlayerController.main.transform.position.x > transform.position.x ? 1 : -1;

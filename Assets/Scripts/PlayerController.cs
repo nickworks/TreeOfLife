@@ -8,6 +8,9 @@ using UnityEngine;
 [RequireComponent(typeof(PawnAABB))]
 public class PlayerController : MonoBehaviour
 {
+    /// <summary>
+    /// Reference to the player object.
+    /// </summary>
     static public GameObject main;
     /// <summary>
     /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
@@ -187,10 +190,9 @@ public class PlayerController : MonoBehaviour
     }
 
     /// <summary>
-    /// 
+    /// Handles switching between the different physics types from outside the player class.
     /// </summary>
     /// <param name="typo">The rigidbodytype to change the player to.</param>
-    /// <param name="vel">The velocity to set the player to.</param>
     public void TransferPhysics(RigidbodyType2D typo)
     {
         _rigidbody.bodyType = typo;
