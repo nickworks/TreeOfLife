@@ -93,7 +93,27 @@ namespace Player {
         /// <param name="other">The trigger volume of the other object.</param>
         void OnTriggerEnter2D(Collider2D other)
         {
-            print("[triggered]");
+            // allows the player to attach itself to the raft and passes in a reference to the player
+            switch(other.gameObject.tag)
+            {
+                case "Raft":
+                    other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
+                    break;
+            }
+        }
+        /// <summary>
+        /// detects the end of collision with objects
+        /// </summary>
+        /// <param name="other"></param> the object the raft WAS colliding with
+        void OnTriggerExit2D(Collider2D other)
+        {
+            // resets the raft's variables for next use
+            switch(other.gameObject.tag)
+            {
+                case "Raft":
+                    other.transform.parent.gameObject.GetComponent<Raft>().Detach();
+                    break;
+            }
         }
     }
 }
