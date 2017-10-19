@@ -22,3 +22,10 @@ sysinfo.txt
 
 # VS BS
 /.vs/
+
+# Nuget Packages
+packages.config
+/packages/
+
+# Documentation
+/docs/
