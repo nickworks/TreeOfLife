@@ -172,7 +172,7 @@ public class PlayerController : MonoBehaviour
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
     /// <summary>
-    /// This method decelerates the horizontal speed of the object.
+    /// This method accelerates the horizontal speed of the object.
     /// </summary>
     /// <param name="amount">The scalar value of horizontal acceleration. This should be a positive number.</param>
     private void DecelerateX(float amount)

@@ -34,7 +34,7 @@ public class EnemyDasher : MonoBehaviour
     /// <summary>
     /// bool used to see if the opbject is grounded
     /// </summary>
-    static public bool isGrounded = false;
+    private bool isGrounded = false;
     /// <summary>
     /// bool used to tell whether or not the object can be thrown
     /// </summary>
