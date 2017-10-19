@@ -9,27 +9,42 @@ namespace Player {
     [RequireComponent(typeof(PawnAABB))]
     public class PlayerController : MonoBehaviour
     {
+
+        #region variables
+
         private PlayerState playerState;
         /// <summary>
         /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
         /// </summary>
+        [Tooltip("The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.")]
         public float jumpTime = 0.75f;
         /// <summary>
         /// The height, in meters, of the player's jump arc.
         /// </summary>
+        [Tooltip("The height, in meters, of the player's jump arc.")]
         public float jumpHeight = 3;
         /// <summary>s
         /// The horizontal acceleration to use when the player moves left or right.
         /// </summary>
+        [Tooltip("The horizontal acceleration to use when the player moves left or right.")]
         public float walkAcceleration = 10;
         /// <summary>
         /// How much to scale the acceleration when the player's horizontal input is opposite of their velocity. Higher numbers make the player stop and turn around more quickly.
         /// </summary>
+        [Tooltip("How much to scale the acceleration when the player's horizontal input is opposite of their velocity. Higher numbers make the player stop and turn around more quickly.")]
         public float turnAroundMultiplier = 10;
         /// <summary>
-        /// The acceleration to use for gravity. This will be calculated from the jumpTime and jumpHeight fields.
+        /// The standard acceleration to use for gravity. This will be calculated from the jumpTime and jumpHeight fields.  The base value for gravity.
         /// </summary>
-        public float gravity;
+        public float gravityStandard { get; private set; }
+        /// <summary>
+        /// The acceleration to use for gravity.  Defaults to gravityStandard, but can be manipulated by force volumes.
+        /// </summary>
+        public float gravityTemporary { get; private set; }
+        /// <summary>
+        /// The direction vector in which Gravity will be applied.
+        /// </summary>
+        public Vector3 gravityDir { get; private set; }
         /// <summary>
         /// The takeoff speed to use as vertical velocity for the player's jump. This will be calculated from jumpTime and jumpHeight fields.
         /// </summary>
@@ -46,7 +61,10 @@ namespace Player {
         /// A reference to the PawnAABB component on this object.
         /// </summary>
         public PawnAABB pawn { get; private set; }
+
+        #endregion
         #region Setup
+
         /// <summary>
         /// This initializes this component.
         /// </summary>
@@ -68,10 +86,13 @@ namespace Player {
         /// </summary>
         void DeriveJumpValues()
         {
-            gravity = (jumpHeight * 2) / (jumpTime * jumpTime);
-            jumpVelocity = gravity * jumpTime;
+            gravityStandard = (jumpHeight * 2) / (jumpTime * jumpTime);
+            jumpVelocity = gravityStandard * jumpTime;
+            SetGravity();
         }
+
         #endregion
+
         /// <summary>
         /// This method is called each frame. 
         /// </summary>
@@ -101,6 +122,44 @@ namespace Player {
                     break;
             }
         }
+
+        /// <summary>
+        /// Used to set or reset gravity.  An empty set of parameters will reset gravity values to defaults.
+        /// </summary>
+        /// <param name ="gravityDirection">Which direction should gravity point?  Will be normalized.</param>
+        /// <param name ="gravityForce">The power of the gravitational force</param>
+        public void SetGravity(Vector3? gravityDirection = null, float? gravityForce = null )
+        {
+            //If gravity direction isn't specified, set it to the default "down"
+            if( gravityDirection == null )
+            {
+                gravityDir = Vector3.down;
+            } else//Otherwise we set gravity to the new direction, and normalize that value
+            {
+                Vector3 tempDirection = (Vector3)gravityDirection;//converts the Vector3? to a vector3
+                gravityDir = tempDirection.normalized;
+            }
+            //If gravity force isn't specified, set it to the default value created at startup
+            if( gravityForce == null )
+            {
+                gravityTemporary = gravityStandard;
+            } else//Otherwise we set the force of gravity to the new value
+            {
+                gravityTemporary = (float)gravityForce;//Convert the float? to a normal float
+            }
+        }
+
+        /// <summary>
+        /// This method applies outside forces (from a force volume) to the object.
+        /// </summary>
+        /// <param name="forceForce">The power of the force to be applied to this pawn.</param>
+        /// <param name="forceDir">The directional vector of the force.  Will be normalized.</param>
+        public void ApplyForce( float forceForce, Vector3 forceDir )
+        {
+            velocity += forceForce * forceDir.normalized * Time.deltaTime;
+        }
+
+
         /// <summary>
         /// detects the end of collision with objects
         /// </summary>
