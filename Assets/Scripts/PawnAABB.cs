@@ -171,9 +171,26 @@ public class PawnAABB : MonoBehaviour {
         DoRaycasts(true); // horizontal
         if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
-        
+        FinalRaycast();
 
         return results;
+    }
+    /// <summary>
+    /// This raycast fixes a troubling edge case where the player would get stuck in a slope.
+    /// It casts a ray diagonally in the direction the player is moving.
+    /// </summary>
+    private void FinalRaycast()
+    {
+        Vector2 origin = new Vector2(
+                    goingLeft ? bounds.min.x : bounds.max.x,
+                    goingDown ? bounds.min.y : bounds.max.y
+                    );
+        float originalDistance = results.distance.magnitude;
+        RaycastHit2D hit = Physics2D.Raycast(origin, results.distance, originalDistance, collidableWith);
+        if (hit && hit.distance < originalDistance)
+        {
+            results.distance = results.distance.normalized * (hit.distance - skinWidth);
+        }
     }
 
     /// <summary>
