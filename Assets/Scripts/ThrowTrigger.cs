@@ -21,6 +21,9 @@ public class ThrowTrigger : MonoBehaviour {
         if (collision.tag == "Player")
         {           
             GetComponentInParent<EnemyDasher>().inRange = true;
+            GetComponentInParent<EnemyDasher>().canDash = true;
+            GetComponentInParent<EnemyDasher>().isHit = true;
+
         }
     }
 

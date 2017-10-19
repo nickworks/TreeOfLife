@@ -6,22 +6,21 @@ using UnityEngine;
 public class EnemyDasher : MonoBehaviour
 {
     public bool inRange = false;
-    public Vector3 targetPos;
-   
+    public Vector3 targetPos;   
    // Vector3 currentPos;
     public float enemeyImpulse;
     private Vector3 velocity = new Vector3();
     private PawnAABB pawn;
     private float gravity = 10;
-     private bool isGrounded = false;
+    static public bool isGrounded = false;
     public bool canDash = true;
-    public bool isHit = false;
+    public bool isHit = true;
     private bool moveRight = true;
-   private float moveCount;
+    private float moveCount;
     public float moveCountReset = 10;
     public float speed = 10;
 
-
+    
 
     void Start()
     {
