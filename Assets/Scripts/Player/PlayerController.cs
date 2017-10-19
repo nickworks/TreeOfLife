@@ -10,6 +10,9 @@ namespace Player {
     public class PlayerController : MonoBehaviour
     {
         private PlayerState playerState;
+
+        
+        
         /// <summary>
         /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
         /// </summary>
@@ -42,6 +45,9 @@ namespace Player {
         /// The maximum speed of the player, in meters-per-second.
         /// </summary>
         public float maxSpeed = 10;
+
+        public bool isClimbing = false;
+
         /// <summary>
         /// A reference to the PawnAABB component on this object.
         /// </summary>
@@ -55,6 +61,7 @@ namespace Player {
             pawn = GetComponent<PawnAABB>();
             velocity = new Vector3();
             DeriveJumpValues();
+            if (playerState == null) playerState = new PlayerStateRegular();
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -77,9 +84,22 @@ namespace Player {
         /// </summary>
         void Update()
         {
-            if (playerState == null) playerState = new PlayerStateRegular();
+
+            if (isClimbing == true)
+            {
+                if (playerState != null) playerState = new PlayerStateClimbing();
+                print(playerState);
+            }
+            if (isClimbing != true)
+            {
+                if (playerState != null) playerState = new PlayerStateRegular();
+                print(playerState);
+            }
 
             PlayerState nextState = playerState.Update(this);
+            
+           
+
             if (nextState != null)
             {
                 playerState.OnExit(this);
@@ -87,13 +107,27 @@ namespace Player {
                 playerState.OnEnter(this);
             }
         }
-        /// <summary>
-        /// This message is called by the 2D physics engine when the player enters a trigger volume.
-        /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter2D(Collider2D other)
+
+
+        private void OnTriggerStay2D(Collider2D other)
         {
-            print("[triggered]");
+            if (other.gameObject.tag == "StickyWeb")
+            {
+                if (Input.GetButton("Grab"))
+                {
+                    isClimbing = true;
+                }
+                
+            }
         }
+
+        private void OnTriggerExit2D(Collider2D other)
+        {
+            if (other.gameObject.tag == "StickyWeb")
+            {
+                isClimbing = false;
+            }
+        }
+
     }
 }

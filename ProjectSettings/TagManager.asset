@@ -3,7 +3,15 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - StickyWeb
+  - SlingShotWeb
+  - SlingShotReciever
+  - Ground
+  - Stopper
+  - Spawn
+  - Bug
+  - LeaderBug
   layers:
   - Default
   - TransparentFX
@@ -14,9 +22,9 @@ TagManager:
   - 
   - 
   - Ground
-  - 
-  - 
-  - 
+  - StickyWeb
+  - SlingShotWeb
+  - SlingShot Reciever
   - 
   - 
   - 
