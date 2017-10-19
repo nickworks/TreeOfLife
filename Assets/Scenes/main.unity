@@ -692,7 +692,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 275090364}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 7.82, y: -3.01, z: 0}
+  m_LocalPosition: {x: 4.46, y: -0.59, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -706,13 +706,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 275090364}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d66a4fd86a2bd414bae672f5a19ba2a6, type: 3}
+  m_Script: {fileID: 11500000, guid: 97032aaebb3143e42a95c15d91a6efd1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   jumpTime: 0.75
   jumpHeight: 4
   walkAcceleration: 10
-  walkDecelerationMultiplier: 5
+  turnAroundMultiplier: 10
   gravity: 14.222222
   velocity: {x: 0, y: 0, z: 0}
   maxSpeed: 10
@@ -1050,8 +1050,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6c3c98f68edc94f8e6e06f1e60c9fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inRange: 0
-  targetPos: {x: 0, y: 0, z: 0}
 --- !u!58 &434999016
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1113,7 +1111,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 434999014}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 6.4613385, y: 8.634447, z: 2.5820312}
+  m_LocalPosition: {x: 6.4613385, y: 8.634447, z: 0.33}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 743902813}
@@ -1340,8 +1338,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6c3c98f68edc94f8e6e06f1e60c9fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inRange: 0
-  targetPos: {x: 0, y: 0, z: 0}
 --- !u!58 &562160412
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -1403,7 +1399,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 562160409}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -11.15, y: 17.32, z: 2.5820312}
+  m_LocalPosition: {x: -11.15, y: 17.32, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1066440842}
@@ -3220,8 +3216,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6c3c98f68edc94f8e6e06f1e60c9fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inRange: 0
-  targetPos: {x: 0, y: 0, z: 0}
 --- !u!58 &1510395788
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -3283,7 +3277,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1510395785}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -23.53, y: 5.46, z: 2.5820312}
+  m_LocalPosition: {x: -23.53, y: 5.46, z: 0.02}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1426677953}
@@ -3648,8 +3642,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aa6c3c98f68edc94f8e6e06f1e60c9fe, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inRange: 0
-  targetPos: {x: 0, y: 0, z: 0}
 --- !u!58 &1699879021
 CircleCollider2D:
   m_ObjectHideFlags: 0
@@ -3711,7 +3703,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1699879018}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.52, y: 21.87, z: 2.5820312}
+  m_LocalPosition: {x: 4.52, y: 21.87, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 1293359030}

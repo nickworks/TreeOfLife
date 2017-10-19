@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Player;
 
 /// <summary>
 /// This class controls a proximity trigger volume for enemies. This component MUST be on a gameobject that is a

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Player;
 
 /// <summary>
 /// This class controls how the ghost/ghost-like enemy moves and "attacks" the player

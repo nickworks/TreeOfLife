@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Player;
 
 /// <summary>
 /// Every NPC that will use a TriggerNPC will need to be derived from this class.
