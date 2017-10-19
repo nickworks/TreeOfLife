@@ -1,27 +1,69 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+/// <summary>
+/// This component turns a GameObject into a and enemy that can be Thrown.
+/// </summary>
 [RequireComponent(typeof(PawnAABB))]
 public class EnemyDasher : MonoBehaviour
 {
+    /// <summary>
+    /// bool
+    /// </summary>
     public bool inRange = false;
-    public Vector3 targetPos;   
-   // Vector3 currentPos;
+    /// <summary>
+    /// vector3
+    /// </summary>
+    public Vector3 targetPos;
+    /// <summary>
+    /// float
+    /// </summary>
     public float enemeyImpulse;
+    /// <summary>
+    /// vector3
+    /// </summary>
     private Vector3 velocity = new Vector3();
+    /// <summary>
+    /// pawnAABB
+    /// </summary>
     private PawnAABB pawn;
+    /// <summary>
+    /// float
+    /// </summary>
     private float gravity = 10;
+    /// <summary>
+    /// bool
+    /// </summary>
     static public bool isGrounded = false;
+    /// <summary>
+    /// bool
+    /// </summary>
     public bool canDash = true;
+    /// <summary>
+    /// bool
+    /// </summary>
     public bool isHit = true;
+    /// <summary>
+    /// bool
+    /// </summary>
     private bool moveRight = true;
+    /// <summary>
+    /// float
+    /// </summary>
     private float moveCount;
+    /// <summary>
+    /// float
+    /// </summary>
     public float moveCountReset = 10;
+    /// <summary>
+    /// float
+    /// </summary>
     public float speed = 10;
 
-    
 
+    /// <summary>
+    /// method that only runs once and is used to initiliaze things
+    /// </summary>
     void Start()
     {
         pawn = GetComponent<PawnAABB>();
@@ -29,7 +71,9 @@ public class EnemyDasher : MonoBehaviour
        
     }
 
-   
+    /// <summary>
+    /// this method runs every frame and is used to call other methodes and check to see if trhe player is in range of the object
+    /// </summary>
     void Update()
     {
         Move();
@@ -43,7 +87,9 @@ public class EnemyDasher : MonoBehaviour
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
 
-
+    /// <summary>
+    /// this method is used to "Throw" the enemy  
+    /// </summary>
     private void Dash()
     {
         if (isHit)
@@ -59,6 +105,9 @@ public class EnemyDasher : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// This method is used to move the object back and forth untill dead
+    /// </summary>
     private void Move()
     {
         if (!isHit)
@@ -86,6 +135,9 @@ public class EnemyDasher : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// This method accelerates the horizontal speed of the object.
+    /// </summary>
     private void DecelerateX(float amount)
     {
         // slow down the player
@@ -100,10 +152,17 @@ public class EnemyDasher : MonoBehaviour
             if (velocity.x > 0) velocity.x = 0;
         }
     }
+    /// <summary>
+    /// This method accelerates the horizontal speed of the object.
+    /// </summary>
     private void AccelerateX(float amount)
     {
         velocity.x += amount * Time.deltaTime;
     }
+    /// <summary>
+    /// Perform collision detection by calling the PawnAABB's collision detection methods.
+    /// The results of collision detection are then applied.
+    /// </summary>
     private void DoCollisions()
     {
         PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
