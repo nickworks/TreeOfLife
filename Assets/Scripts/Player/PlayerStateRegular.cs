@@ -5,6 +5,11 @@ using UnityEngine;
 
 public class PlayerStateRegular : PlayerState {
 
+    /// <summary>
+    /// This method is called by the PlayerController every tick.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
+    /// <returns>The new state that the PlayerController should switch to. If null, then remain in this state.</returns>
     override public PlayerState Update(PlayerController player)
     {
         base.Update(player);
@@ -16,14 +21,16 @@ public class PlayerStateRegular : PlayerState {
 
         return null;
     }
-    override public void OnEnter(PlayerController player)
-    {
-        
-    }
-    override public void OnExit(PlayerController player)
-    {
-
-    }
+    /// <summary>
+    /// This method is called by the PlayerController when this state begins.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
+    override public void OnEnter(PlayerController player) { }
+    /// <summary>
+    /// This method is called by the PlayerController when this state ends.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
+    override public void OnExit(PlayerController player) { }
     /// <summary>
     /// This method uses input to manipulate this object's physics.
     /// </summary>
@@ -39,7 +46,8 @@ public class PlayerStateRegular : PlayerState {
         {
             bool movingLeft = (player.velocity.x <= 0);
             bool acceleratingLeft = (axisH <= 0);
-            float scaleAcceleration = (movingLeft != acceleratingLeft) ? 5 : 1; // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+            // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
+            float scaleAcceleration = (movingLeft != acceleratingLeft) ? player.turnAroundMultiplier : 1;
 
             AccelerateX(axisH * player.walkAcceleration * scaleAcceleration);
         }

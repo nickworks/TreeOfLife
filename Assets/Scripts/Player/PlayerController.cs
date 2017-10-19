@@ -22,6 +22,10 @@ public class PlayerController : MonoBehaviour
     /// </summary>
     public float walkAcceleration = 10;
     /// <summary>
+    /// How much to scale the acceleration when the player's horizontal input is opposite of their velocity. Higher numbers make the player stop and turn around more quickly.
+    /// </summary>
+    public float turnAroundMultiplier = 10;
+    /// <summary>
     /// The acceleration to use for gravity. This will be calculated from the jumpTime and jumpHeight fields.
     /// </summary>
     public float gravity;
@@ -41,12 +45,14 @@ public class PlayerController : MonoBehaviour
     /// A reference to the PawnAABB component on this object.
     /// </summary>
     public PawnAABB pawn { get; private set; }
+    #region Setup
     /// <summary>
     /// This initializes this component.
     /// </summary>
     void Start()
     {
         pawn = GetComponent<PawnAABB>();
+        velocity = new Vector3();
         DeriveJumpValues();
     }
     /// <summary>
@@ -64,6 +70,7 @@ public class PlayerController : MonoBehaviour
         gravity = (jumpHeight * 2) / (jumpTime * jumpTime);
         jumpVelocity = gravity * jumpTime;
     }
+    #endregion
     /// <summary>
     /// This method is called each frame. 
     /// </summary>

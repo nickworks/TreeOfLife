@@ -712,6 +712,7 @@ MonoBehaviour:
   jumpTime: 0.75
   jumpHeight: 4
   walkAcceleration: 10
+  walkDecelerationMultiplier: 5
   gravity: 14.222222
   velocity: {x: 0, y: 0, z: 0}
   maxSpeed: 10
@@ -2283,7 +2284,7 @@ Camera:
   near clip plane: 0.3
   far clip plane: 1000
   field of view: 60
-  orthographic: 1
+  orthographic: 0
   orthographic size: 5
   m_Depth: -1
   m_CullingMask:

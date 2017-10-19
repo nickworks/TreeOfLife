@@ -5,18 +5,34 @@ using UnityEngine;
 public abstract class PlayerState {
 
     public PlayerController player;
+    /// <summary>
+    /// This method is called by the PlayerController every tick.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
+    /// <returns>The new state that the PlayerController should switch to. If null, then remain in this state.</returns>
     public virtual PlayerState Update(PlayerController player)
     {
         this.player = player;
         return null;
     }
+    /// <summary>
+    /// This method is called by the PlayerController when this state begins.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
     public abstract void OnEnter(PlayerController player);
+    /// <summary>
+    /// This method is called by the PlayerController when this state ends.
+    /// </summary>
+    /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
     public abstract void OnExit(PlayerController player);
     
     /// <summary>
-    /// This boolean allows us to have variable jump heights.
+    /// This boolean tracks whether or not the player has a jump active. It allows us to have variable jump heights.
     /// </summary>
     protected bool isJumping = false;
+    /// <summary>
+    /// This boolean stores whether or not the player is currently on the ground.
+    /// </summary>
     protected bool isGrounded = false;
 
     /// <summary>
@@ -47,6 +63,11 @@ public abstract class PlayerState {
         if (!player) return;
         player.velocity.x += amount * Time.deltaTime;
     }
+    /// <summary>
+    /// This method checks to see if the player should jump. It also tracks whether or not the player has a jump active.
+    /// </summary>
+    /// <param name="velocityAtTakeoff"></param>
+    /// <returns></returns>
     protected bool Jump(float velocityAtTakeoff)
     {
         // jump
@@ -59,6 +80,10 @@ public abstract class PlayerState {
         }
         return (Input.GetButton("Jump") && isJumping);
     }
+    /// <summary>
+    /// Apply the player.gravity to player.velocity. 
+    /// </summary>
+    /// <param name="scale">How much to scale the gravity before applying it. (1 = no scale)</param>
     protected void ApplyGravity(float scale)
     {
         // gravity
