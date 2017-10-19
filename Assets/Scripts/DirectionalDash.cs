@@ -25,7 +25,7 @@ public class DirectionalDash : MonoBehaviour {
 		rot = this.transform.up; // stores up direction to be used by the player class
 	
 
-		print (rot);
+		//print (rot);
 
 
     }
