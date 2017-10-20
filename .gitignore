@@ -22,9 +22,9 @@ sysinfo.txt
 
 # VS BS
 /.vs/
+*.ide
 
 # Nuget Packages
-packages.config
 /packages/
 
 # Documentation
