@@ -6,6 +6,7 @@ TagManager:
   tags:
   - Water
   - Raft
+  - RopeTarget
   layers:
   - Default
   - TransparentFX

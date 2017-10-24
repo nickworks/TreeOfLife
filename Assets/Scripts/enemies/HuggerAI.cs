@@ -104,7 +104,7 @@ public class HuggerAI : MonoBehaviour
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
 
-        float distanceFromPlayer = Vector2.Distance(PlayerController.main.transform.position, transform.position);
+        float distanceFromPlayer = Vector2.Distance(Player.PlayerController.main.transform.position, transform.position);
 
         if (isGrounded)
         {
@@ -137,7 +137,7 @@ public class HuggerAI : MonoBehaviour
     {
         isHugging = true;
         isLeaping = false;
-        transform.SetParent(PlayerController.main.transform);
+        transform.SetParent(Player.PlayerController.main.transform);
     }
 
     /// <summary>
@@ -182,7 +182,7 @@ public class HuggerAI : MonoBehaviour
 
         transform.position += (Vector3)velocity * Time.deltaTime;
 
-        float distanceFromPlayer = Vector2.Distance(PlayerController.main.transform.position, transform.position);
+        float distanceFromPlayer = Vector2.Distance(Player.PlayerController.main.transform.position, transform.position);
         if (distanceFromPlayer < 1)
             SetHugging();
 
@@ -196,6 +196,6 @@ public class HuggerAI : MonoBehaviour
     /// <returns></returns>
     int PlayerDirection()
     {
-        return PlayerController.main.transform.position.x > transform.position.x ? 1 : -1;
+        return Player.PlayerController.main.transform.position.x > transform.position.x ? 1 : -1;
     }
 }

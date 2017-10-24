@@ -12,6 +12,7 @@ namespace Player {
 
         #region variables
 
+        static public PlayerController main;
         private PlayerState playerState;
         /// <summary>
         /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
@@ -61,6 +62,12 @@ namespace Player {
         /// A reference to the PawnAABB component on this object.
         /// </summary>
         public PawnAABB pawn { get; private set; }
+        public Rigidbody2D _rigidbody;
+        public Transform ropeTarget = null;
+        /// <summary>
+        /// The strength of the swing.
+        /// </summary>
+        public float swingStrength = 5;
 
         #endregion
         #region Setup
@@ -73,6 +80,8 @@ namespace Player {
             pawn = GetComponent<PawnAABB>();
             velocity = new Vector3();
             DeriveJumpValues();
+            _rigidbody = GetComponent<Rigidbody2D>();
+            main = this;
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -171,6 +180,38 @@ namespace Player {
             {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Detach();
+                    break;
+            }
+        }
+
+        private void OnTriggerStay2D(Collider2D collision)
+        {
+            switch (collision.gameObject.tag)
+            {
+                case "RopeTarget":
+                    if (ropeTarget == null)
+                    {
+                        if (Input.GetButtonDown("Fire1"))
+                        {
+                            ropeTarget = collision.transform;
+                            collision.gameObject.GetComponent<RopeSpawn>().LinkRope(_rigidbody);
+                            playerState = new PlayerStateSwing();
+                            _rigidbody.bodyType = RigidbodyType2D.Dynamic;
+                        }
+                    }
+                    else
+                    {
+                        if (Input.GetButtonUp("Fire1"))
+                        {
+                            ropeTarget.gameObject.GetComponent<RopeSpawn>().UnlinkRope();
+                            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
+                            playerState = new PlayerStateRegular();
+                            velocity = _rigidbody.velocity;
+                            velocity.y += 10;
+                            _rigidbody.velocity = Vector2.zero;
+                            ropeTarget = null;
+                        }
+                    }
                     break;
             }
         }
