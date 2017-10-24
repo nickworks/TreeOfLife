@@ -4,8 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Grappleable
-  - Enemy
+  - Water
+  - Raft
   layers:
   - Default
   - TransparentFX

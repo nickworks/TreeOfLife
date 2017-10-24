@@ -19,3 +19,13 @@
 
 # Unity3D Generated File On Crash Reports
 sysinfo.txt
+
+# VS BS
+/.vs/
+*.ide
+
+# Nuget Packages
+/packages/
+
+# Documentation
+/docs/
