@@ -197,11 +197,12 @@ namespace Player {
                             collision.gameObject.GetComponent<RopeSpawn>().LinkRope(_rigidbody);
                             playerState = new PlayerStateSwing();
                             _rigidbody.bodyType = RigidbodyType2D.Dynamic;
+                            _rigidbody.velocity = velocity;
                         }
                     }
                     else
                     {
-                        if (Input.GetButtonUp("Fire1"))
+                        if (!Input.GetButton("Fire1"))
                         {
                             ropeTarget.gameObject.GetComponent<RopeSpawn>().UnlinkRope();
                             _rigidbody.bodyType = RigidbodyType2D.Kinematic;

@@ -99,7 +99,7 @@ namespace Player
         protected void DoCollisions()
         {
             // clamp to max speed
-            if (Mathf.Abs(player.velocity.x) > player.maxSpeed && isGrounded)//TODO: better way to handle volume acceleration?
+            if (Mathf.Abs(player.velocity.x) > player.maxSpeed)//TODO: better way to handle volume acceleration?
             {
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
