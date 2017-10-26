@@ -6,8 +6,8 @@ using UnityEngine;
 /// This component gives this GameObject an AABB and allows for collision detection with the Physics2D engine.
 /// The pawn also has the ability to ascend slopes.
 /// </summary>
-[System.Obsolete("This class is deprecated in favor of PawnAABB3D.")]
-public class PawnAABB : MonoBehaviour {
+public class PawnAABB3D : MonoBehaviour
+{
 
     /// <summary>
     /// This struct contains information about collision detection,
@@ -63,13 +63,8 @@ public class PawnAABB : MonoBehaviour {
             ascendSlope = descendSlope = hitTop = hitBottom = hitLeft = hitRight = false;
             slopeAnglePrevious = slopeAngle;
             slopeAngle = 0;
-        }   
+        }
     }
-
-    /// <summary>
-    /// This field stores a reference to the GameObject's BoxCollider component.
-    /// </summary>
-    private BoxCollider2D aabb;
 
     /// <summary>
     /// This contains the results of collision detection.
@@ -103,24 +98,11 @@ public class PawnAABB : MonoBehaviour {
     /// Which layers this object can collide with.
     /// </summary>
     public LayerMask collidableWith;
+    public float halfWidth = .4f;
+    public float halfHeight = .4f;
     #endregion
 
     #region Collision Detection Data
-    /// <summary>
-    /// This stores the amount of horizontal space between the origins of rays being
-    /// cast vertically. We use this value when calculating the positions of origins.
-    /// </summary>
-    private float spaceBetweenVerticalOrigins;
-    /// <summary>
-    /// This stores the amount of vertical space between the origins of rays being
-    /// cast horizontally. We use this value when calculating the positions of origins.
-    /// </summary>
-    private float spaceBetweenHorizontalOrigins;
-    /// <summary>
-    /// This stores the bounds of the PawnAABB's AABB box. Because it is shrunken using
-    /// skinWidth, this value should be smaller than the CollisionBox2D's bounds.
-    /// </summary>
-    private Bounds bounds;
     /// <summary>
     /// Returns -1 when moving left and +1 when moving right. Also returns -1 if not moving horizontally.
     /// </summary>
@@ -132,19 +114,11 @@ public class PawnAABB : MonoBehaviour {
     /// <summary>
     /// Whether or not the PawnAABB is moving to the left. If this value is false, we can assume the PawnAABB is moving to the right.
     /// </summary>
-    private bool goingLeft { get { return (results.distance.x <= 0); } }
+    private bool goingLeft;
     /// <summary>
     /// Whether or not the PawnAABB is moving down. If this value if false, we can assume the PawnAABB is moving up.
     /// </summary>
-    private bool goingDown { get { return (results.distance.y <= 0); } }
-    /// <summary>
-    /// For rays being cast horizontally, this returns the x-value of the rays' origins.
-    /// </summary>
-    private float originX { get { return goingLeft ? bounds.min.x : bounds.max.x; } }
-    /// <summary>
-    /// For rays being cast vertically, this returns the y-value of the rays' origins.
-    /// </summary>
-    private float originY { get { return goingDown ? bounds.min.y : bounds.max.y; } }
+    private bool goingDown;
     #endregion
 
     /// <summary>
@@ -152,7 +126,6 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     void Start()
     {
-        aabb = GetComponent<BoxCollider2D>();
     }
 
     /// <summary>
@@ -163,16 +136,19 @@ public class PawnAABB : MonoBehaviour {
 	public CollisionResults Move(Vector3 distance)
     {
 
+        goingLeft = distance.x <= 0;
+        goingDown = distance.y <= 0;
+
+        distance = transform.TransformVector(distance);
         results.Reset(distance);
-        CalculateEdges();
 
         if (renderInEditor) RenderBounds();
 
-        if (distance.y < 0) DescendSlope();
+        //if (distance.y < 0) DescendSlope();
         DoRaycasts(true); // horizontal
-        if (results.ascendSlope) ExtraRaycastFromToes();
+        //if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
-        FinalRaycast();
+        //FinalRaycast();
 
         return results;
     }
@@ -182,6 +158,7 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     private void FinalRaycast()
     {
+        /*
         Vector2 origin = new Vector2(
                     goingLeft ? bounds.min.x : bounds.max.x,
                     goingDown ? bounds.min.y : bounds.max.y
@@ -192,53 +169,46 @@ public class PawnAABB : MonoBehaviour {
         {
             results.distance = results.distance.normalized * (hit.distance - skinWidth);
         }
+        */
     }
 
-    /// <summary>
-    /// This method uses the skinWidth to create a shrunken copy of the Collider's aabb. Then it calculates and caches the distance to use for spreading out the raycast origins.
-    /// </summary>
-    private void CalculateEdges()
-    {
-        bounds = aabb.bounds;
-        bounds.Expand(skinWidth * -2);
-        spaceBetweenVerticalOrigins = bounds.size.x / (resolution - 1);
-        spaceBetweenHorizontalOrigins = bounds.size.y / (resolution - 1);
-    }
     /// <summary>
     /// This method performs the raycasting. If collisions are found, it then calls other functions to limit or adjust the players movement.
     /// </summary>
     /// <param name="doHorizontal">Whether or not to cast rays horizontally. If false, the function will cast rays vertically.</param>
     private void DoRaycasts(bool doHorizontal)
     {
-        
+
         float rayLength = GetRayLength(doHorizontal);
 
-        for(int i = 0; i < resolution; i++)
+        for (int i = 0; i < resolution; i++)
         {
             Vector3 dir = GetCastDirection(doHorizontal);
             Vector3 origin = GetOrigin(doHorizontal, i);
+            Ray ray = new Ray(origin, dir);
+            RaycastHit hit;
 
             if (renderInEditor) Debug.DrawRay(origin, dir * rayLength);
 
-            RaycastHit2D hit = Physics2D.Raycast(origin, dir, rayLength, collidableWith);
-            if (hit.collider == null) continue; // if there's no collision, we're done with this raycast
+            if (!Physics.Raycast(ray, out hit, rayLength, collidableWith)) continue; // return if there's no collision
 
             float slopeAngle = GetSlopeAngleFromNormal(hit.normal);
 
             if (doHorizontal)
             {
+                /*
                 if (i == 0 && slopeAngle <= maxSlopeAscend)
                 {
                     AscendSlope(slopeAngle);
-                    // FIXME: somehow the front toe is getting caught in the slope sometimes
-                    //results.distance.x += (hit.distance - skinWidth) * Mathf.Sign(results.distance.x); // maybe this will help?
                 }
-                if((!results.ascendSlope && !results.descendSlope) || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
-                {
+                if ((!results.ascendSlope && !results.descendSlope) || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
+                {*/
+                if (hit.distance < rayLength) {
                     rayLength = hit.distance;
                     SetRayLength(rayLength, doHorizontal);
                 }
-            } else
+            }
+            else
             {
                 if (hit.distance < rayLength) // if the collision is the closest we've encountered yet
                 {
@@ -256,6 +226,7 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     private void ExtraRaycastFromToes()
     {
+        /*
         // check for a yet steeper collision ahead of us
         float rayLength = GetRayLength(true);
         Vector2 origin = new Vector2(goingLeft ? bounds.min.x : bounds.max.x, bounds.min.y + results.distance.y); // get origin (player's toe)
@@ -271,16 +242,22 @@ public class PawnAABB : MonoBehaviour {
                 results.slopeAngle = slopeAngle;
             }
         }
+        */
     }
     /// <summary>
     /// This method renders the bounds in the editor. This draws a rectangle of the shrunken AABB.
     /// </summary>
     private void RenderBounds()
     {
-        Debug.DrawLine(new Vector3(bounds.min.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.min.y));
-        Debug.DrawLine(new Vector3(bounds.max.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.max.y));
-        Debug.DrawLine(new Vector3(bounds.max.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.max.y));
-        Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.min.y));
+        Vector3 corner1 = GetPointInQuad(0, 0);
+        Vector3 corner2 = GetPointInQuad(1, 0);
+        Vector3 corner3 = GetPointInQuad(1, 1);
+        Vector3 corner4 = GetPointInQuad(0, 1);
+
+        Debug.DrawLine(corner1, corner2);
+        Debug.DrawLine(corner2, corner3);
+        Debug.DrawLine(corner3, corner4);
+        Debug.DrawLine(corner4, corner1);
     }
     /// <summary>
     /// This method returns the length to cast a ray.
@@ -301,7 +278,7 @@ public class PawnAABB : MonoBehaviour {
     private Vector3 GetCastDirection(bool isHorizontal)
     {
         if (isHorizontal)
-        return (goingLeft) ? Vector3.left : Vector3.right;
+        return (goingLeft) ? -transform.right : transform.right;
         return (goingDown) ? Vector3.down : Vector3.up;
     }
     /// <summary>
@@ -313,10 +290,18 @@ public class PawnAABB : MonoBehaviour {
     private Vector3 GetOrigin(bool isHorizontal, int i)
     {
         Vector3 origin = (isHorizontal)
-        ? new Vector3(originX, bounds.min.y + i * spaceBetweenHorizontalOrigins)
-        : new Vector3(bounds.min.x + i * spaceBetweenVerticalOrigins, originY);
+        ? GetPointInQuad(goingLeft ? 0: 1, i / (resolution - 1f))
+        : GetPointInQuad(i / (resolution - 1f), goingDown ? 0 : 1);
 
         return origin;
+    }
+    private Vector3 GetPointInQuad(float px, float py)
+    {
+        // TODO: we should cache the transformed max and min and only do two lerps here (no transformPoint())
+        float x = Mathf.Lerp(-halfWidth, halfWidth, px);
+        float y = Mathf.Lerp(-halfHeight, halfHeight, py);
+
+        return transform.TransformPoint(new Vector3(x, y, 0));
     }
     /// <summary>
     /// This method reduces the distance the PawnABB is allowed to move. The method should be called only when a collision has been found.
@@ -326,7 +311,9 @@ public class PawnAABB : MonoBehaviour {
     private void SetRayLength(float length, bool isHorizontal)
     {
         length -= skinWidth;
-        if (length < 0) length = 0;
+        
+        // DON'T clamp length to 0, otherwise we can't move the player out of a collider if they end up slightly within one
+
         if (isHorizontal)
         {
             results.hitLeft = goingLeft;
@@ -352,13 +339,13 @@ public class PawnAABB : MonoBehaviour {
         float newDistanceY = dis * Mathf.Sin(slopeRadians);
 
         if (newDistanceY < results.distance.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
-        
+
         results.distance.x = dis * Mathf.Cos(slopeRadians) * signX;
         results.distance.y = newDistanceY;
         results.slopeAngle = slopeDegrees;
         results.ascendSlope = true;
         results.hitBottom = true;
-        
+
     }
     /// <summary>
     /// This method casts a ray down. If it hits ground, the slope of the ground is calculated.
@@ -366,18 +353,19 @@ public class PawnAABB : MonoBehaviour {
     /// </summary>
     private void DescendSlope()
     {
+        /*
         Vector2 origin = new Vector2(goingLeft ? bounds.max.x : bounds.min.x, bounds.min.y); // cast from the bottom, trailing corner
         RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, float.PositiveInfinity, collidableWith); // cast ray down!
 
         if (renderInEditor) Debug.DrawRay(origin, Vector2.down * 10, Color.blue);
 
         if (hit) // there's ground below us!
-        {            
+        {
             float slopeDegrees = GetSlopeAngleFromNormal(hit.normal); // get the angle of the slope of that ground below us
-            if(slopeDegrees > 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
+            if (slopeDegrees > 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
             {
                 bool slopeDescendsLeft = (hit.normal.x <= 0); // whether or not the slope descends to the left (/ true) (\ false)
-                
+
                 if (slopeDescendsLeft == goingLeft) // If the player is moving down the slope... (either left or right)
                 {
                     float slopeRadians = slopeDegrees * Mathf.Deg2Rad; // get radians
@@ -401,7 +389,7 @@ public class PawnAABB : MonoBehaviour {
                 }
             }
         }
-
+        */
     }
     /// <summary>
     /// Given a surface's normal, get the angle of the surface's slope.

@@ -7,7 +7,7 @@ namespace Player {
     /// <summary>
     /// This component turns a GameObject into a controllable avatar.
     /// </summary>
-    [RequireComponent(typeof(PawnAABB))]
+    [RequireComponent(typeof(PawnAABB3D))]
     public class PlayerController : MonoBehaviour
     {
 
@@ -62,13 +62,13 @@ namespace Player {
         /// <summary>
         /// A reference to the PawnAABB component on this object.
         /// </summary>
-        public PawnAABB pawn { get; private set; }
+        public float swingStrength = 5;
+        /// </summary>
+        /// The strength of the swing.
+        /// <summary>
         public Rigidbody2D _rigidbody;
         public Transform ropeTarget = null;
-        /// <summary>
-        /// The strength of the swing.
-        /// </summary>
-        public float swingStrength = 5;
+        public PawnAABB3D pawn { get; private set; }
 
 
           //public SpawnTriggerMover sTM = new SpawnTriggerMover();
@@ -82,8 +82,7 @@ namespace Player {
         /// </summary>
         void Start()
         {
-        sTM = GameObject.Find("SpawnPoint").GetComponent<SpawnPointMover>();
-            pawn = GetComponent<PawnAABB>();
+            pawn = GetComponent<PawnAABB3D>();
             velocity = new Vector3();
             DeriveJumpValues();
             _rigidbody = GetComponent<Rigidbody2D>();
@@ -105,7 +104,6 @@ namespace Player {
             jumpVelocity = gravityStandard * jumpTime;
             SetGravity();
         }
-
         #endregion
 
         /// <summary>

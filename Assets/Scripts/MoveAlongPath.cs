@@ -68,11 +68,7 @@ public class MoveAlongPath : MonoBehaviour
             timeTotal = (nextPoint - prevPoint).magnitude / speed; // using the distance and desired speed, set the timeTotal
             percent = timeElapsed / timeTotal; // calculate the new percentage based on the leftover timeElapsed
         }
-        if (prevPoint != null && nextPoint != null)
-        {
-            //GetComponent<PlatformController>().move = startingPosition + Vector3.Lerp(prevPoint, nextPoint, percent);
-            transform.position = startingPosition + Vector3.Lerp(prevPoint, nextPoint, percent);
-        }
+        transform.position = startingPosition + Vector3.Lerp(prevPoint, nextPoint, percent);
 	}
     /// <summary>
     /// This method sets the two points that we should interpolate between.

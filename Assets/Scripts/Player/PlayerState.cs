@@ -104,7 +104,7 @@ namespace Player
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
 
-            PawnAABB.CollisionResults results = player.pawn.Move(player.velocity * Time.deltaTime);
+            PawnAABB3D.CollisionResults results = player.pawn.Move(player.velocity * Time.deltaTime);
             if (results.hitTop || results.hitBottom) player.velocity.y = 0;
             if (results.hitLeft || results.hitRight) player.velocity.x = 0;
             isGrounded = results.hitBottom || results.ascendSlope;
