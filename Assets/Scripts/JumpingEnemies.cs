@@ -194,17 +194,17 @@ public class JumpingEnemies : MonoBehaviour {
                 break;
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 velocity.y = jumpImpulse;
-                velocity.x = (player.position.x - enemy.position.x) / 1.5f;
+                velocity.x = (player.position.x - enemy.position.x) / (jumpTime * 2);
                 break;
             case JumpingEnemies.EnemyType.directionJumpingEnemy:
                 velocity.y = jumpImpulse;
                 if (horizontalDirection)
                 {
-                    velocity.x = jumpDistance / 1.5f;
+                    velocity.x = jumpDistance / (jumpTime * 2);
                 }
                 else
                 {
-                    velocity.x = -jumpDistance / 1.5f;
+                    velocity.x = -jumpDistance / (jumpTime * 2);
                 }
                 break;
         }

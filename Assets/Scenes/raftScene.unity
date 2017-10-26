@@ -3243,8 +3243,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d62caeb92cc85845b1f34d949f0c981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyType: 0
-  startDelay: 0.5
+  enemyType: 1
+  startDelay: 0
   jumpDelay: 0.5
   jumpDistance: 0
   jumpHeight: 3
