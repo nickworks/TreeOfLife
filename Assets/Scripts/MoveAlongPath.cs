@@ -36,6 +36,12 @@ public class MoveAlongPath : MonoBehaviour {
     /// The position of the prevPoint in the path. This is reflected as a relative distance from startingPosition.
     /// </summary>
     private Vector3 prevPoint;
+    /// <summary>
+    /// boolused to determin what direction to move the object ehn t is alive
+    /// </summary>
+    private bool moveRight = true;
+   
+
 
     /// <summary>
     /// This method initializes the component, setting some of its default values.

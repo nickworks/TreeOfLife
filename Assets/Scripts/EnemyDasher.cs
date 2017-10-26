@@ -38,38 +38,25 @@ public class EnemyDasher : MonoBehaviour
     /// <summary>
     /// bool used to tell whether or not the object can be thrown
     /// </summary>
-    public bool canDash = true;
+    public bool canBeThrown = true;
     /// <summary>
     /// bool used to tell if the object has been hit
     /// </summary>
     public bool isHit = true;
-    /// <summary>
-    /// boolused to determin what direction to move the object ehn t is alive
-    /// </summary>
-    private bool moveRight = true;   
-    /// <summary>
-    /// float used to determin the speed of the object
-    /// </summary>
-   // public float speed = 10;
-
 
     /// <summary>
     /// method that only runs once and is used to initiliaze things
     /// </summary>
     void Start()
     {
-        pawn = GetComponent<PawnAABB>();
-      
-       
+        pawn = GetComponent<PawnAABB>();       
     }
-
     /// <summary>
     /// this method runs every frame and is used to call other methodes and check to see if trhe player is in range of the object
     /// </summary>
     void Update()
     {
         DoCollisions();
-
         DecelerateX(20);
         if (inRange)
         {                 
@@ -78,7 +65,6 @@ public class EnemyDasher : MonoBehaviour
         float gravityScale = 2;
         velocity.y -= gravity * Time.deltaTime * gravityScale;
     }
-
     /// <summary>
     /// this method is used to "Throw" the enemy  
     /// </summary>
@@ -86,18 +72,16 @@ public class EnemyDasher : MonoBehaviour
     {
         if (isHit)
         {
-            if (canDash)
+            if (canBeThrown)
             {
                 if (Input.GetButtonDown("Fire2"))
                 {
                     velocity = DirectionalDash.rot * enemeyImpulse;
-                    canDash = false;
-
+                    canBeThrown = false;
                 }
             }
         }
     }
-
     /// <summary>
     /// This method accelerates the horizontal speed of the object.
     /// </summary>
@@ -122,8 +106,6 @@ public class EnemyDasher : MonoBehaviour
     {
         velocity.x += amount * Time.deltaTime;
     }
-
-
     /// <summary>
     /// Perform collision detection by calling the PawnAABB's collision detection methods.
     /// The results of collision detection are then applied.
