@@ -249,8 +249,8 @@ MonoBehaviour:
   inRange: 0
   targetPos: {x: 0, y: 0, z: 0}
   enemeyImpulse: 20
-  canDash: 1
-  isHit: 0
+  canBeThrown: 1
+  isHit: 1
 --- !u!114 &114924915514890910
 MonoBehaviour:
   m_ObjectHideFlags: 1
