@@ -70,14 +70,17 @@ public class ForceVolume : MonoBehaviour {
     /// <param name="collision">The object that collided with this volume.</param>
     private void OnTriggerEnter2D( Collider2D collision )
     {
-        if( OverwritesGravity )
+        if( turnedOn )
         {
-            //only apply this to the player pawns
-            if( collision.tag == "Player" )
+            if( OverwritesGravity )
             {
-                collision.GetComponent<Player.PlayerController>().SetGravity(forceVector, forceMult);
+                //only apply this to the player pawns
+                if( collision.tag == "Player" )
+                {
+                    collision.GetComponent<Player.PlayerController>().SetGravity(forceVector, forceMult);
+                }
             }
-        }        
+        }                
     }
     /// <summary>
     /// What to do when an object exits this trigger volume.  Resets gravity forces that may have been changed to defaults.
@@ -85,13 +88,16 @@ public class ForceVolume : MonoBehaviour {
     /// <param name="collision">The object exiting the volume</param>
     private void OnTriggerExit2D( Collider2D collision )
     {
-        if( OverwritesGravity )
+        if( turnedOn )
         {
-            if( collision.tag == "Player" )
+            if( OverwritesGravity )
             {
-                collision.GetComponent<Player.PlayerController>().SetGravity();
+                if( collision.tag == "Player" )
+                {
+                    collision.GetComponent<Player.PlayerController>().SetGravity();
+                }
             }
-        }
+        }        
     }
     /// <summary>
     /// What to do every tick an object is in this volume.  Applies forces if overwrites gravity is false.
@@ -99,13 +105,15 @@ public class ForceVolume : MonoBehaviour {
     /// <param name="collision">The object that collided with this volume.</param>
     private void OnTriggerStay2D( Collider2D collision )
     {
-        if( !OverwritesGravity )
+        if( turnedOn )
         {
-            if( collision.tag == "Player" )
+            if( !OverwritesGravity )
             {
-                collision.GetComponent<Player.PlayerController>().ApplyForce(forceMult, forceVector);
+                if( collision.tag == "Player" )
+                {
+                    collision.GetComponent<Player.PlayerController>().ApplyForce(forceMult, forceVector);
+                }
             }
-        }
+        }        
     }
-
 }
