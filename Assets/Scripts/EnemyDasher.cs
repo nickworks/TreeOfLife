@@ -46,19 +46,11 @@ public class EnemyDasher : MonoBehaviour
     /// <summary>
     /// boolused to determin what direction to move the object ehn t is alive
     /// </summary>
-    private bool moveRight = true;
-    /// <summary>
-    /// float used to determin the number of seconds untill the directioin is changed
-    /// </summary>
-    private float moveCount;
-    /// <summary>
-    /// float used to determin the number of seconds untill the directioin is changed
-    /// </summary>
-    public float moveCountReset = 10;
+    private bool moveRight = true;   
     /// <summary>
     /// float used to determin the speed of the object
     /// </summary>
-    public float speed = 10;
+   // public float speed = 10;
 
 
     /// <summary>
@@ -67,7 +59,7 @@ public class EnemyDasher : MonoBehaviour
     void Start()
     {
         pawn = GetComponent<PawnAABB>();
-        moveCount = moveCountReset;
+      
        
     }
 
@@ -76,9 +68,9 @@ public class EnemyDasher : MonoBehaviour
     /// </summary>
     void Update()
     {
-        Move();
+        DoCollisions();
+
         DecelerateX(20);
-        DoCollisions();       
         if (inRange)
         {                 
             Dash();
@@ -105,36 +97,7 @@ public class EnemyDasher : MonoBehaviour
             }
         }
     }
-    /// <summary>
-    /// This method is used to move the object back and forth untill dead
-    /// </summary>
-    private void Move()
-    {
-        if (!isHit)
-        {
-            if (moveRight)
-            {
-                velocity.x += speed * Time.deltaTime;
-                moveCount -= Time.deltaTime;
-                if (moveCount <= 0)
-                {
-                    moveRight = false;
-                    moveCount = moveCountReset;
 
-                }
-
-            } else {
-                velocity.x += -speed * Time.deltaTime;
-                moveCount -= Time.deltaTime;
-                if (moveCount <= 0)
-                {
-                    moveRight = true;
-                    moveCount = moveCountReset;
-
-                }
-            }
-        }
-    }
     /// <summary>
     /// This method accelerates the horizontal speed of the object.
     /// </summary>
@@ -159,6 +122,8 @@ public class EnemyDasher : MonoBehaviour
     {
         velocity.x += amount * Time.deltaTime;
     }
+
+
     /// <summary>
     /// Perform collision detection by calling the PawnAABB's collision detection methods.
     /// The results of collision detection are then applied.
