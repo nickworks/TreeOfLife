@@ -35,6 +35,10 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
     public EnemyType enemyType;
     /// <summary>
+    /// delays the object from jumping the first time it hits the ground.
+    /// </summary>
+    public float startDelay;
+    /// <summary>
     /// controls what the jump delay timer of the object is based on time inputted in the editor.
     /// </summary>
     public float jumpDelay;
@@ -52,8 +56,12 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
     public float jumpTime;
     /// <summary>
+    /// This toggle allows the user to control if they want to use activationDistance to control when the object moves.
+    /// </summary>
+    public bool useActivationDistance;
+    /// <summary>
     /// The amount of distance, in meters, that the player has to come within to activate the object.
-    /// 12 meters is the minimum distance for the object to always be moving on screen.
+    /// 15 meters is the minimum distance for the object to always be moving on screen.
     /// </summary>
     public float activationDistance;
 
@@ -90,7 +98,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// Controls when the object can move.
     /// This is based off of player to object distance.
     /// </summary>
-    private bool isActivated = false;
+    private bool isActivated = true;
 
     /// <summary>
     /// stores a reference to this objects TRANSFORM class.
@@ -124,7 +132,7 @@ public class JumpingEnemies : MonoBehaviour {
     {
         gravity = (jumpHeight * 2) / (jumpTime * jumpTime);
         jumpImpulse = gravity * jumpTime;
-        jumpDelayTimer = jumpDelay;
+        jumpDelayTimer = startDelay;
     }
 
     /// <summary>
@@ -134,7 +142,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
 	void Update ()
     {
-        if (CalculateActivationDistance() < activationDistance) isActivated = true;
+        if (CalculateActivationDistance() < activationDistance && useActivationDistance == true) isActivated = true;
         if (isActivated)
         {
             velocity.y -= gravity * Time.deltaTime;
@@ -143,6 +151,7 @@ public class JumpingEnemies : MonoBehaviour {
             {
                 velocity.y = 0;
                 velocity.x = 0;
+                
                 jumpDelayTimer -= Time.deltaTime;
 
                 if (jumpDelayTimer <= 0)
@@ -150,7 +159,7 @@ public class JumpingEnemies : MonoBehaviour {
                     ApplyJumpType();
                     jumpDelayTimer = jumpDelay;
                 }
-                if (CalculateActivationDistance() > activationDistance)
+                if (CalculateActivationDistance() > activationDistance && useActivationDistance == true)
                 {
                     jumpDelayTimer = 0;
                     isActivated = false;
