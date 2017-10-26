@@ -98,7 +98,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// Controls when the object can move.
     /// This is based off of player to object distance.
     /// </summary>
-    private bool isActivated = true;
+    private bool isActivated = false;
 
     /// <summary>
     /// stores a reference to this objects TRANSFORM class.
@@ -124,6 +124,7 @@ public class JumpingEnemies : MonoBehaviour {
         enemyAABB = gameObject.GetComponent<PawnAABB>();
         Player.PlayerController playerControl = (Player.PlayerController)FindObjectOfType(typeof(Player.PlayerController));
         player = playerControl.GetComponent<Transform>();
+        if (useActivationDistance == false) isActivated = true;
     }
     /// <summary>
     /// This is called automatically when the values change in the inspector.
@@ -143,30 +144,31 @@ public class JumpingEnemies : MonoBehaviour {
 	void Update ()
     {
         if (CalculateActivationDistance() < activationDistance && useActivationDistance == true) isActivated = true;
-        if (isActivated)
+
+        velocity.y -= gravity * Time.deltaTime;
+
+        if (isGrounded)
         {
-            velocity.y -= gravity * Time.deltaTime;
-
-            if (isGrounded)
-            {
-                velocity.y = 0;
-                velocity.x = 0;
+            velocity.y = 0;
+            velocity.x = 0;
                 
-                jumpDelayTimer -= Time.deltaTime;
+            jumpDelayTimer -= Time.deltaTime;
 
-                if (jumpDelayTimer <= 0)
+            if (jumpDelayTimer <= 0)
+            {
+                if(isActivated)
                 {
                     ApplyJumpType();
                     jumpDelayTimer = jumpDelay;
                 }
-                if (CalculateActivationDistance() > activationDistance && useActivationDistance == true)
-                {
-                    jumpDelayTimer = 0;
-                    isActivated = false;
-                }
             }
-            HandleCollisions();
-        }  
+            if (CalculateActivationDistance() > activationDistance && useActivationDistance == true)
+            {
+                jumpDelayTimer = 0;
+                isActivated = false;
+            }
+        }
+        HandleCollisions();
     }
     /// <summary>
     /// calculates the distance between the player and the enemy and returns the distance

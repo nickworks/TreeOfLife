@@ -1160,7 +1160,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1308776297}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 18, y: -0.81, z: 0}
+  m_LocalPosition: {x: 18, y: -0.759, z: 0}
   m_LocalScale: {x: 0.3, y: 0.2, z: 0.3}
   m_Children: []
   m_Father: {fileID: 0}
@@ -1178,7 +1178,7 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0.00000005960464, y: 0}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -1202,14 +1202,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0d62caeb92cc85845b1f34d949f0c981, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  enemyType: 0
-  startDelay: 0.25
-  jumpDelay: 0.25
+  enemyType: 1
+  startDelay: 0
+  jumpDelay: 0
   jumpDistance: 0
   jumpHeight: 3
-  jumpTime: 0.25
-  useActivationDistance: 0
-  activationDistance: 0
+  jumpTime: 0.75
+  useActivationDistance: 1
+  activationDistance: 5
 --- !u!1 &1446506495
 GameObject:
   m_ObjectHideFlags: 0
