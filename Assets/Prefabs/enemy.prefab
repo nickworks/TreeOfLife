@@ -25,7 +25,7 @@ GameObject:
   - component: {fileID: 114865989146525720}
   - component: {fileID: 114910457255432682}
   m_Layer: 0
-  m_Name: Cube
+  m_Name: enemy
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -251,8 +251,6 @@ MonoBehaviour:
   enemeyImpulse: 20
   canDash: 1
   isHit: 0
-  moveCountReset: 1
-  speed: 30
 --- !u!114 &114924915514890910
 MonoBehaviour:
   m_ObjectHideFlags: 1
