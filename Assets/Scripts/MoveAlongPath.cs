@@ -70,6 +70,7 @@ public class MoveAlongPath : MonoBehaviour
         }
         if (prevPoint != null && nextPoint != null)
         {
+            //GetComponent<PlatformController>().move = startingPosition + Vector3.Lerp(prevPoint, nextPoint, percent);
             transform.position = startingPosition + Vector3.Lerp(prevPoint, nextPoint, percent);
         }
 	}
