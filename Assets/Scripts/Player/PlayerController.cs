@@ -10,6 +10,9 @@ namespace Player {
     public class PlayerController : MonoBehaviour
     {
         private PlayerState playerState;
+
+        
+
         /// <summary>
         /// The amount of time, in seconds, that it should take the player to reach the peak of their jump arc.
         /// </summary>
@@ -42,6 +45,11 @@ namespace Player {
         /// The maximum speed of the player, in meters-per-second.
         /// </summary>
         public float maxSpeed = 10;
+
+
+        //public SpawnTriggerMover sTM = new SpawnTriggerMover();
+        SpawnPointMover sTM;
+
         /// <summary>
         /// A reference to the PawnAABB component on this object.
         /// </summary>
@@ -52,9 +60,12 @@ namespace Player {
         /// </summary>
         void Start()
         {
+            //sTM =  GameObject.Find("SpawnTrigger").GetComponent<SpawnTriggerMover>();
+            sTM = GameObject.Find("SpawnPoint").GetComponent<SpawnPointMover>();
             pawn = GetComponent<PawnAABB>();
             velocity = new Vector3();
             DeriveJumpValues();
+            if (playerState == null) playerState = new PlayerStateRegular();
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -77,23 +88,65 @@ namespace Player {
         /// </summary>
         void Update()
         {
-            if (playerState == null) playerState = new PlayerStateRegular();
 
+
+            
             PlayerState nextState = playerState.Update(this);
+            
+           
+
             if (nextState != null)
             {
                 playerState.OnExit(this);
                 playerState = nextState;
                 playerState.OnEnter(this);
             }
+
+            //If the player hits the respawn button
+            if (Input.GetButton("Respawn"))
+            {
+                //We set their current transform to the STM's transform
+              transform.position = sTM.transform.position;
+                
+            }
+            
+        }
+
+        /// <summary>
+        /// A on trigger stay 2D method to handle collision events
+        /// </summary>
+        /// <param name="other">A reference to the collider information passed into this</param>
+        private void OnTriggerStay2D(Collider2D other)
+        {
+            //If the other object is a stickyweb
+            if (other.gameObject.tag == "StickyWeb")
+            {
+                //And the player grabs the players state is set to climbing
+                if (Input.GetButton("Grab"))
+                {
+                    //We set the playerstate to playerStateClimbing
+                    playerState = new PlayerStateClimbing();
+
+                }else if(Input.GetButtonUp("Jump")){// If the jump button is released
+                    //Player state is set to regular
+                  playerState = new PlayerStateRegular();
+                }
+                
+            }
         }
         /// <summary>
-        /// This message is called by the 2D physics engine when the player enters a trigger volume.
+        /// An on trigger exit 2D method to handle collision exit events
         /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter2D(Collider2D other)
+        /// <param name="other"> A reference to the collider information passed into thiss</param>
+        private void OnTriggerExit2D(Collider2D other)
         {
-            print("[triggered]");
+            //If the other game object is a stickyweb
+            if (other.gameObject.tag == "StickyWeb" )
+            {
+                //The player state is set to regular
+                playerState = new PlayerStateRegular();
+            }
         }
+
     }
 }

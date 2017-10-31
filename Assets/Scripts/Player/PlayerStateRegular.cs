@@ -18,11 +18,12 @@ namespace Player
             base.Update(player);
 
             bool jumpActive = Jump(player.jumpVelocity);
+            
             ApplyGravity(jumpActive ? 1 : 2f);
             HandleInput();
             DoCollisions();
 
-            return null;
+            return this;
         }
         /// <summary>
         /// This method is called by the PlayerController when this state begins.
@@ -40,7 +41,10 @@ namespace Player
         private void HandleInput()
         {
             float axisH = Input.GetAxisRaw("Horizontal");
-
+            if (Input.GetButton("Jump"))
+            {
+                Jump(player.jumpVelocity);
+            }
             if (axisH == 0)
             {
                 DecelerateX(player.walkAcceleration);
@@ -56,5 +60,6 @@ namespace Player
             }
         }
 
+        
     }
 }

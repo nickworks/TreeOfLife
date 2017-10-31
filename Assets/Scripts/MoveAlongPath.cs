@@ -40,7 +40,8 @@ public class MoveAlongPath : MonoBehaviour {
     /// <summary>
     /// This method initializes the component, setting some of its default values.
     /// </summary>
-    void Start () {
+    void Start ()
+    {
         startingPosition = transform.position;
         SetPoints();
 	}
@@ -50,7 +51,8 @@ public class MoveAlongPath : MonoBehaviour {
     /// It uses the time to calculate a percentage, and then the percentage is used
     /// to Lerp between the nextPoint and the prevPoint.
     /// </summary>
-	void Update () {
+	void Update ()
+    {
 
         timeElapsed += Time.deltaTime;
         if (points.Count == 0) return;
