@@ -1,8 +1,10 @@
+
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class MoveAlongPath : MonoBehaviour {
+public class MoveAlongPath : MonoBehaviour 
+{
 
     /// <summary>
     /// The speed this object should move, measured in meters/second.
@@ -83,3 +85,4 @@ public class MoveAlongPath : MonoBehaviour {
         nextPoint = points[index];
     }
 }
+

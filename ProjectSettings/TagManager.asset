@@ -4,6 +4,7 @@
 TagManager:
   serializedVersion: 2
   tags:
+
   - StickyWeb
   - Ground
   - Stopper
@@ -11,6 +12,10 @@ TagManager:
   - Bug
   - LeaderBug
   - WebMovementStopper
+  - Water
+  - Raft
+  - RopeTarget
+
   layers:
   - Default
   - TransparentFX

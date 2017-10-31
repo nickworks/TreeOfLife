@@ -90,7 +90,7 @@ namespace Player
         protected void ApplyGravity(float scale)
         {
             // gravity
-            player.velocity.y -= player.gravity * Time.deltaTime * scale;
+            player.velocity += player.gravityDir * player.gravityTemporary * Time.deltaTime * scale;
         }
         /// <summary>
         /// Perform collision detection by calling the PawnAABB's collision detection methods.
@@ -99,7 +99,7 @@ namespace Player
         protected void DoCollisions()
         {
             // clamp to max speed
-            if (Mathf.Abs(player.velocity.x) > player.maxSpeed)
+            if (Mathf.Abs(player.velocity.x) > player.maxSpeed)//TODO: better way to handle volume acceleration?
             {
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
