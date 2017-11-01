@@ -25,7 +25,12 @@ public class FallingPlatform : MonoBehaviour
     /// downSpeed is the way that speed is calculated for downfalling objects
     /// </summary>
     public float downSpeed = 0;
-
+  
+    /// <summary>
+    /// OriginalPosition 
+    /// Controls the Position where the Platform Respawns.
+    /// TO DO: Have it take from the platforms original instead of manually setting it
+    /// </summary>
     public float OriginalPosition;
 
     // Use this for initialization
@@ -52,6 +57,8 @@ public class FallingPlatform : MonoBehaviour
     /// Updates and checks to see if the object is falling is checked for true and the transform position is decreased by downspeed by += time.deltatime / 100;
     /// Once the object hits a Y position it stops and is no longer interactable
     /// TO DO : Add destroy object
+    /// Resets Object after reaching certain Y Position and starts from the same location it was originally
+    /// Down speed is reset to prevent INFINITE SPEED PROBLEM
     /// </summary>
     void Update()
     {
@@ -61,6 +68,9 @@ public class FallingPlatform : MonoBehaviour
             transform.position = new Vector3(transform.position.x, transform.position.y - downSpeed, transform.position.z);
 
         }
+        ///
+        /// 
+        ///
         if (transform.localPosition.y < -40)
         {
             isFalling = false;
