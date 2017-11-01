@@ -17,9 +17,9 @@ public class PlatformController : MonoBehaviour
 
     List<PassengerMovement> passengerMovement;
 
-    public const float skinWidth = .03f;
+    public const float skinWidth = .015f;
     public int horizontalRayCount = 3;
-    public int verticalRayCount = 3;
+    public int verticalRayCount = 6;
 
     public float horizontalRaySpacing;
     public float verticalRaySpacing;
@@ -172,18 +172,24 @@ public class PlatformController : MonoBehaviour
     public void UpdateRaycastOrigins()
     {
         Bounds bounds = collider.bounds;
-        bounds.Expand(skinWidth * 2);
+        bounds.Expand(skinWidth * -2);
 
         raycastOrigins.bottomLeft = new Vector2(bounds.min.x, bounds.min.y);
         raycastOrigins.bottomRight = new Vector2(bounds.max.x, bounds.min.y);
         raycastOrigins.topLeft = new Vector2(bounds.min.x, bounds.max.y);
         raycastOrigins.topRight = new Vector2(bounds.max.x, bounds.max.y);
+
+
+        Debug.DrawLine(new Vector3(bounds.min.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.min.y));
+        Debug.DrawLine(new Vector3(bounds.max.x, bounds.min.y, 0), new Vector3(bounds.max.x, bounds.max.y));
+        Debug.DrawLine(new Vector3(bounds.max.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.max.y));
+        Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.min.y));
     }
 
     public void CalculateRaySpacing()
     {
         Bounds bounds = collider.bounds;
-        bounds.Expand(skinWidth * 2);
+        bounds.Expand(skinWidth * -2);
 
         horizontalRayCount = Mathf.Clamp(horizontalRayCount, 2, int.MaxValue);
         verticalRayCount = Mathf.Clamp(verticalRayCount, 2, int.MaxValue);

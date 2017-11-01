@@ -3652,7 +3652,7 @@ MonoBehaviour:
   move: {x: 0, y: 0, z: 0}
   player: {fileID: 0}
   horizontalRayCount: 3
-  verticalRayCount: 3
+  verticalRayCount: 6
   horizontalRaySpacing: 0
   verticalRaySpacing: 0
 --- !u!1 &1862298656
