@@ -3,114 +3,142 @@ using System.Collections.Generic;
 using UnityEngine;
 using Player;
 
-
-//FIXME: Comment all variables and classes
+/// <summary>
+/// This class moves platforms and moves the player with them
+/// </summary>
 public class PlatformController : MonoBehaviour
 {
-
     /// <summary>
     /// Which layers this object can collide with.
     /// </summary>
     public LayerMask playerMask;
-    //FIXME: Comment all variables and classes
-    //FIXME: Make a vector 2 so nobody tinkers with the z axis but this will probably get reworked cause of the whole pathing thing
+    /// <summary>
+    /// This is the movement of the platform on an axis
+    /// </summary>
     public Vector3 move;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This will hold a reference to the Player object
+    /// </summary>
     public PlayerController player;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// List holds all the passenger movements for the player, based on the PassengerMovement struct
+    /// </summary>
     List<PassengerMovement> passengerMovement;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This is the width the bounding box is reduced by
+    /// </summary>
     public const float skinWidth = .015f;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// Number of horizontal raycasts the platform will do
+    /// </summary>
     public int horizontalRayCount = 3;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// Number of vertical raycasts the platform will do
+    /// </summary>
     public int verticalRayCount = 6;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This determines the spacing between each horizontal raycast
+    /// </summary>
     public float horizontalRaySpacing;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This determines the spacing between each vertical raycast
+    /// </summary>
     public float verticalRaySpacing;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This holds a reference to the platforms collider
+    /// </summary>
     BoxCollider2D collider;
-    //FIXME: Comment all variables and classes
+    /// <summary>
+    /// This determines the origins of the raycast
+    /// </summary>
     public RaycastOrigins raycastOrigins;
 
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// Initilize this class
+    /// </summary>
     public void Start()
     {
-        //FIXME: Comment what you are doing here
+        //Set the collider
         collider = GetComponent<BoxCollider2D>();
+        //Calculate the space that will be between each ray
         CalculateRaySpacing();
+        //Set the player reference
         player = FindObjectOfType<PlayerController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        //FIXME: Comment what you are doing here
+        //This update the origins of the raycast each frame. Helpful when the platform moves
         UpdateRaycastOrigins();
 
-        //FIXME: Comment what you are doing here
+        //Setting the movement to use delta time
         Vector3 velocity = move * Time.deltaTime;
-        //FIXME: Comment what you are doing here
+
+        //This determines how to move the player with the platform
         MovePlayer(velocity);
-        //FIXME: Comment what you are doing here
-        //transform.Translate(velocity);
+
+        
+        
+        //If the player should move before the platform, move them here
         MovePassangers(true);
-        //FIXME: Comment what you are doing here
+        //Move the platform
         transform.position += velocity;
-        //FIXME: Comment what you are doing here
-        //transform.position = move;
+        //If the player should move after the platform, move them here
         MovePassangers(false);
     }
 
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This method handles moving the player with the platform
+    /// </summary>
+    /// <param name="beforeMovePlatform">Should move before platform or after?</param>
     void MovePassangers(bool beforeMovePlatform)
     {
-        //FIXME: What is this for each loop doing
+        //Check each passenger
         foreach (PassengerMovement passenger in passengerMovement)
         {
-            //FIXME: What is this if statement doing
+            //Check if the player should move now
             if (passenger.moveBeforePlatform == beforeMovePlatform)
             {
-                //FIXME: Comment what you are doing here
+                //Access the players AABB move
                 PawnAABB.CollisionResults results = passenger.transform.GetComponent<PlayerController>().pawn.Move(passenger.velocity);
-                //FIXME: Comment what you are doing here
+                //update the players position
                 passenger.transform.position += results.distance;
             }
         }
     }
 
 
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This method determines how to move the player, depending on the players relation to the platform
+    /// </summary>
+    /// <param name="velocity">Speed the platform is moving times delta time</param>
     void MovePlayer(Vector3 velocity)
     {
-        //FIXME: Comment what you are doing here
+        //Hashset of transforms to check and see if the player has been moved once already
         HashSet<Transform> movedPlayers = new HashSet<Transform>();
         passengerMovement = new List<PassengerMovement>();
-        //FIXME: Comment what you are doing here
+        
         float directionX = Mathf.Sign(velocity.x);
         float directionY = Mathf.Sign(velocity.y);
 
-        //FIXME: What is this if statement doing
+        //Vertical moving platform
         if (velocity.y != 0)
         {
             float rayLength = Mathf.Abs(velocity.y) + skinWidth;
-            //FIXME: What is this for loop doing
+            //Raycastying up
             for (int i = 0; i < verticalRayCount; i++)
             {
-                //FIXME: Comment what you are doing here
                 Vector2 rayOrigin = (directionY == -1) ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
-                //FIXME: Comment what you are doing here
                 rayOrigin += Vector2.right * (verticalRaySpacing * i);
-                //FIXME: Comment what you are doing here
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, playerMask);
-                //FIXME: What is this if statement doing
+                //Is there a hit?
                 if (hit)
                 {
-                    //FIXME: What is this if statement doing
+                    //Has the player already moved?
                     if (!movedPlayers.Contains(hit.transform))
                     {
-                        //FIXME: Comment what you are doing here
+                        //Add the player to hashset, determine how much to move the player
                         movedPlayers.Add(hit.transform);
                         float pushY = velocity.y - (hit.distance - skinWidth) * directionY;
                         float pushX = (directionY == 1) ? velocity.x : 0;
@@ -125,21 +153,20 @@ public class PlatformController : MonoBehaviour
         }//end if vertical
 
 
-        //FIXME: What is this if statement doing
         //horizontal moving platform
         if (velocity.x != 0)
         {
             float rayLength = Mathf.Abs(velocity.x) + skinWidth;
-            //FIXME: What is this for loop doing
+            //Horizontal raycasting
             for (int i = 0; i < horizontalRayCount; i++)
             {
                 Vector2 rayOrigin = (directionX == -1) ? raycastOrigins.bottomLeft : raycastOrigins.bottomRight;
                 rayOrigin += Vector2.up * (horizontalRaySpacing * i);
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.right * directionX, rayLength, playerMask);
-                //FIXME: What is this if statement doing
+                //Is there a hit
                 if (hit)
                 {
-                    //FIXME: What is this if statement doing
+                    //Has the player moved?
                     if (!movedPlayers.Contains(hit.transform))
                     {
                         movedPlayers.Add(hit.transform);
@@ -155,8 +182,6 @@ public class PlatformController : MonoBehaviour
             }//end for loop
         }//end if vertical*/
 
-
-        //FIXME: What is this if statement doing
         // Player on top platform moving horizontally or down
         if (directionY == -1 || velocity.y == 0 && velocity.x != 0)
         {
@@ -165,10 +190,10 @@ public class PlatformController : MonoBehaviour
             {
                 Vector2 rayOrigin = raycastOrigins.topLeft + Vector2.right * (verticalRaySpacing * i);
                 RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up, rayLength, playerMask);
-                //FIXME: What is this if statement doing
+                //Is there a hit?
                 if (hit)
                 {
-                    //FIXME: What is this if statement doing
+                    //Has the player moved?
                     if (!movedPlayers.Contains(hit.transform))
                     {
                         movedPlayers.Add(hit.transform);
@@ -184,17 +209,36 @@ public class PlatformController : MonoBehaviour
             }//end for loop
         }//end if vertical
     }
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This is a struct holding logic for moving the player
+    /// </summary>
     struct PassengerMovement
     {
 
-        //FIXME: What are these variables for
+        /// <summary>
+        /// Players transform
+        /// </summary>
         public Transform transform;
+        /// <summary>
+        /// How much the player should be moved
+        /// </summary>
         public Vector3 velocity;
+        /// <summary>
+        /// Is the player on the platform?
+        /// </summary>
         public bool standingOnPlatform;
+        /// <summary>
+        /// Should the player move before the platform?
+        /// </summary>
         public bool moveBeforePlatform;
 
-        //FIXME: What are you doing here
+        /// <summary>
+        /// This method stores information for moving the player
+        /// </summary>
+        /// <param name="t">The players transform</param>
+        /// <param name="v">How much to move the player</param>
+        /// <param name="onPlat">On platform?</param>
+        /// <param name="beforePlat">Move playuer before moving the platform</param>
         public PassengerMovement(Transform t, Vector3 v, bool onPlat, bool beforePlat)
         {
             transform = t;
@@ -203,7 +247,9 @@ public class PlatformController : MonoBehaviour
             moveBeforePlatform = beforePlat;
         }
     }
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This method calculates the raycast origins each frame
+    /// </summary>
     public void UpdateRaycastOrigins()
     {
         Bounds bounds = collider.bounds;
@@ -220,7 +266,9 @@ public class PlatformController : MonoBehaviour
         Debug.DrawLine(new Vector3(bounds.max.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.max.y));
         Debug.DrawLine(new Vector3(bounds.min.x, bounds.max.y, 0), new Vector3(bounds.min.x, bounds.min.y));
     }
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This method determines the spcaing between the raycasts
+    /// </summary>
     public void CalculateRaySpacing()
     {
         Bounds bounds = collider.bounds;
@@ -232,7 +280,9 @@ public class PlatformController : MonoBehaviour
         horizontalRaySpacing = bounds.size.y / (horizontalRayCount - 1);
         verticalRaySpacing = bounds.size.x / (verticalRayCount - 1);
     }
-    //FIXME: Comment what you are doing here
+    /// <summary>
+    /// This struct stores the bounds of the platform
+    /// </summary>
     public struct RaycastOrigins
     {
         public Vector2 topLeft, topRight;
