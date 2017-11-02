@@ -34,9 +34,18 @@ namespace Player
         /// </summary>
         protected bool isJumping = false;
         /// <summary>
+        /// This boolean tracks whether or not the player has a jump active. It allows us to have variable jump heights.
+        /// </summary>
+        protected bool canDash = false;
+        /// <summary>
         /// This boolean stores whether or not the player is currently on the ground.
         /// </summary>
         protected bool isGrounded = false;
+        /// <summary>
+        /// This boolean stores whether or not the player is currently on the ground.
+        /// </summary>
+        protected float impulseJump = 20;
+
 
         /// <summary>
         /// This method decelerates the horizontal speed of the object.
@@ -73,6 +82,24 @@ namespace Player
         /// <returns></returns>
         protected bool Jump(float velocityAtTakeoff)
         {
+            //Dash
+            if (Input.GetButtonDown("Fire1"))
+            {
+                if (isGrounded == false)
+                {
+                    if (canDash)
+                    {
+                        player.velocity = DirectionalDash.rot * impulseJump;
+                        canDash = false;
+                    }
+                }
+            }
+            //dash ground check
+            if (isGrounded)
+            {
+                canDash = true;
+
+            }
             // jump
             if (player.velocity.y < 0 || !Input.GetButton("Jump")) isJumping = false;
 
@@ -82,6 +109,10 @@ namespace Player
                 isJumping = true;
             }
             return (Input.GetButton("Jump") && isJumping);
+        
+
+           
+
         }
         /// <summary>
         /// Apply the player.gravity to player.velocity. 
