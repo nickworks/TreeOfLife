@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// This component gives this GameObject an AABB and allows for collision detection with the Physics2D engine.
+/// This component gives the GameObject a 2D AABB that prevents collisions with 3D colliders. Weird.
 /// The pawn also has the ability to ascend slopes.
 /// </summary>
 public class PawnAABB3D : MonoBehaviour
@@ -129,9 +129,9 @@ public class PawnAABB3D : MonoBehaviour
     }
 
     /// <summary>
-    /// This method should be called when a PawnAABB is attempting to move.
+    /// This method should be called when a PawnAABB is attempting to move along the curved XY "plane".
     /// </summary>
-    /// <param name="distance">How far the object is trying to move from its previous position. In many cases, this can be the object's current velocity.</param>
+    /// <param name="distance">How far the object is trying to move from its previous position. In many cases, this can be the object's current velocity. This velocity should be 2D (XY values)!</param>
     /// <returns>The results of collision detection. This includes a potentially modified distance value and additional information about which edges were hit.</returns>
 	public CollisionResults Move(Vector3 distance)
     {
@@ -139,16 +139,22 @@ public class PawnAABB3D : MonoBehaviour
         goingLeft = distance.x <= 0;
         goingDown = distance.y <= 0;
 
-        distance = transform.TransformVector(distance);
+        distance = transform.TransformVector(distance); // convert the velocity from XY "plane-space" into world-space
         results.Reset(distance);
 
-        if (renderInEditor) RenderBounds();
+        if (renderInEditor)
+        {
+            RenderBounds();
+            Debug.DrawLine(transform.position, distance * 10 + transform.position, Color.blue);
+        }
 
         //if (distance.y < 0) DescendSlope();
         DoRaycasts(true); // horizontal
         //if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
         //FinalRaycast();
+
+        //results.distance = transform.InverseTransformVector(results.distance);
 
         return results;
     }
@@ -295,6 +301,12 @@ public class PawnAABB3D : MonoBehaviour
 
         return origin;
     }
+    /// <summary>
+    /// Returns the world position of a point within the player's 2D AABB. Note: the input parameters are not clamped within the method.
+    /// </summary>
+    /// <param name="px">The horizontal position. The range of values is [0.0 to 1.0].</param>
+    /// <param name="py">The vertical position. The range of values is [0.0 to 1.0].</param>
+    /// <returns></returns>
     private Vector3 GetPointInQuad(float px, float py)
     {
         // TODO: we should cache the transformed max and min and only do two lerps here (no transformPoint())

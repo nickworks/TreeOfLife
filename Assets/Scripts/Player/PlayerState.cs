@@ -103,6 +103,7 @@ namespace Player
             {
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
+            //player.transform.position += player.velocity * Time.deltaTime;
 
             PawnAABB3D.CollisionResults results = player.pawn.Move(player.velocity * Time.deltaTime);
             if (results.hitTop || results.hitBottom) player.velocity.y = 0;
