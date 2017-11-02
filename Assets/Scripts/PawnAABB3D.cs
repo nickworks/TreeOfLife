@@ -325,20 +325,10 @@ public class PawnAABB3D : MonoBehaviour
 
         if (isHorizontal)
         {
-
-
-
             results.hitLeft = goingLeft;
             results.hitRight = !goingLeft;
 
             results.distanceLocal.x = goingLeft ? -length : length;
-
-            //Vector3 fixLocal = new Vector3(goingLeft ? -length : length, 0, 0);
-
-
-
-            // FIXME: distance is in world space... so we should be modifying X and Z here...
-
         }
         else
         {
