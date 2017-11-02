@@ -196,16 +196,25 @@ public class JumpingEnemies : MonoBehaviour {
         switch (enemyType)
         {
 
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case is called when Enemy Type is equal to Basic Jumping Enemy
+			/// this case contains the movement logic for the Basic Jumping Enemy
+			/// </summary>
             case JumpingEnemies.EnemyType.basicJumpingEnemy:
                 velocity.y = jumpImpulse;
                 break;
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case is called when Enemy Type is equal to Player Jumping Enemy
+			/// this case contains the movement logic for the Player Jumping Enemy
+			/// </summary>
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 velocity.y = jumpImpulse;
                 velocity.x = (player.position.x - enemy.position.x) / (jumpTime * 2);
                 break;
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case is called when Enemy Type is equal to Direction Jumping Enemy
+			/// this case contains the movement logic for the Direction Jumping Enemy
+			/// </summary>
             case JumpingEnemies.EnemyType.directionJumpingEnemy:
                 velocity.y = jumpImpulse;
                 if (horizontalDirection)
@@ -271,7 +280,10 @@ public class JumpingEnemiesEditor : Editor
 
         switch(editor.enemyType)
         {
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case controls what you can see in the inspector for Basic Jumping Enemy
+			/// -CAUTION- you will not be able to edit public variables in the inspector without this logic
+			/// </summary>
             case JumpingEnemies.EnemyType.basicJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
@@ -280,7 +292,10 @@ public class JumpingEnemiesEditor : Editor
                 editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
                 if(editor.useActivationDistance) editor.activationDistance = EditorGUILayout.FloatField("Activation Distance", editor.activationDistance);
                 break;
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case controls what you can see in the inspector for Player Jumping Enemy
+			/// -CAUTION- you will not be able to edit public variables in the inspector without this logic
+			/// </summary>
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
@@ -289,7 +304,10 @@ public class JumpingEnemiesEditor : Editor
                 editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
                 if (editor.useActivationDistance) editor.activationDistance = EditorGUILayout.FloatField("Activation Distance", editor.activationDistance);
                 break;
-            //FIXME : add some discriptions to this so that we better understand what it does
+			/// <summary>
+			/// this case controls what public variables you can see in the inspector for Direction Jumping Enemy
+			/// -CAUTION- you will not be able to edit public variables in the inspector without this logic
+			/// </summary>
             case JumpingEnemies.EnemyType.directionJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
