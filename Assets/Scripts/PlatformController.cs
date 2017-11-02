@@ -101,9 +101,9 @@ public class PlatformController : MonoBehaviour
             if (passenger.moveBeforePlatform == beforeMovePlatform)
             {
                 //Access the players AABB move
-                PawnAABB.CollisionResults results = passenger.transform.GetComponent<PlayerController>().pawn.Move(passenger.velocity);
+                PawnAABB3D.CollisionResults results = passenger.transform.GetComponent<PlayerController>().pawn.Move(passenger.velocity);
                 //update the players position
-                passenger.transform.position += results.distance;
+                passenger.transform.position += transform.TransformVector(results.distanceLocal);
             }
         }
     }
