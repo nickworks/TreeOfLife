@@ -9,6 +9,8 @@ public class AlignWithPath : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+        if (!currentNode) return;
+
         PathNode.ProjectionResults results = currentNode.Constrain(transform);
         if(results.newNode != null)
         {

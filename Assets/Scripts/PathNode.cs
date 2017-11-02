@@ -2,45 +2,69 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// A single node for building paths. This class forms the backbone of a linked list of nodes.
+/// </summary>
 public class PathNode : MonoBehaviour {
 
+    /// <summary>
+    /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
+    /// </summary>
+    public PathNode pathNodePrefab;
+    /// <summary>
+    /// The PathNode to the left of this one. This is the previous item in the linked List.
+    /// </summary>
+    [HideInInspector]
     public PathNode left;
+    /// <summary>
+    /// The PathNode to the right of this one. This is the next item in the linked list.
+    /// </summary>
+    [HideInInspector]
     public PathNode right;
+    /// <summary>
+    /// How much to curve this corner (if space allows).
+    /// </summary>
     [Range(0, 10)] public float curveRadius = 0;
     private float clampedCurveRadius = 0;
 
     public Vector3 curveIn { get; private set; }
     public Vector3 curveOut { get; private set; }
-    private float percentCurveIn;
-    private float percentCurveOut;
 
+    /// <summary>
+    /// The yaw-rotation of the segment between this node and the next (right) node.
+    /// </summary>
     private Quaternion rotationYaw;
+    /// <summary>
+    /// The length from this node and the next (right) node.
+    /// </summary>
     private float length;
 
     void Start()
     {
-        CacheData();
+        CacheData(false);
     }
     void OnValidate()
     {
-        CacheData();
+        CacheData(true);
     }
-    void CacheData(PathNode caller = null)
+    void CacheData(bool shouldRipple, PathNode caller = null)
     {
         length = 0;
         curveIn = transform.position;
         curveOut = transform.position;
         clampedCurveRadius = 0;
 
-        if (left && caller != left) left.CacheData(this); // ripple outwards
-        if (right && caller != right) right.CacheData(this); // ripple outwards
+        if (shouldRipple)
+        {
+            if (left && caller != left) left.CacheData(false, this); // ripple outwards
+            if (right && caller != right) right.CacheData(false, this); // ripple outwards
+        }
 
         if (right)
         {
+            // if there's a node to the right, use it to calculate and cache values for length & rotationYaw
             Vector3 diff = VectorToRight();
-
             length = diff.magnitude;
-
             float angle = Mathf.Atan2(-diff.z, diff.x) * Mathf.Rad2Deg;
             rotationYaw = Quaternion.Euler(0, angle, 0);
         }       
@@ -153,6 +177,77 @@ public class PathNode : MonoBehaviour {
             
         return results;
     }
+    public PathNode Split()
+    {
+        bool spawnToTheLeft = (this.right && !this.left);
+        bool trueSplit = (this.right && this.left);
+
+        // determine position of new node:
+        Vector3 spawnPos = transform.position;
+        if (trueSplit)
+        {
+            float length = (right.transform.position - left.transform.position).magnitude/3;
+
+            spawnPos = Vector3.Lerp(transform.position, right.transform.position, .33f);
+            transform.position = Vector3.Lerp(transform.position, left.transform.position, .33f);
+
+        } else if(left)
+        {
+            spawnPos += (transform.position - left.transform.position);
+        } else if(right)
+        {
+            spawnPos += (transform.position - right.transform.position);
+        } else
+        {
+            spawnPos += Vector3.right * 10;
+        }
+        
+        // spawn a new node:
+        PathNode newNode = Instantiate(pathNodePrefab, spawnPos, Quaternion.identity);
+
+        // insert the node into our linked list of nodes:
+
+        if (spawnToTheLeft) // if this is the left-most node
+        {
+            // insert the node onto the left
+            this.left = newNode;
+            newNode.right = this;
+            this.left.transform.position += Vector3.left;
+        }
+        else
+        {
+            // insert the node onto the right
+            newNode.left = this;
+            newNode.right = this.right;
+            if (this.right) this.right.left = newNode;
+            this.right = newNode;
+        }
+
+        // TODO: adjust positions of newNode and this node (in the middle AND at the ends)
+
+        // return the new node
+        return newNode;
+    }
+    public void RemoveAndDestroy()
+    {
+        if (left) left.right = right;
+        if (right) right.left = left;
+        DestroyImmediate(gameObject);
+    }
+    public void RenameNodes(string name)
+    {
+        PathNode currentNode = GetLeftMostNode();
+        for(int i = 0; currentNode; i++) {
+            currentNode.name = name + i;
+            currentNode = currentNode.right;
+        }
+    }
+    public PathNode GetLeftMostNode()
+    {
+        PathNode leftMostNode = this;
+        while (leftMostNode.left) leftMostNode = this.left;
+        return leftMostNode;
+    }
     Vector3 OverwriteY(Vector3 v, float y = 0)
     {
         return new Vector3(v.x, y, v.z);
@@ -193,7 +288,7 @@ public class PathNode : MonoBehaviour {
     }
     void DrawLines()
     {
-        if (transform.hasChanged) CacheData();
+        if (transform.hasChanged) CacheData(false);
 
         if (left) Gizmos.DrawLine(curveIn, left.curveOut);
         if (right) Gizmos.DrawLine(curveOut, right.curveIn);
