@@ -92,7 +92,7 @@ public class PathNode : MonoBehaviour {
                 p = ProjectOnSegment(results.position, curveIn, curveOut); // project onto curve
                 if (p < 0 || p > 1) // left of curve
                 {
-                    //if(left) results.newNode = left;
+                    if(left) results.newNode = left;
                 }
                 else // on curve
                 {

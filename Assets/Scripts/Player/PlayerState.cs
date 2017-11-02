@@ -98,18 +98,23 @@ namespace Player
         /// </summary>
         protected void DoCollisions()
         {
-            // clamp to max speed
-            if (Mathf.Abs(player.velocity.x) > player.maxSpeed)//TODO: better way to handle volume acceleration?
+            // clamp velocity to maxSpeed
+            if (isGrounded && Mathf.Abs(player.velocity.x) > player.maxSpeed)
             {
+                // FIXME: this might not be working correctly on slopes...
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
-            //player.transform.position += player.velocity * Time.deltaTime;
 
             PawnAABB3D.CollisionResults results = player.pawn.Move(player.velocity * Time.deltaTime);
             if (results.hitTop || results.hitBottom) player.velocity.y = 0;
             if (results.hitLeft || results.hitRight) player.velocity.x = 0;
             isGrounded = results.hitBottom || results.ascendSlope;
-            player.transform.position += results.distance;
+
+            // convert local distance into world space
+            Vector3 worldSpaceDistance = player.transform.TransformVector(results.distanceLocal);
+
+            // add to player position
+            player.transform.position += worldSpaceDistance;
         }
     }
 }

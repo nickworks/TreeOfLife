@@ -15,11 +15,14 @@ public class PawnAABB3D : MonoBehaviour
     /// </summary>
     public struct CollisionResults
     {
+        
         /// <summary>
         /// After collision detection, this stores how far this object may move.
         /// Before collision detection, this stores how far this object is attempting to move.
+        /// This value is in LOCAL space. If you are going to add this to transform.position, first convert it to world-space coordinates by using transform.TransformVector().
         /// </summary>
-        public Vector3 distance;
+        public Vector3 distanceLocal;
+
         /// <summary>
         /// After collision detection is calculated, this stores whether or not the object hit its top edge on something.
         /// </summary>
@@ -59,7 +62,7 @@ public class PawnAABB3D : MonoBehaviour
         /// <param name="distance">The distance this object is attempting to move.</param>
         public void Reset(Vector3 distance)
         {
-            this.distance = distance;
+            this.distanceLocal = distance;
             ascendSlope = descendSlope = hitTop = hitBottom = hitLeft = hitRight = false;
             slopeAnglePrevious = slopeAngle;
             slopeAngle = 0;
@@ -135,18 +138,12 @@ public class PawnAABB3D : MonoBehaviour
     /// <returns>The results of collision detection. This includes a potentially modified distance value and additional information about which edges were hit.</returns>
 	public CollisionResults Move(Vector3 distance)
     {
-
         goingLeft = distance.x <= 0;
         goingDown = distance.y <= 0;
 
-        distance = transform.TransformVector(distance); // convert the velocity from XY "plane-space" into world-space
         results.Reset(distance);
 
-        if (renderInEditor)
-        {
-            RenderBounds();
-            Debug.DrawLine(transform.position, distance * 10 + transform.position, Color.blue);
-        }
+        if (renderInEditor) RenderBounds();
 
         //if (distance.y < 0) DescendSlope();
         DoRaycasts(true); // horizontal
@@ -273,8 +270,8 @@ public class PawnAABB3D : MonoBehaviour
     private float GetRayLength(bool isHorizontal)
     {
         if (isHorizontal)
-        return skinWidth + (goingLeft ? -results.distance.x : results.distance.x);
-        return skinWidth + (goingDown ? -results.distance.y : results.distance.y);
+        return skinWidth + (goingLeft ? -results.distanceLocal.x : results.distanceLocal.x);
+        return skinWidth + (goingDown ? -results.distanceLocal.y : results.distanceLocal.y);
     }
     /// <summary>
     /// This method determines the direction to cast the rays, based on the direction the object is trying to move.
@@ -328,15 +325,26 @@ public class PawnAABB3D : MonoBehaviour
 
         if (isHorizontal)
         {
+
+
+
             results.hitLeft = goingLeft;
             results.hitRight = !goingLeft;
-            results.distance.x = goingLeft ? -length : length;
+
+            results.distanceLocal.x = goingLeft ? -length : length;
+
+            //Vector3 fixLocal = new Vector3(goingLeft ? -length : length, 0, 0);
+
+
+
+            // FIXME: distance is in world space... so we should be modifying X and Z here...
+
         }
         else
         {
             results.hitBottom = goingDown;
             results.hitTop = !goingDown;
-            results.distance.y = goingDown ? -length : length;
+            results.distanceLocal.y = goingDown ? -length : length;
         }
     }
     /// <summary>
@@ -347,13 +355,13 @@ public class PawnAABB3D : MonoBehaviour
     private void AscendSlope(float slopeDegrees)
     {
         float slopeRadians = slopeDegrees * Mathf.Deg2Rad;
-        float dis = goingLeft ? -results.distance.x : results.distance.x;
+        float dis = goingLeft ? -results.distanceLocal.x : results.distanceLocal.x;
         float newDistanceY = dis * Mathf.Sin(slopeRadians);
 
-        if (newDistanceY < results.distance.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
+        if (newDistanceY < results.distanceLocal.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
 
-        results.distance.x = dis * Mathf.Cos(slopeRadians) * signX;
-        results.distance.y = newDistanceY;
+        results.distanceLocal.x = dis * Mathf.Cos(slopeRadians) * signX;
+        results.distanceLocal.y = newDistanceY;
         results.slopeAngle = slopeDegrees;
         results.ascendSlope = true;
         results.hitBottom = true;
