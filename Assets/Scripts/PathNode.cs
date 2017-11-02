@@ -7,6 +7,9 @@ using UnityEngine;
 /// </summary>
 public class PathNode : MonoBehaviour {
 
+    public static PathNode lastCheckpoint;
+
+    public bool isACheckpoint = false;
     /// <summary>
     /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
     /// </summary>
@@ -101,80 +104,55 @@ public class PathNode : MonoBehaviour {
     {
         ProjectionResults results = new ProjectionResults(obj);
 
-        if (!right) return results; // hmmmm...
+        if (!right && !left) return results; // hmmmm...
 
-        float p = ProjectOnSegment(results.position, curveOut, right.curveIn); // project onto straight segment
+        float p = 0;
 
-        if(p < 0) // left of straight segment
+        if (right)
         {
-            if (clampedCurveRadius <= 0 || curveIn == curveOut)
+            // project onto straight segment:
+            p = ProjectOnSegment(results.position, curveOut, right.curveIn); 
+
+            if (p < 0) // left of straight segment
             {
-                if (left) results.newNode = left;
+                if (clampedCurveRadius <= 0 || curveIn == curveOut)
+                {
+                    // if there's no curved segment, switch to the left node:
+                    if (left) results.newNode = left;
+                }
+                else
+                {
+                    // project onto curve
+                    p = ProjectOnSegment(results.position, curveIn, curveOut);
+                    if (p < 0 || p > 1) // if left (or right???) of curve:
+                    {
+                        if (left) results.newNode = left;
+                    }
+                    else // if on curve:
+                    {
+                        // FIXME: bug causes the player to automatically move in a curve...
+                        results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
+                        results.rotation = GetRotationOnCurve(p);
+                    }
+                }
             }
-            else
+            else if (p <= 1)
+            { // on straight segment:
+                results.position = OverwriteY(Vector3.Lerp(curveOut, right.curveIn, p), results.position.y);
+                results.rotation = rotationYaw;
+            }
+            else // right of straight segment:
             {
-                p = ProjectOnSegment(results.position, curveIn, curveOut); // project onto curve
-                if (p < 0 || p > 1) // left of curve
-                {
-                    if(left) results.newNode = left;
-                }
-                else // on curve
-                {
-                    results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
-                    results.rotation = GetRotationOnCurve(p);
-                }
+                // switch to right node
+                results.newNode = right;
             }
-
-        } else if (p <= 1) { // on straight segment
-
-            results.position = OverwriteY(Vector3.Lerp(curveOut, right.curveIn, p), results.position.y);
-            results.rotation = rotationYaw;
-
-        } else { // right of straight segment
-
-            results.newNode = right;
-
-        }
-
-        return results;
-    }
-    public ProjectionResults ClosestPoint(Transform obj)
-    {
-        ProjectionResults results = new ProjectionResults();
-        results.position = obj.position;
-
-        if (!right) return results;
-        Vector3 nodeToThis = obj.position - transform.position;
-        nodeToThis.y = 0;
-
-        Vector3 segment = VectorToRight();
-        segment.y = 0;
-
-        Vector3 axis = segment.normalized;
-        float projectedPoint = Vector3.Dot(axis, nodeToThis);
-
-        if (left && right && projectedPoint < clampedCurveRadius) // projection inside curved section:
-        {   
-            float t = (projectedPoint + clampedCurveRadius) / (clampedCurveRadius * 2);
-            //print(t);
-            //results.position = GetPointOnCurve(t);
-            results.rotation = GetRotationOnCurve(t);
-        }
-        else if (projectedPoint <= 0) // projection to the left of this node:
+        } else // there is a node to the left, but no node to the right...
         {
-            results.newNode = left;
+            // in this situation, the player is "off the rail"
+            p = ProjectOnSegment(results.position, left.curveOut, curveIn);
+            if (p < 1) results.newNode = left; // back on the rail
         }
-        else if (projectedPoint >= length) // projection past right node:
-        {
-            results.newNode = right;
-        }
-        else // projection on segment:
-        {
-            results.position = axis * projectedPoint + transform.position;
-            results.position.y = obj.position.y; // break y out of the line segment to preserve the object's height
-            results.rotation = rotationYaw;
-        }
-            
+
         return results;
     }
     public PathNode Split()
@@ -222,11 +200,8 @@ public class PathNode : MonoBehaviour {
             if (this.right) this.right.left = newNode;
             this.right = newNode;
         }
-
-        // TODO: adjust positions of newNode and this node (in the middle AND at the ends)
-
-        // return the new node
-        return newNode;
+        
+        return newNode; // return the new node
     }
     public void RemoveAndDestroy()
     {
@@ -245,7 +220,7 @@ public class PathNode : MonoBehaviour {
     public PathNode GetLeftMostNode()
     {
         PathNode leftMostNode = this;
-        while (leftMostNode.left) leftMostNode = this.left;
+        while (leftMostNode.left) leftMostNode = leftMostNode.left;
         return leftMostNode;
     }
     Vector3 OverwriteY(Vector3 v, float y = 0)

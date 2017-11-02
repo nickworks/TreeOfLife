@@ -3,9 +3,15 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 
+/// <summary>
+/// This class creates custom Editor GUI (scene and inspector) and behavior for PathNode objects.
+/// </summary>
 [CustomEditor(typeof(PathNode))]
 public class PathNodeEditor : Editor
 {
+    /// <summary>
+    /// This method draws the Inspector GUI for PathNode objects.
+    /// </summary>
     override public void OnInspectorGUI()
     {
         base.DrawDefaultInspector();
@@ -25,37 +31,22 @@ public class PathNodeEditor : Editor
             Rename(temp);
         }
         GUILayout.EndHorizontal();
-        /*
-        if(GUILayout.Button("Promote to Parent"))
-        {
-            PathNode topNode = node;
-
-            while (true)
-            {
-
-                PathNode parentNode = topNode.transform.parent.GetComponent<PathNode>();
-                if (!parentNode) break;
-                topNode = parentNode;
-            }
-
-            node.transform.parent = topNode.transform.parent;
-
-            for (PathNode n = node.left; n != null; n = n.left)
-            {
-                n.transform.parent = node.transform;
-            }
-            for (PathNode n = node.right; n != null; n = n.right)
-            {
-                n.transform.parent = node.transform;
-            }
-
-        }
-        */
         
     }
+    /// <summary>
+    /// This method renames all of the PathNode objects in a path.
+    /// </summary>
+    /// <param name="node">A node from the desired path.</param>
     void Rename(PathNode node)
     {
         node.GetLeftMostNode().RenameNodes("Node");
+    }
+    /// <summary>
+    /// This method draws additional gizmos / handles in the scene view when a PathNode is selected.
+    /// </summary>
+    void OnSceneGUI()
+    {
+        Handles.DrawWireCube(((PathNode)target).transform.position, Vector3.one);
     }
 }
 

@@ -2,10 +2,22 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// This class allows a GameObject to align with a path. A path is comprised of one or more PathNode objects.
+/// </summary>
 public class AlignWithPath : MonoBehaviour {
 
     public PathNode currentNode;
 
+    void Start()
+    {
+        Teleport();
+    }
+    public void Teleport(PathNode node = null)
+    {
+        if (node == null) node = currentNode;
+        transform.position = node.transform.position;
+    }
 
 	// Update is called once per frame
 	void Update () {
