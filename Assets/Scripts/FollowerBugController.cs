@@ -9,8 +9,8 @@ using UnityEngine;
 public class FollowerBugController : MonoBehaviour {
 
 
-    
-    
+
+#region Variable Region
     /// <summary>
     /// A float variable to hold the distance between the player and the fly
     /// </summary>
@@ -44,6 +44,9 @@ public class FollowerBugController : MonoBehaviour {
     /// A variable used to control movement
     /// </summary>
     Vector3 flyMover = new Vector3();
+
+
+#endregion
 
     // Use this for initialization
     void Start ()

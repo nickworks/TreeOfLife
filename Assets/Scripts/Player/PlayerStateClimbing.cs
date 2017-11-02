@@ -11,6 +11,8 @@ namespace Player
     /// </summary>
     public class PlayerStateClimbing : PlayerState
     {
+
+#region Variable Region
         /// <summary>
         /// A private float to handle the players climbspeed
         /// </summary>
@@ -27,6 +29,8 @@ namespace Player
         /// A private float to slow the player down when they jump
         /// </summary>
         private float jumpSlowDown = .75f;
+
+#endregion
 
         /// <summary>
         /// This method is called by the PlayerController every tick.

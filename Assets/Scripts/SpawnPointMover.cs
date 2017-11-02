@@ -32,7 +32,9 @@ public class SpawnPointMover : MonoBehaviour {
         //If the move variable in the SpawnTriggerMover script is set to true then we need to move the spawn
         if (stm.moveSpawn) MoveSpawn();
 	}
-    //FIXME: comments this method
+    /// <summary>
+    /// This moves the spawn to a new position
+    /// </summary>
     private void MoveSpawn()
     {
         //We set the rigidbody transform equal to the STM transform

@@ -11,7 +11,7 @@ using UnityEngine;
 /// </summary>
 public class FlyController : MonoBehaviour {
 
-  
+#region Variable Region
     /// <summary>
     /// A float variable to hold the distance between the player and the fly
     /// </summary>
@@ -42,17 +42,12 @@ public class FlyController : MonoBehaviour {
     /// A vector 3 that is used to move the bug around
     /// </summary>
     Vector3 flyMover = new Vector3();
-
-    public bool isStopped;
-
     /// <summary>
-    /// A start method used for initialization
+    /// A public boolean used to control wiether or not the bug is stopped
     /// </summary>
-    void Start ()
-    {
-        
-        
-    }
+    public bool isStopped;
+#endregion
+   
 	
 	// Update is called once per frame
 	void Update ()

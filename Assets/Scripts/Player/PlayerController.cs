@@ -143,20 +143,7 @@ namespace Player {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
                     break;
-                    
-                    //FIXME: should only need it in onTriggerStay, remove this
-                    case "StickyWeb":
-                     //And the player grabs the players state is set to climbing
-                if (Input.GetButton("Grab"))
-                {
-                    //We set the playerstate to playerStateClimbing
-                    playerState = new PlayerStateClimbing();
-
-                }else if(Input.GetButtonUp("Jump")){// If the jump button is released
-                    //Player state is set to regular
-                  playerState = new PlayerStateRegular();
-                }
-                    break;
+                   
             }
         }
 
