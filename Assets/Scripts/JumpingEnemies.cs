@@ -195,13 +195,17 @@ public class JumpingEnemies : MonoBehaviour {
     {
         switch (enemyType)
         {
+
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.basicJumpingEnemy:
                 velocity.y = jumpImpulse;
                 break;
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 velocity.y = jumpImpulse;
                 velocity.x = (player.position.x - enemy.position.x) / (jumpTime * 2);
                 break;
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.directionJumpingEnemy:
                 velocity.y = jumpImpulse;
                 if (horizontalDirection)
@@ -267,6 +271,7 @@ public class JumpingEnemiesEditor : Editor
 
         switch(editor.enemyType)
         {
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.basicJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
@@ -275,6 +280,7 @@ public class JumpingEnemiesEditor : Editor
                 editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
                 if(editor.useActivationDistance) editor.activationDistance = EditorGUILayout.FloatField("Activation Distance", editor.activationDistance);
                 break;
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
@@ -283,6 +289,7 @@ public class JumpingEnemiesEditor : Editor
                 editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
                 if (editor.useActivationDistance) editor.activationDistance = EditorGUILayout.FloatField("Activation Distance", editor.activationDistance);
                 break;
+            //FIXME : add some discriptions to this so that we better understand what it does
             case JumpingEnemies.EnemyType.directionJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
