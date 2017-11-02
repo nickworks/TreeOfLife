@@ -144,6 +144,7 @@ namespace Player {
                     other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
                     break;
                     
+                    //FIXME: should only need it in onTriggerStay, remove this
                     case "StickyWeb":
                      //And the player grabs the players state is set to climbing
                 if (Input.GetButton("Grab"))
