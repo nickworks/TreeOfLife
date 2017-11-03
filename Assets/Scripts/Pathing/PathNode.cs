@@ -17,10 +17,6 @@ public class PathNode : MonoBehaviour {
     /// </summary>
     [Range(0, 10)] public float curveRadius = 0;
     /// <summary>
-    /// The clamped curve radius. This takes into consideration how close neighboring nodes are.
-    /// </summary>
-    private float clampedCurveRadius = 0;
-    /// <summary>
     /// The PathNode to the left of this one. This is the previous item in the linked List.
     /// </summary>
     [HideInInspector]
@@ -46,6 +42,12 @@ public class PathNode : MonoBehaviour {
     /// The length from this node and the next (right) node.
     /// </summary>
     private float length;
+    private float arcAngle;
+    private float startAngle;
+    private float clampedCurveRadius;
+    public Vector3 curveCenter;
+
+    public string data;
 
     /// <summary>
     /// When this object starts, we call CacheData()
@@ -70,7 +72,6 @@ public class PathNode : MonoBehaviour {
         length = 0;
         curveIn = transform.position;
         curveOut = transform.position;
-        clampedCurveRadius = 0;
 
         if (shouldRipple)
         {
@@ -89,17 +90,56 @@ public class PathNode : MonoBehaviour {
 
         if (left && right)
         {
+            clampedCurveRadius = curveRadius;
 
-            float disToLeft = Vector3.Distance(transform.position, left.transform.position);
-            float disToRight = Vector3.Distance(transform.position, right.transform.position);
-
-            clampedCurveRadius = Mathf.Min(curveRadius, 0.5f * disToLeft, 0.5f * disToRight);
-            if (clampedCurveRadius < 0) clampedCurveRadius = 0;
             Vector3 p1 = left.transform.position;
             Vector3 p2 = transform.position;
             Vector3 p3 = right.transform.position;
-            curveIn = p2 - (p2 - p1).normalized * clampedCurveRadius;
-            curveOut = p2 - (p2 - p3).normalized * clampedCurveRadius;
+
+            Vector3 leftDiff = OverwriteY(p1 - p2); // get the FLAT vector to left
+            Vector3 rightDiff = OverwriteY(p3 - p2); // get the FLAT vector to right
+
+            Vector3 leftAxis = leftDiff.normalized;
+            Vector3 rightAxis = rightDiff.normalized;
+
+            // the angle between the two segments
+            float angle1 = Mathf.Atan2(rightDiff.z, rightDiff.x);
+            float angle2 = Mathf.Atan2(leftDiff.z, leftDiff.x);
+
+            if(Mathf.Abs(angle1 - angle2) > Mathf.PI)
+            {
+                angle1 += ((angle1 < angle2) ? 2 : -2) * Mathf.PI;
+            }
+
+            float angle = Mathf.Abs(angle1 - angle2);
+            if (angle > Mathf.PI) angle = Mathf.PI * 2 - angle;
+            angle /= 2;
+            
+            float maxAdjacent = Mathf.Min(0.5f * leftDiff.magnitude, 0.5f * rightDiff.magnitude);
+            float maxDistance = maxAdjacent / Mathf.Cos(angle);
+            float disToCenter = curveRadius / Mathf.Sin(angle);
+
+            if(maxDistance < disToCenter)
+            {
+                clampedCurveRadius *= maxDistance / disToCenter;
+                disToCenter = maxDistance;
+            }
+
+            float disToInOut = Mathf.Cos(angle) * disToCenter;
+            curveIn = Vector3.Lerp(p2, p1, disToInOut / leftDiff.magnitude);
+            curveOut = Vector3.Lerp(p2, p3, disToInOut / rightDiff.magnitude);
+
+            float angleToCenter = (angle1 + angle2) / 2;
+            curveCenter = transform.position + new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter)) * disToCenter;
+
+            startAngle = Mathf.Atan2(curveIn.z - curveCenter.z, curveIn.x - curveCenter.x);
+            Vector3 flatV1 = OverwriteY(curveIn - curveCenter);
+            Vector3 flatV3 = OverwriteY(curveOut - curveCenter);
+
+            arcAngle = Mathf.Atan2(flatV3.z, flatV3.x) - Mathf.Atan2(flatV1.z, flatV1.x);
+            arcAngle = WrapAngle(arcAngle);
+
+            data = "angle1: " + angle1 + "\nangle2: " + angle2 + "\nangle: " + angle + "\nangleToCenter: " + angleToCenter;
         }
     }
 
@@ -151,7 +191,7 @@ public class PathNode : MonoBehaviour {
 
             if (p < 0) // left of straight segment
             {
-                if (clampedCurveRadius <= 0 || curveIn == curveOut)
+                if (curveRadius <= 0 || curveIn == curveOut)
                 {
                     // if there's no curved segment, switch to the left node:
                     if (left) results.newNode = left;
@@ -344,7 +384,13 @@ public class PathNode : MonoBehaviour {
     /// <returns>The calculated position.</returns>
     Vector3 GetPointOnCurve(float t)
     {
-        return Vector3.Lerp(Vector3.Lerp(curveIn, transform.position, t), Vector3.Lerp(transform.position, curveOut, t), t);
+        //return Vector3.Lerp(Vector3.Lerp(curveIn, transform.position, t), Vector3.Lerp(transform.position, curveOut, t), t);
+        float currentAngle = startAngle + arcAngle * t;
+        float x = clampedCurveRadius * Mathf.Cos(currentAngle) + curveCenter.x;
+        float y = Mathf.Lerp(curveIn.y, curveOut.y, t);
+        float z = clampedCurveRadius * Mathf.Sin(currentAngle) + curveCenter.z;
+
+        return new Vector3(x, y, z);
     }
     /// <summary>
     /// Calculates a desired rotation on a curved section of the path.
@@ -355,5 +401,11 @@ public class PathNode : MonoBehaviour {
     {
         if (!left) return rotationYaw;
         return Quaternion.Slerp(left.rotationYaw, rotationYaw, t);
+    }
+    float WrapAngle(float a)
+    {
+        while (a > Mathf.PI) a -= Mathf.PI * 2;
+        while (a < -Mathf.PI) a += Mathf.PI * 2;
+        return a;
     }
 }

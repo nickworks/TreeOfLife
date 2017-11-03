@@ -46,7 +46,12 @@ public class PathNodeEditor : Editor
     /// </summary>
     void OnSceneGUI()
     {
-        Handles.DrawWireCube(((PathNode)target).transform.position, Vector3.one);
+        PathNode node = ((PathNode)target);
+        Handles.DrawWireCube(node.transform.position, Vector3.one);
+        Handles.DrawWireCube(node.curveCenter, Vector3.one * .1f);
+        //Handles.DrawWireArc(node.curveCenter, Vector3.up, Vector3.right, 360, node.curveRadius);
+        Handles.Label(node.transform.position + new Vector3(1, 0, 1), node.data);
+
     }
 }
 
