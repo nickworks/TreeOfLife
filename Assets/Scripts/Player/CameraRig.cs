@@ -5,7 +5,7 @@ using UnityEngine;
 /// <summary>
 /// This script causes a camera to follow and align with a specified target. Add this script to the parent of a Camera GameObject.
 /// </summary>
-public class FollowTarget : MonoBehaviour {
+public class CameraRig : MonoBehaviour {
 
     /// <summary>
     /// The transform to ease towards.
