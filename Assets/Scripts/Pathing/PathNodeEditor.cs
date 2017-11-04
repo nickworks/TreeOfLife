@@ -49,9 +49,15 @@ public class PathNodeEditor : Editor
         PathNode node = ((PathNode)target);
         Handles.DrawWireCube(node.transform.position, Vector3.one);
         Handles.DrawWireCube(node.curveCenter, Vector3.one * .1f);
-        //Handles.DrawWireArc(node.curveCenter, Vector3.up, Vector3.right, 360, node.curveRadius);
-        Handles.Label(node.transform.position + new Vector3(1, 0, 1), node.data);
-
+        
+        DrawLineFromYaw(node.curveCenter, node.angleCurveIn);
+        DrawLineFromYaw(node.curveCenter, node.angleCurveOut);
+    }
+    void DrawLineFromYaw(Vector3 p, float angle, float length = 1)
+    {
+        Vector3 p2 = p + length * new Vector3(Mathf.Cos(angle), 0, Mathf.Sin(angle));
+        Handles.DrawLine(p, p2);
+        Handles.Label(p2, (angle * Mathf.Rad2Deg).ToString());
     }
 }
 

@@ -11,11 +11,10 @@ public class PathNode : MonoBehaviour {
     /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
     /// </summary>
     public PathNode pathNodePrefab;
-    
     /// <summary>
     /// How much to curve this corner (if space allows).
     /// </summary>
-    [Range(0, 10)] public float curveRadius = 0;
+    [Range(0, 20)] public float curveRadius = 0;
     /// <summary>
     /// The PathNode to the left of this one. This is the previous item in the linked List.
     /// </summary>
@@ -42,12 +41,22 @@ public class PathNode : MonoBehaviour {
     /// The length from this node and the next (right) node.
     /// </summary>
     private float length;
-    private float arcAngle;
-    private float startAngle;
+    /// <summary>
+    /// The clamped radius. This is what's used to create the curved section of the curve.
+    /// </summary>
     private float clampedCurveRadius;
-    public Vector3 curveCenter;
-
-    public string data;
+    /// <summary>
+    /// The center point of the curved section.
+    /// </summary>
+    public Vector3 curveCenter { get; private set; }
+    /// <summary>
+    /// The angle from curveCenter to the left edge of the curve.
+    /// </summary>
+    public float angleCurveIn { get; private set; }
+    /// <summary>
+    /// The angle from curveCenter to the right edge of the curve.
+    /// </summary>
+    public float angleCurveOut { get; private set; }
 
     /// <summary>
     /// When this object starts, we call CacheData()
@@ -70,8 +79,7 @@ public class PathNode : MonoBehaviour {
     void CacheData(bool shouldRipple)
     {
         length = 0;
-        curveIn = transform.position;
-        curveOut = transform.position;
+        curveCenter = curveIn = curveOut = transform.position;
 
         if (shouldRipple)
         {
@@ -102,22 +110,17 @@ public class PathNode : MonoBehaviour {
             Vector3 leftAxis = leftDiff.normalized;
             Vector3 rightAxis = rightDiff.normalized;
 
-            // the angle between the two segments
-            float angle1 = Mathf.Atan2(rightDiff.z, rightDiff.x);
-            float angle2 = Mathf.Atan2(leftDiff.z, leftDiff.x);
+            // the YAW to angle1 and angle2
+            float angleToP3 = Mathf.Atan2(rightDiff.z, rightDiff.x);
+            float angleToP1 = Mathf.Atan2(leftDiff.z, leftDiff.x);
+            angleToP3 = AngleWrapFromTo(angleToP3, angleToP1);
 
-            if(Mathf.Abs(angle1 - angle2) > Mathf.PI)
-            {
-                angle1 += ((angle1 < angle2) ? 2 : -2) * Mathf.PI;
-            }
+            float angleBetween = Mathf.Abs(angleToP3 - angleToP1) / 2; // save a step, and half the difference
+            float angleToCenter = (angleToP3 + angleToP1) / 2; // angle from p2 to center... use the average of our previous two angles
 
-            float angle = Mathf.Abs(angle1 - angle2);
-            if (angle > Mathf.PI) angle = Mathf.PI * 2 - angle;
-            angle /= 2;
-            
-            float maxAdjacent = Mathf.Min(0.5f * leftDiff.magnitude, 0.5f * rightDiff.magnitude);
-            float maxDistance = maxAdjacent / Mathf.Cos(angle);
-            float disToCenter = curveRadius / Mathf.Sin(angle);
+            float maxAdjacent = Mathf.Min(leftDiff.magnitude, rightDiff.magnitude) * 0.5f;
+            float maxDistance = maxAdjacent / Mathf.Cos(angleBetween);
+            float disToCenter = curveRadius / Mathf.Sin(angleBetween);
 
             if(maxDistance < disToCenter)
             {
@@ -125,24 +128,28 @@ public class PathNode : MonoBehaviour {
                 disToCenter = maxDistance;
             }
 
-            float disToInOut = Mathf.Cos(angle) * disToCenter;
+            float disToInOut = Mathf.Cos(angleBetween) * disToCenter;
             curveIn = Vector3.Lerp(p2, p1, disToInOut / leftDiff.magnitude);
             curveOut = Vector3.Lerp(p2, p3, disToInOut / rightDiff.magnitude);
 
-            float angleToCenter = (angle1 + angle2) / 2;
-            curveCenter = transform.position + new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter)) * disToCenter;
+            Vector3 axisToCenter = new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter));
+            curveCenter = transform.position + axisToCenter * disToCenter;
 
-            startAngle = Mathf.Atan2(curveIn.z - curveCenter.z, curveIn.x - curveCenter.x);
-            Vector3 flatV1 = OverwriteY(curveIn - curveCenter);
-            Vector3 flatV3 = OverwriteY(curveOut - curveCenter);
+            angleCurveIn = CurveAngleTo(curveIn);
+            angleCurveOut = CurveAngleTo(curveOut);
 
-            arcAngle = Mathf.Atan2(flatV3.z, flatV3.x) - Mathf.Atan2(flatV1.z, flatV1.x);
-            arcAngle = WrapAngle(arcAngle);
-
-            data = "angle1: " + angle1 + "\nangle2: " + angle2 + "\nangle: " + angle + "\nangleToCenter: " + angleToCenter;
+            angleCurveOut = AngleWrapFromTo(angleCurveOut, angleCurveIn);
         }
     }
-
+    /// <summary>
+    /// Gets the angle from the center of the curve to another point.
+    /// </summary>
+    /// <param name="pos">The position</param>
+    /// <returns>The angle in radians</returns>
+    private float CurveAngleTo(Vector3 pos)
+    {
+        return Mathf.Atan2(pos.z - curveCenter.z, pos.x - curveCenter.x);
+    }
     /// <summary>
     /// This holds the data that is returned from Constrain()
     /// </summary>
@@ -179,53 +186,39 @@ public class PathNode : MonoBehaviour {
     public ProjectionResults Constrain(Transform obj)
     {
         ProjectionResults results = new ProjectionResults(obj);
-
-        if (!right && !left) return results; // hmmmm...
-
-        float p = 0;
-
+        
         if (right)
         {
-            // project onto straight segment:
-            p = ProjectOnSegment(results.position, curveOut, right.curveIn); 
-
-            if (p < 0) // left of straight segment
+            float p = ProjectOnSegment(results.position, curveOut, right.curveIn);
+            if (p > 1) results.newNode = right;
+            else if (p >= 0) // on straight segment:
             {
-                if (curveRadius <= 0 || curveIn == curveOut)
-                {
-                    // if there's no curved segment, switch to the left node:
-                    if (left) results.newNode = left;
-                }
-                else
-                {
-                    // project onto curve
-                    p = ProjectOnSegment(results.position, curveIn, curveOut);
-                    if (p < 0 || p > 1) // if left (or right???) of curve:
-                    {
-                        if (left) results.newNode = left;
-                    }
-                    else // if on curve:
-                    {
-                        // FIXME: bug causes the player to automatically move in a curve...
-                        results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
-                        results.rotation = GetRotationOnCurve(p);
-                    }
-                }
-            }
-            else if (p <= 1)
-            { // on straight segment:
                 results.position = OverwriteY(Vector3.Lerp(curveOut, right.curveIn, p), results.position.y);
                 results.rotation = rotationYaw;
             }
-            else // right of straight segment:
+            else if (left)
             {
-                // switch to right node
-                results.newNode = right;
+                if (angleCurveIn == angleCurveOut) results.newNode = left;
+                else {
+                    p = ProjectOnCurve(results.position);
+                    if (p < 0) results.newNode = left;
+                    else if (p <= 1)
+                    {
+                        results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
+                        results.rotation = GetRotationOnCurve(p);
+                    } else
+                    {
+                        results.newNode = right; // this only happens when curveIn and curveOut are the same point
+                    }
+                    return results;
+                }
             }
-        } else // there is a node to the left, but no node to the right...
+            return results;
+        }
+        if (left) // the player must be right of the right-most node...
         {
             // in this situation, the player is "off the rail"
-            p = ProjectOnSegment(results.position, left.curveOut, curveIn);
+            float p = ProjectOnSegment(results.position, left.curveOut, curveIn);
             if (p < 1) results.newNode = left; // back on the rail
         }
 
@@ -337,9 +330,20 @@ public class PathNode : MonoBehaviour {
         Vector3 axis = OverwriteY(end - start);
 
         float length = axis.magnitude;
+        if (length == 0) return float.NaN; // segment doesn't have a length; end and start are the same
         float projection = Vector3.Dot(axis.normalized, diff);
 
         return projection / length; // return a percentage
+    }
+    /// <summary>
+    /// This method "projects" a position onto curve. It really just gets the angle to the position and uses the angle to calculate its position.
+    /// </summary>
+    /// <param name="target">The position to project.</param>
+    /// <returns>A percent value of the projection results. 0 would mean that the position aligns with the left edge of the curve. 1 would mean the position aligns with the right edge of the curve.</returns>
+    float ProjectOnCurve(Vector3 target)
+    {
+        float angle = AngleWrapFromTo(CurveAngleTo(target), angleCurveIn);
+        return (angle - angleCurveIn) / (angleCurveOut - angleCurveIn);
     }
     /// <summary>
     /// This method draws the node icon (and lines) in the editor.
@@ -384,10 +388,12 @@ public class PathNode : MonoBehaviour {
     /// <returns>The calculated position.</returns>
     Vector3 GetPointOnCurve(float t)
     {
-        //return Vector3.Lerp(Vector3.Lerp(curveIn, transform.position, t), Vector3.Lerp(transform.position, curveOut, t), t);
-        float currentAngle = startAngle + arcAngle * t;
+        float currentAngle = Mathf.Lerp(angleCurveIn, angleCurveOut, t);
         float x = clampedCurveRadius * Mathf.Cos(currentAngle) + curveCenter.x;
-        float y = Mathf.Lerp(curveIn.y, curveOut.y, t);
+        float y = Mathf.Lerp(
+            Mathf.Lerp(curveIn.y, transform.position.y, t),
+            Mathf.Lerp(transform.position.y, curveOut.y, t),
+            t);
         float z = clampedCurveRadius * Mathf.Sin(currentAngle) + curveCenter.z;
 
         return new Vector3(x, y, z);
@@ -402,10 +408,16 @@ public class PathNode : MonoBehaviour {
         if (!left) return rotationYaw;
         return Quaternion.Slerp(left.rotationYaw, rotationYaw, t);
     }
-    float WrapAngle(float a)
+    /// <summary>
+    /// This utility function converts one angle to be within 180 degrees of second angle.
+    /// </summary>
+    /// <param name="a">The angle to adjust.</param>
+    /// <param name="b">The stationary reference angle.</param>
+    /// <returns>The adjusted angle.</returns>
+    float AngleWrapFromTo(float a, float b)
     {
-        while (a > Mathf.PI) a -= Mathf.PI * 2;
-        while (a < -Mathf.PI) a += Mathf.PI * 2;
+        while (a - b > Mathf.PI) a -= Mathf.PI * 2;
+        while (a - b <-Mathf.PI) a += Mathf.PI * 2;
         return a;
     }
 }
