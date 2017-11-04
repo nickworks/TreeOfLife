@@ -5,14 +5,15 @@ using UnityEngine;
 /// <summary>
 /// Falling Platform is a class that creates a falling platform on any object this attached to.
 /// </summary>
-[RequireComponent(typeof(BoxCollider2D))]
-public class FallingPlatform : MonoBehaviour {
-    
+[RequireComponent(typeof(BoxCollider))]
+public class FallingPlatform : MonoBehaviour
+{
+
     /// <summary>
-    /// Stores a Referencey
+    /// Stores a Reference
     /// </summary>
-    private Rigidbody2D rb2d;
-    
+    private Rigidbody rb3d;
+
     /// <summary>
     /// Boolean - IsFalling tracks to see if the object is falling 
     /// </summary>
@@ -22,17 +23,17 @@ public class FallingPlatform : MonoBehaviour {
     /// downSpeed is the way that speed is calculated for downfalling objects
     /// </summary>
     private float downSpeed = 0;
-    
+
     /// <summary>
     /// Vector3 variable stores original position of object.
     /// </summary>
     private Vector3 OriginalPosition;
 
-	/// <summary>
+    /// <summary>
     ///  Gives Original Position a local position
     /// </summary>
     void Start()
-	{
+    {
         OriginalPosition = transform.localPosition;
     }
     // Use this for initialization//FIXME - what is this <
@@ -41,11 +42,12 @@ public class FallingPlatform : MonoBehaviour {
     /// if not it isfalling is false!
     /// </summary>
     /// <param name="collider"></param>
-    public void OnTriggerEnter2D(Collider2D collider)
+    public void OnTriggerEnter(Collider collider)
     {
         /// Tag of Player
         if (collider.CompareTag("Player"))
         {
+            print("Hello");
 
             isFalling = true;
         }
@@ -60,8 +62,9 @@ public class FallingPlatform : MonoBehaviour {
     /// </summary>
     void Update()
     {
-        if(isFalling)
+        if (isFalling)
         {
+            print("fuck");
             downSpeed += Time.deltaTime / 100;
             transform.position = new Vector3(transform.position.x, transform.position.y - downSpeed, transform.position.z);
 
@@ -80,7 +83,7 @@ public class FallingPlatform : MonoBehaviour {
             }
 
         }
-        
+
     }
-  
+
 }
