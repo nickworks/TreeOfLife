@@ -16,7 +16,7 @@ public class AlignWithPath : MonoBehaviour {
     public void Teleport(PathNode node = null)
     {
         if (node == null) node = currentNode;
-        transform.position = node.transform.position;
+        if (node != null) transform.position = node.transform.position;
     }
 
 	// Update is called once per frame
