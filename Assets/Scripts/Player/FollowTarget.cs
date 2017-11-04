@@ -28,18 +28,18 @@ public class FollowTarget : MonoBehaviour {
     /// <summary>
     /// This causes the camera rig to follow, align with, and look at the specified target;
     /// </summary>
-	void Update () {
+	void LateUpdate () {
 
         // TODO: we might want to store camera settings within PathNode objects... (zoom amount, easing, etc).
 
         if (!target) return;
 
         transform.rotation = Quaternion.Slerp(transform.rotation, target.rotation, Time.deltaTime * easing);
+        transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * easing);
 
         // TODO: We will probably want to Lerp / Slerp the rotation and somehow limit it so it doesn't
         // always rotate to point directly at its target. This works fine for the player, but not for cutscenes.
         cam.rotation = Quaternion.LookRotation(target.position - cam.position, Vector3.up);
 
-        transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * easing);
 	}
 }
