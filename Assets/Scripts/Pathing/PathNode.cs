@@ -11,6 +11,7 @@ public class PathNode : MonoBehaviour {
     /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
     /// </summary>
     public PathNode pathNodePrefab;
+    public CameraRig.CameraData cameraData;
     /// <summary>
     /// How much to curve this corner (if space allows).
     /// </summary>

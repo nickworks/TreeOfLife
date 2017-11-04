@@ -140,6 +140,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 70188069}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 7.7
   left: {fileID: 1302041318}
   right: {fileID: 999713059}
@@ -348,7 +352,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 202725575}
-  curveRadius: 2
+  cameraData:
+    pitch: -45
+    yaw: 0
+    easing: 2
+  curveRadius: 3.5
   left: {fileID: 880994339}
   right: {fileID: 1302041318}
 --- !u!4 &202725576
@@ -845,6 +853,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 880994339}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 5
   left: {fileID: 1374010915}
   right: {fileID: 202725575}
@@ -1057,6 +1069,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 999713059}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 2
   left: {fileID: 70188069}
   right: {fileID: 0}
@@ -1353,6 +1369,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1234331068}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 13.08
   left: {fileID: 1518319589}
   right: {fileID: 1374010915}
@@ -1565,6 +1585,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1302041318}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 2
   left: {fileID: 202725575}
   right: {fileID: 70188069}
@@ -1609,6 +1633,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1374010915}
+  cameraData:
+    pitch: 20
+    yaw: 0
+    easing: 2
   curveRadius: 7.85
   left: {fileID: 1234331068}
   right: {fileID: 880994339}
@@ -1737,6 +1765,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1449300769}
+  cameraData:
+    pitch: 60
+    yaw: 0
+    easing: 2
   curveRadius: 10
   left: {fileID: 0}
   right: {fileID: 1556321060}
@@ -1746,12 +1778,12 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1449300768}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -39.95, y: 4.2186003, z: 2.19}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -50.774303, y: 1.5114956, z: -2.63}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_Father: {fileID: 1555540935}
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1518319588
 GameObject:
@@ -1781,6 +1813,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1518319589}
+  cameraData:
+    pitch: 5
+    yaw: 0
+    easing: 2
   curveRadius: 10
   left: {fileID: 2108074625}
   right: {fileID: 1234331068}
@@ -1792,7 +1828,7 @@ Transform:
   m_GameObject: {fileID: 1518319588}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -24.74, y: -0.21710467, z: -3.61}
-  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_LocalScale: {x: 1, y: 1.0128449, z: 1}
   m_Children: []
   m_Father: {fileID: 1555540935}
   m_RootOrder: 0
@@ -1830,6 +1866,10 @@ Transform:
   - {fileID: 1302041319}
   - {fileID: 70188070}
   - {fileID: 999713060}
+  - {fileID: 2108074626}
+  - {fileID: 2000954695}
+  - {fileID: 1556321061}
+  - {fileID: 1449300770}
   m_Father: {fileID: 0}
   m_RootOrder: 3
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -1861,6 +1901,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 1556321060}
+  cameraData:
+    pitch: 60
+    yaw: 0
+    easing: 2
   curveRadius: 9.23
   left: {fileID: 1449300769}
   right: {fileID: 2000954694}
@@ -1870,12 +1914,12 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1556321059}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -47.72, y: 1.89, z: 7.47}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -58.544304, y: -0.8171047, z: 2.6499996}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_Father: {fileID: 1555540935}
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1758598862
 GameObject:
@@ -2409,6 +2453,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 2000954694}
+  cameraData:
+    pitch: 60
+    yaw: 0
+    easing: 2
   curveRadius: 5.81
   left: {fileID: 1556321060}
   right: {fileID: 2108074625}
@@ -2418,12 +2466,12 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2000954693}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -43.03, y: 3.3543, z: 16.2}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -53.8543, y: 0.64719534, z: 11.380001}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_Father: {fileID: 1555540935}
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &2004771774
 Prefab:
@@ -2507,8 +2555,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 08c57c2659b4841439a73304a5c207dc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  target: {fileID: 504908382}
-  easing: 3
+  target: {fileID: 10016521}
+  easing: 2.62
+  pitch: 0
 --- !u!4 &2100306804
 Transform:
   m_ObjectHideFlags: 0
@@ -2551,6 +2600,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 2108074625}
+  cameraData:
+    pitch: 60
+    yaw: 0
+    easing: 2
   curveRadius: 10
   left: {fileID: 2000954694}
   right: {fileID: 1518319589}
@@ -2560,10 +2613,10 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 2108074624}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -34.12, y: 2.7781, z: 7.26}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: -44.9443, y: 0.07099533, z: 2.44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_Father: {fileID: 1555540935}
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
