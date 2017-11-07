@@ -8,6 +8,7 @@ namespace Player {
     /// This component turns a GameObject into a controllable avatar.
     /// </summary>
     [RequireComponent(typeof(PawnAABB3D))]
+    [RequireComponent(typeof(Rigidbody))]
     public class PlayerController : MonoBehaviour
     {
 
@@ -66,7 +67,7 @@ namespace Player {
         /// </summary>
         /// The strength of the swing.
         /// <summary>
-        public Rigidbody2D _rigidbody;
+        public Rigidbody rigidBody;
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
 
@@ -85,7 +86,8 @@ namespace Player {
             pawn = GetComponent<PawnAABB3D>();
             velocity = new Vector3();
             DeriveJumpValues();
-            _rigidbody = GetComponent<Rigidbody2D>();
+            rigidBody = GetComponent<Rigidbody>();
+            rigidBody.isKinematic = true;
             main = this;
         }
         /// <summary>
@@ -211,10 +213,10 @@ namespace Player {
                         if (Input.GetButtonDown("Fire1"))
                         {
                             ropeTarget = collision.transform;
-                            collision.gameObject.GetComponent<RopeSpawn>().LinkRope(_rigidbody);
+                            //collision.gameObject.GetComponent<RopeSpawn>().LinkRope(rigidBody);
                             playerState = new PlayerStateSwing();
-                            _rigidbody.bodyType = RigidbodyType2D.Dynamic;
-                            _rigidbody.velocity = velocity;
+                            //rigidBody.bodyType = RigidbodyType2D.Dynamic;
+                            rigidBody.velocity = velocity;
                         }
                     }
                     else
@@ -222,11 +224,11 @@ namespace Player {
                         if (!Input.GetButton("Fire1"))
                         {
                             ropeTarget.gameObject.GetComponent<RopeSpawn>().UnlinkRope();
-                            _rigidbody.bodyType = RigidbodyType2D.Kinematic;
+                            //rigidBody.bodyType = RigidbodyType2D.Kinematic;
                             playerState = new PlayerStateRegular();
-                            velocity = _rigidbody.velocity;
+                            velocity = rigidBody.velocity;
                             velocity.y += 10;
-                            _rigidbody.velocity = Vector2.zero;
+                            rigidBody.velocity = Vector2.zero;
                             ropeTarget = null;
                         }
                     }
