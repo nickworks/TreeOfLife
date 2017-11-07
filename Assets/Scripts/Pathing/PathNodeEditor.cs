@@ -7,6 +7,7 @@ using UnityEditor;
 /// This class creates custom Editor GUI (scene and inspector) and behavior for PathNode objects.
 /// </summary>
 [CustomEditor(typeof(PathNode))]
+[CanEditMultipleObjects]
 public class PathNodeEditor : Editor
 {
     /// <summary>

@@ -5,12 +5,52 @@ using UnityEngine;
 /// <summary>
 /// A single node for building paths. This class forms the backbone of a linked list of nodes.
 /// </summary>
-public class PathNode : MonoBehaviour {
+public class PathNode : MonoBehaviour
+{
+
+    /// <summary>
+    /// This holds the data that is returned from Constrain()
+    /// </summary>
+    public struct ProjectionResults
+    {
+        /// <summary>
+        /// The overall percentage of the projection results. 0 is this node; 1 is right node; -1 is left node.
+        /// </summary>
+        public float percent;
+        /// <summary>
+        /// If this isn't null, then the constrained object should switch its currentNode to newNode.
+        /// </summary>
+        public PathNode newNode;
+        /// <summary>
+        /// The constrained position of the object.
+        /// </summary>
+        public Vector3 position;
+        /// <summary>
+        /// The constrained rotation of the object.
+        /// </summary>
+        public Quaternion rotation;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="t">Use this transform to set the default position and rotation values.</param>
+        public ProjectionResults(Transform t)
+        {
+            percent = float.NaN;
+            newNode = null;
+            position = t.position;
+            rotation = t.rotation;
+        }
+    }
 
     /// <summary>
     /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
     /// </summary>
     public PathNode pathNodePrefab;
+    /// <summary>
+    /// A reference to a CameraDataNode component, if one exists on this GameObject.
+    /// </summary>
+    public CameraDataNode cameraDataNode;
+
     /// <summary>
     /// How much to curve this corner (if space allows).
     /// </summary>
@@ -57,6 +97,14 @@ public class PathNode : MonoBehaviour {
     /// The angle from curveCenter to the right edge of the curve.
     /// </summary>
     public float angleCurveOut { get; private set; }
+    /// <summary>
+    /// How far (in percent) the curveOut is between this node and the neighboring left node. For performance, this is calculated once and cached.
+    /// </summary>
+    private float percentCurveIn;
+    /// <summary>
+    /// How far (in percent) the curveOut is between this node and the neighboring right node. For performance, this is calculated once and cached.
+    /// </summary>
+    private float percentCurveOut;
 
     /// <summary>
     /// When this object starts, we call CacheData()
@@ -78,7 +126,8 @@ public class PathNode : MonoBehaviour {
     /// <param name="shouldRipple">Whether or not to tell neighbors to also recalc and cache. Rippling does not recurse, and so it only affects left and right.</param>
     void CacheData(bool shouldRipple)
     {
-        length = 0;
+        cameraDataNode = GetComponent<CameraDataNode>();
+        percentCurveIn = percentCurveOut = length = 0;
         curveCenter = curveIn = curveOut = transform.position;
 
         if (shouldRipple)
@@ -94,7 +143,7 @@ public class PathNode : MonoBehaviour {
             length = diff.magnitude;
             float angle = Mathf.Atan2(-diff.z, diff.x) * Mathf.Rad2Deg;
             rotationYaw = Quaternion.Euler(0, angle, 0);
-        }       
+        }
 
         if (left && right)
         {
@@ -122,23 +171,26 @@ public class PathNode : MonoBehaviour {
             float maxDistance = maxAdjacent / Mathf.Cos(angleBetween);
             float disToCenter = curveRadius / Mathf.Sin(angleBetween);
 
-            if(maxDistance < disToCenter)
+            if (maxDistance < disToCenter)
             {
                 clampedCurveRadius *= maxDistance / disToCenter;
                 disToCenter = maxDistance;
             }
 
-            float disToInOut = Mathf.Cos(angleBetween) * disToCenter;
-            curveIn = Vector3.Lerp(p2, p1, disToInOut / leftDiff.magnitude);
-            curveOut = Vector3.Lerp(p2, p3, disToInOut / rightDiff.magnitude);
-
             Vector3 axisToCenter = new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter));
             curveCenter = transform.position + axisToCenter * disToCenter;
 
+            float disToInOut = Mathf.Cos(angleBetween) * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+            percentCurveIn = disToInOut / leftDiff.magnitude; // percent of the way from p2 to p1
+            percentCurveOut = disToInOut / rightDiff.magnitude; // percent of the way from p2 to p3
+
+            curveIn = Vector3.Lerp(p2, p1, percentCurveIn);
+            curveOut = Vector3.Lerp(p2, p3, percentCurveOut);
+
             angleCurveIn = CurveAngleTo(curveIn);
             angleCurveOut = CurveAngleTo(curveOut);
-
             angleCurveOut = AngleWrapFromTo(angleCurveOut, angleCurveIn);
+
         }
     }
     /// <summary>
@@ -151,34 +203,6 @@ public class PathNode : MonoBehaviour {
         return Mathf.Atan2(pos.z - curveCenter.z, pos.x - curveCenter.x);
     }
     /// <summary>
-    /// This holds the data that is returned from Constrain()
-    /// </summary>
-    public struct ProjectionResults
-    {
-        /// <summary>
-        /// If this isn't null, then the constrained object should switch its currentNode to newNode.
-        /// </summary>
-        public PathNode newNode;
-        /// <summary>
-        /// The constrained position of the object.
-        /// </summary>
-        public Vector3 position;
-        /// <summary>
-        /// The constrained rotation of the object.
-        /// </summary>
-        public Quaternion rotation;
-        /// <summary>
-        /// Constructor
-        /// </summary>
-        /// <param name="t">Use this transform to set the default position and rotation values.</param>
-        public ProjectionResults(Transform t)
-        {
-            newNode = null;
-            position = t.position;
-            rotation = t.rotation;
-        }
-    }
-    /// <summary>
     /// Call this method to calculate a constained position and rotation for a given Transform
     /// </summary>
     /// <param name="obj">The Transform to constrain. This method will NOT modify the Transform.</param>
@@ -186,27 +210,32 @@ public class PathNode : MonoBehaviour {
     public ProjectionResults Constrain(Transform obj)
     {
         ProjectionResults results = new ProjectionResults(obj);
-        
+
         if (right)
         {
             float p = ProjectOnSegment(results.position, curveOut, right.curveIn);
             if (p > 1) results.newNode = right;
             else if (p >= 0) // on straight segment:
             {
+                //results.cameraData = CameraRig.CameraData.Lerp(cameraData, right.cameraData, p);
+                results.percent = CalcOverallPercent(p, false);
                 results.position = OverwriteY(Vector3.Lerp(curveOut, right.curveIn, p), results.position.y);
                 results.rotation = rotationYaw;
             }
-            else if (left)
+            else if (left) // on the curve:
             {
                 if (angleCurveIn == angleCurveOut) results.newNode = left;
-                else {
+                else
+                {
                     p = ProjectOnCurve(results.position);
                     if (p < 0) results.newNode = left;
                     else if (p <= 1)
                     {
+                        results.percent = CalcOverallPercent(p, true);
                         results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
                         results.rotation = GetRotationOnCurve(p);
-                    } else
+                    }
+                    else
                     {
                         results.newNode = right; // this only happens when curveIn and curveOut are the same point
                     }
@@ -237,22 +266,25 @@ public class PathNode : MonoBehaviour {
         Vector3 spawnPos = transform.position;
         if (trueSplit)
         {
-            float length = (right.transform.position - left.transform.position).magnitude/3;
+            float length = (right.transform.position - left.transform.position).magnitude / 3;
 
             spawnPos = Vector3.Lerp(transform.position, right.transform.position, .33f);
             transform.position = Vector3.Lerp(transform.position, left.transform.position, .33f);
 
-        } else if(left)
+        }
+        else if (left)
         {
             spawnPos += (transform.position - left.transform.position);
-        } else if(right)
+        }
+        else if (right)
         {
             spawnPos += (transform.position - right.transform.position);
-        } else
+        }
+        else
         {
             spawnPos += Vector3.right * 10;
         }
-        
+
         // spawn a new node:
         PathNode newNode = Instantiate(pathNodePrefab, spawnPos, Quaternion.identity);
 
@@ -273,7 +305,7 @@ public class PathNode : MonoBehaviour {
             if (this.right) this.right.left = newNode;
             this.right = newNode;
         }
-        
+
         return newNode; // return the new node
     }
     /// <summary>
@@ -292,7 +324,8 @@ public class PathNode : MonoBehaviour {
     public void RenameNodes(string name)
     {
         PathNode currentNode = GetLeftMostNode();
-        for(int i = 0; currentNode; i++) {
+        for (int i = 0; currentNode; i++)
+        {
             currentNode.name = name + i;
             currentNode = currentNode.right;
         }
@@ -417,7 +450,46 @@ public class PathNode : MonoBehaviour {
     float AngleWrapFromTo(float a, float b)
     {
         while (a - b > Mathf.PI) a -= Mathf.PI * 2;
-        while (a - b <-Mathf.PI) a += Mathf.PI * 2;
+        while (a - b < -Mathf.PI) a += Mathf.PI * 2;
         return a;
+    }
+    /// <summary>
+    /// Using the percent value from projection, this method calculates an overall percentage of
+    /// how far the projection is from this node to the next (right) node. A negative value is possible,
+    /// indicating that the projection is on the curve to the left of this node.
+    /// </summary>
+    /// <param name="p">The projection percentage calculated by ProjectOnSegment() or ProjectOnCurve()</param>
+    /// <param name="isOnCurve">Whether or not the input percentage value was calculated by ProjectOnCurve(). If false, it is assumed that the input percentage value was calculated by ProjectOnSegment().</param>
+    /// <returns>The overall percentage of how far the projection is from this node (0) to the right node (1) or the left node (-1). The output is not clamped in any way.</returns>
+    float CalcOverallPercent(float p, bool isOnCurve)
+    {
+        if (!right) return 1;
+
+        if (isOnCurve)
+        {
+            if (p < .5f) return -Mathf.Lerp(0, percentCurveIn, (0.5f - p) / 0.5f); // left side of curve
+            return Mathf.Lerp(0, percentCurveOut, (p - 0.5f) / 0.5f); // right side of curve
+        }
+        return Mathf.Lerp(percentCurveOut, 1 - right.percentCurveIn, p);
+    }
+    /// <summary>
+    /// Using an overall percentage (see CalcOverallPercent()), this method interpolates the camera data of this node and a neighboring node.
+    /// </summary>
+    /// <param name="p">The overall percentage for the interpolation. If negative, the method will interpolate to the left node. Otherwise, it interpolates to the right node.</param>
+    /// <returns>The interpolated camera data.</returns>
+    public CameraDataNode.CameraData GetCameraData(float p)
+    {
+        if (!cameraDataNode) return null;
+
+        CameraDataNode.CameraData data1 = cameraDataNode.cameraData;
+
+        if (p == 0) return data1;
+        if (p < 0 && (!left || !left.cameraDataNode)) return data1;
+        if (p > 0 && (!right || !right.cameraDataNode)) return data1;
+
+        CameraDataNode.CameraData data2 = (p < 0) ? left.cameraDataNode.cameraData : right.cameraDataNode.cameraData;
+
+        if (p < 0) p *= -1; // make percent positive
+        return CameraDataNode.CameraData.Lerp(data1, data2, p); // lerp
     }
 }
