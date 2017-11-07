@@ -11,7 +11,9 @@ public class PathNode : MonoBehaviour {
     /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
     /// </summary>
     public PathNode pathNodePrefab;
-    public CameraRig.CameraData cameraData;
+
+    public CameraDataNode cameraDataNode;
+
     /// <summary>
     /// How much to curve this corner (if space allows).
     /// </summary>
@@ -58,6 +60,8 @@ public class PathNode : MonoBehaviour {
     /// The angle from curveCenter to the right edge of the curve.
     /// </summary>
     public float angleCurveOut { get; private set; }
+    private float percentCurveIn;
+    private float percentCurveOut;
 
     /// <summary>
     /// When this object starts, we call CacheData()
@@ -79,7 +83,7 @@ public class PathNode : MonoBehaviour {
     /// <param name="shouldRipple">Whether or not to tell neighbors to also recalc and cache. Rippling does not recurse, and so it only affects left and right.</param>
     void CacheData(bool shouldRipple)
     {
-        length = 0;
+        percentCurveIn = percentCurveOut = length = 0;
         curveCenter = curveIn = curveOut = transform.position;
 
         if (shouldRipple)
@@ -118,7 +122,7 @@ public class PathNode : MonoBehaviour {
 
             float angleBetween = Mathf.Abs(angleToP3 - angleToP1) / 2; // save a step, and half the difference
             float angleToCenter = (angleToP3 + angleToP1) / 2; // angle from p2 to center... use the average of our previous two angles
-
+            
             float maxAdjacent = Mathf.Min(leftDiff.magnitude, rightDiff.magnitude) * 0.5f;
             float maxDistance = maxAdjacent / Mathf.Cos(angleBetween);
             float disToCenter = curveRadius / Mathf.Sin(angleBetween);
@@ -129,17 +133,20 @@ public class PathNode : MonoBehaviour {
                 disToCenter = maxDistance;
             }
 
-            float disToInOut = Mathf.Cos(angleBetween) * disToCenter;
-            curveIn = Vector3.Lerp(p2, p1, disToInOut / leftDiff.magnitude);
-            curveOut = Vector3.Lerp(p2, p3, disToInOut / rightDiff.magnitude);
-
             Vector3 axisToCenter = new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter));
             curveCenter = transform.position + axisToCenter * disToCenter;
 
+            float disToInOut = Mathf.Cos(angleBetween) * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+            percentCurveIn = disToInOut / leftDiff.magnitude; // percent of the way from p2 to p1
+            percentCurveOut = disToInOut / rightDiff.magnitude; // percent of the way from p2 to p3
+
+            curveIn = Vector3.Lerp(p2, p1, percentCurveIn);
+            curveOut = Vector3.Lerp(p2, p3, percentCurveOut);
+
             angleCurveIn = CurveAngleTo(curveIn);
             angleCurveOut = CurveAngleTo(curveOut);
-
             angleCurveOut = AngleWrapFromTo(angleCurveOut, angleCurveIn);
+
         }
     }
     /// <summary>
@@ -194,10 +201,11 @@ public class PathNode : MonoBehaviour {
             if (p > 1) results.newNode = right;
             else if (p >= 0) // on straight segment:
             {
+                //results.cameraData = CameraRig.CameraData.Lerp(cameraData, right.cameraData, p);
                 results.position = OverwriteY(Vector3.Lerp(curveOut, right.curveIn, p), results.position.y);
                 results.rotation = rotationYaw;
             }
-            else if (left)
+            else if (left) // on the curve:
             {
                 if (angleCurveIn == angleCurveOut) results.newNode = left;
                 else {
@@ -205,6 +213,7 @@ public class PathNode : MonoBehaviour {
                     if (p < 0) results.newNode = left;
                     else if (p <= 1)
                     {
+                        //results.cameraData = cameraData;
                         results.position = OverwriteY(GetPointOnCurve(p), results.position.y);
                         results.rotation = GetRotationOnCurve(p);
                     } else
@@ -420,5 +429,16 @@ public class PathNode : MonoBehaviour {
         while (a - b > Mathf.PI) a -= Mathf.PI * 2;
         while (a - b <-Mathf.PI) a += Mathf.PI * 2;
         return a;
+    }
+    float CalcOverallPercent(float p, bool isOnCurve)
+    {
+        if (!right) return 1;
+
+        if (isOnCurve)
+        {
+            if(p < .5f) return Mathf.Lerp(0, percentCurveIn,  (0.5f - p) / 0.5f); // left side of curve
+            return Mathf.Lerp(0, percentCurveOut, (p - 0.5f) / 0.5f); // right side of curve
+        }
+        return Mathf.Lerp(percentCurveOut, 1 - right.percentCurveIn, p);
     }
 }

@@ -6,17 +6,7 @@ using UnityEngine;
 /// This script causes a camera to follow and align with a specified target. Add this script to the parent of a Camera GameObject.
 /// </summary>
 public class CameraRig : MonoBehaviour {
-
-    [System.Serializable]
-    public class CameraData
-    {
-        [Range(10, 30)] public float distance = 15;
-        [Range(-45, 89)] public float pitch;
-        [Range(-80, 80)] public float yaw;
-        [Range(0, 10)] public float easing = 2;
-        [Range(10, 50)] public float influenceRadius = 10;
-    }
-
+    
     /// <summary>
     /// The transform to ease towards.
     /// </summary>
@@ -52,11 +42,11 @@ public class CameraRig : MonoBehaviour {
         float distance = cam.localPosition.z;
         if (trackData)
         {
-            CameraData data = trackData.currentNode.cameraData;
-            distance = -data.distance;
-            pitch = data.pitch;
-            easing = data.easing;
-            yaw += data.yaw;
+            //CameraData data = trackData.currentNode.cameraData;
+            //distance = -data.distance;
+            //pitch = data.pitch;
+            //easing = data.easing;
+            //yaw += data.yaw;
         }
 
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(pitch, yaw, 0), Time.deltaTime * easing);
