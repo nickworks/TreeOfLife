@@ -16,17 +16,38 @@ public class CameraRig : MonoBehaviour {
     /// A scalar that affects how much easing the camera has.
     /// </summary>
     [Range(.5f, 10)] public float easing = 1;
-    [Range(-45, 89)] public float pitch = 0;
+    /// <summary>
+    /// A reference to a child GameObject with a camera component on it.
+    /// </summary>
+    private Camera cam;
+    /// <summary>
+    /// A reference to our target's AlignWithPathNode
+    /// </summary>
+    private AlignWithPath trackDataSrc;
 
-    private Transform cam;
-    private AlignWithPath trackData;
+    /// <summary>
+    /// The camera's pitch. Measured in degrees.
+    /// </summary>
+    private float pitch = 0;
+    /// <summary>
+    /// The camera's yaw offset. Measured in degrees.
+    /// </summary>
+    private float yaw = 0;
+    /// <summary>
+    /// The camera's distance from its target. Measured in meters.
+    /// </summary>
+    private float distance = 10;
+    /// <summary>
+    /// The camera's field of view. Measured in degrees.
+    /// </summary>
+    private float fov = 90;
 
     /// <summary>
     /// This sets a reference to the Camera component.
     /// </summary>
 	void Start () {
-        cam = GetComponentInChildren<Camera>().transform;
-        trackData = target.GetComponent<AlignWithPath>();
+        cam = GetComponentInChildren<Camera>();
+        if(target) trackDataSrc = target.GetComponent<AlignWithPath>();
     }
     
     /// <summary>
@@ -34,27 +55,35 @@ public class CameraRig : MonoBehaviour {
     /// </summary>
 	void LateUpdate () {
 
-        // TODO: we might want to store camera settings within PathNode objects... (zoom amount, easing, etc).
-
         if (!target) return;
 
-        float yaw = target.rotation.eulerAngles.y;
-        float distance = cam.localPosition.z;
-        if (trackData)
-        {
-            //CameraData data = trackData.currentNode.cameraData;
-            //distance = -data.distance;
-            //pitch = data.pitch;
-            //easing = data.easing;
-            //yaw += data.yaw;
-        }
+        GetTrackData();
 
         transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.Euler(pitch, yaw, 0), Time.deltaTime * easing);
         transform.position = Vector3.Lerp(transform.position, target.position, Time.deltaTime * easing);
 
         // TODO: We will probably want to Lerp / Slerp the rotation and somehow limit it so it doesn't
         // always rotate to point directly at its target. This works fine for the player, but not for cutscenes.
-        cam.rotation = Quaternion.LookRotation(target.position - cam.position, Vector3.up);
-        cam.localPosition = Vector3.Lerp(cam.localPosition, new Vector3(0, 0, distance), Time.deltaTime * easing);
+        cam.transform.rotation = Quaternion.LookRotation(target.position - cam.transform.position, Vector3.up);
+        cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, new Vector3(0, 0, distance), Time.deltaTime * easing);
+        cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fov, Time.deltaTime * easing);
 	}
+    /// <summary>
+    /// If the target has an AlignWithPath component, this method extracts 
+    /// interpolated camera data from the target's current PathNode.
+    /// </summary>
+    private void GetTrackData()
+    {
+        if (!trackDataSrc) return;
+
+        CameraDataNode.CameraData data = trackDataSrc.GetCameraData();
+        if (data == null) return;
+
+        // Maybe we should ease these values instead of directly applying them...
+        distance = -data.cameraDistance;
+        pitch = data.pitchOffset;
+        easing = data.easeMultiplier;
+        yaw = data.yawOffset + target.rotation.eulerAngles.y;
+        fov = data.fov;
+    }
 }
