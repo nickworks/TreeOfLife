@@ -46,12 +46,12 @@ namespace Player
         /// </summary>
         private void HandleInput()
         {
-            Transform pt = player._rigidbody.transform;
+            Transform pt = player.rigidBody.transform;
             float axisH = Input.GetAxisRaw("Horizontal");
             Vector2 dir = pt.position - player.ropeTarget.position;
             dir = new Vector2(-dir.y, dir.x);
             dir.Normalize();
-            player._rigidbody.AddForce(dir * axisH * player.swingStrength);
+            player.rigidBody.AddForce(dir * axisH * player.swingStrength);
         }
 
     }
