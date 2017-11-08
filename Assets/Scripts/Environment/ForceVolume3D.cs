@@ -6,7 +6,8 @@ using UnityEditor;
 /// <summary>
 /// A trigger script for collision volumes that applies forces to objects that enter the volume. Requires some kind of 2D collider! For the volume to work, the collider component on the same object needs to be a trigger!
 /// </summary>
-public class ForceVolume : MonoBehaviour {
+public class ForceVolume3D : MonoBehaviour
+{
 
     #region variables
 
@@ -56,6 +57,15 @@ public class ForceVolume : MonoBehaviour {
     public bool toggleMesh = true;
 
     #endregion
+
+    /// <summary>
+    /// Called when the script starts.  Makes sure any collider on this volume is properly set to be a trigger.
+    /// </summary>
+    private void Start()
+    {
+        GetComponent<Collider>().isTrigger = true;
+    }
+
     #region EditorAdjustments
     /// <summary>
     /// Called every time a value in the inspector is changed.  Updates force direction information.
@@ -79,16 +89,19 @@ public class ForceVolume : MonoBehaviour {
     /// <summary>
     /// Every tick, if the "is timed" option is checked, the game cycles the timer and adjusts the volume accordingly
     /// </summary>
-    private void Update() {
-        if( isTimed ) {
+    private void Update()
+    {
+        if( isTimed )
+        {
 
             timer -= Time.deltaTime;
 
-            if(timer < 0f ) {
+            if( timer < 0f )
+            {
                 turnedOn = !turnedOn;//toggle the active state
                 timer = turnedOn ? activeTime : offTime;//apply the time to the timer
                 //toggle visibility of the volume if the option to do so is enabled
-                if( toggleMesh) GetComponent<MeshRenderer>().enabled = turnedOn;
+                if( toggleMesh ) GetComponent<MeshRenderer>().enabled = turnedOn;
             }
         }
     }
@@ -96,10 +109,10 @@ public class ForceVolume : MonoBehaviour {
     #region Trigger Events
 
     /// <summary>
-    /// What to do when an object enters this trigger volume.  Overwrites gravity if that option is checked.
+    /// Called when things enter the volume. Sets gravity if volume overwrites gravity.
     /// </summary>
-    /// <param name="collision">The object that collided with this volume.</param>
-    private void OnTriggerEnter2D( Collider2D collision )
+    /// <param name="collision"></param>
+    private void OnTriggerEnter( Collider collision )
     {
         if( turnedOn )
         {
@@ -111,13 +124,13 @@ public class ForceVolume : MonoBehaviour {
                     collision.GetComponent<Player.PlayerController>().SetGravity(forceVector, forceMult);
                 }
             }
-        }                
+        }
     }
     /// <summary>
-    /// What to do when an object exits this trigger volume.  Resets gravity forces that may have been changed to defaults.
+    /// Called when things exit the volume.  Resets gravity to game normal.
     /// </summary>
-    /// <param name="collision">The object exiting the volume</param>
-    private void OnTriggerExit2D( Collider2D collision )
+    /// <param name="collision"></param>
+    private void OnTriggerExit( Collider collision )
     {
         if( turnedOn )
         {
@@ -128,13 +141,13 @@ public class ForceVolume : MonoBehaviour {
                     collision.GetComponent<Player.PlayerController>().SetGravity();
                 }
             }
-        }        
+        }
     }
     /// <summary>
-    /// What to do every tick an object is in this volume.  Applies forces if overwrites gravity is false.
+    /// Called every frame something is in this volume.  Applies force to a player.
     /// </summary>
-    /// <param name="collision">The object that collided with this volume.</param>
-    private void OnTriggerStay2D( Collider2D collision )
+    /// <param name="collision"></param>
+    private void OnTriggerStay( Collider collision )
     {
         if( turnedOn )
         {
@@ -145,7 +158,7 @@ public class ForceVolume : MonoBehaviour {
                     collision.GetComponent<Player.PlayerController>().ApplyForce(forceMult, forceVector);
                 }
             }
-        }        
+        }
     }
 
     #endregion
@@ -155,13 +168,13 @@ public class ForceVolume : MonoBehaviour {
 /// <summary>
 /// A custom editor that allows for timer options to be hidden if the volume is not timed.
 /// </summary>
-[CustomEditor(typeof(ForceVolume))]
-public class ForceVolumeEditor : Editor
+[CustomEditor(typeof(ForceVolume3D))]
+public class ForceVolume3DEditor : Editor
 {
     override public void OnInspectorGUI()
     {
 
-        var myScript = target as ForceVolume;
+        var myScript = target as ForceVolume3D;
 
         new SerializedObject(myScript);
 
