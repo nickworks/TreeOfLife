@@ -31,10 +31,10 @@ public class BulletController : MonoBehaviour {
     {
         if(collision.tag == "Player" )
         {
-            collision.GetComponent<PlayerData>().health -= 10;
-            print(collision.GetComponent<PlayerData>().health);
+            //TODO: DAMAGE PLAYER
         }
-
+        //TODO: clean up tags/layers
+        //Destroy if colliding with anything other than another enemy or a volume, add in anything else not to collide with here.
         if (collision.tag != "Enemy" && collision.tag != "Volume" ) Destroy(gameObject);
 
     }

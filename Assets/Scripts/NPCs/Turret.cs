@@ -5,7 +5,6 @@ using UnityEngine;
 public class Turret : MonoBehaviour {
 
     #region variables
-
     /// <summary>
     /// A reference to the object this turret is going to shoot
     /// </summary>
@@ -25,41 +24,38 @@ public class Turret : MonoBehaviour {
     /// </summary>
     private float fireTimer;
     /// <summary>
-    /// How quickly the turret's barrel can rotate around the body.
+    /// How quickly the turret's barrel can rotate around the body. Percentage decimals used (0-1).
     /// </summary>
-    [Tooltip("How Quickly the turret's Barrel can rotate around it's body.  Numbers from 0-1.")]
-    public float turretSpeed = .5F;
+    [Tooltip("How Quickly the turret's Barrel can rotate around it's body.")]
+    [Range(0, 1)]public float turretSpeed = .5F;
     /// <summary>
     /// The point in space, represented by an objects anchor point, that will emit the projectile
     /// </summary>
     [SerializeField]
-    [Tooltip("An Object whose anchor point will be used as the origin for projectile emission.")]
+    [Tooltip("An Object whose anchor point will be used as the origin for projectile emission.  Make sure the emitter is pointed in the 'forward' vector of the barrel!")]
     private Transform shootFrom;
     /// <summary>
     /// The Game Object that represents the base of the barrel of the turret
     /// </summary>
     [SerializeField]
-    [Tooltip("The base of the barrel of the turret.")]
-    private Transform barrel;
-
+    [Tooltip("The base of the barrel of the turret.  Make sure the barrel is pointed in the 'forward' vector of the base!")]
+    private Transform rotateAround;
     #endregion
     #region intialization
-
     /// <summary>
     /// Called when this script is intialized.
     /// </summary>
     void Start ()
     {
         CalculateFireDelay();
+        GetComponent<Collider>().isTrigger = true;//make sure the collider is a trigger so it can detect players
 	}
     /// <summary>
-    /// Called when values are changed in the editor.   updates fire delay and caps certain values
+    /// Called when values are changed in the editor. Updates fire delay and caps certain values
     /// </summary>
     private void OnValidate()
     {
         CalculateFireDelay();//Make sure to recalculate fire rate if RPM gets changed.
-        if( turretSpeed < 0 ) turretSpeed = 0;
-        if( turretSpeed > 1 ) turretSpeed = 1;
     }
     /// <summary>
     /// Calculates the time in between each shot
@@ -68,43 +64,44 @@ public class Turret : MonoBehaviour {
     {
         fireDelay = 60f / RPM;//use of RPM allows for higher numbers in editor to equate to faster shooting.
     }
-
     #endregion
     #region everyFrame
-
     /// <summary>
-    /// Called once per frame.
+    /// Called once per frame.  Updates fire timer.
     /// </summary>
     void Update ()
     {
         fireTimer -= Time.deltaTime;
 	}
-    /// <summary>
-    /// Called every frame that an object w/ a RigidBody is in this object's collision hull(Requires collision hull to be registered as a trigger volume).
-    /// </summary>
-    /// <param name="collision">The object that collided with this trigger volume.</param>
-    private void OnTriggerStay2D( Collider2D collision )
+    private void OnTriggerStay( Collider collision )
     {
         if(collision.tag == "Player" )//only target players
         {
+            /*THE 2D IMPLIMENTATION JUST IN CASE
             //figure out where the barrel should be pointing
-            Vector3 direction = collision.transform.position - barrel.position;
+            Vector3 direction = collision.transform.position - rotateAround.position;
             float angle = Vector3.SignedAngle(Vector3.up, direction, Vector3.forward);
             //calculate a slerp towards the intended rotation for smoothness
-            Quaternion slerpChange = Quaternion.Slerp(barrel.rotation, Quaternion.Euler(0, 0, angle), turretSpeed);
+            Quaternion slerpChange = Quaternion.Slerp(rotateAround.rotation, Quaternion.Euler(0, 0, angle), turretSpeed);
 
-            barrel.rotation = slerpChange;//apply the slerped rotation to the barrel
+            rotateAround.rotation = slerpChange;//apply the slerped rotation to the barrel
+            */
+
+            //Aim the Barrel
+            Vector3 relativePos = collision.transform.position - rotateAround.transform.position;
+            Quaternion rot = Quaternion.LookRotation(relativePos, Vector3.up);
+            Quaternion slerpRot = Quaternion.Slerp(rotateAround.rotation, rot, turretSpeed);
+            rotateAround.rotation = slerpRot;//slerp for smoothness
 
             //shoot things
             if( fireTimer <= 0 )
             {
                 fireTimer = fireDelay;//reset fire timer
                 GameObject b = Instantiate(projectile, shootFrom.position, Quaternion.identity);//make a bullet
-                b.transform.forward = barrel.up;//bullet's forward momentum is in the direction the barrel points
+                b.transform.forward = rotateAround.forward;//bullet's forward momentum is in the direction the barrel points
             }
         }
     }
-
 #endregion
 
 }
