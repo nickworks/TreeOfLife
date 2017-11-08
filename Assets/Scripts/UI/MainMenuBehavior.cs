@@ -29,7 +29,13 @@ public class MainMenuBehavior : MonoBehaviour {
     /// </summary>
     public void GameExit()
     {
-        print("Greetings this is being implemented");
+        //if unity_Editor
+#if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+#else
+        Application.Quit();
+#endif
+               print("Greetings this is being implemented");
     //    SceneManager.
     }
 }
