@@ -28,4 +28,12 @@ public class MainMenuBehavior : MonoBehaviour {
                print("Greetings this is being implemented");
     //    SceneManager.
     }
+
+    public void SaveVolumeSetting(float value)
+    {
+        PlayerPrefs.SetFloat("volume", value);
+        PlayerPrefs.Save();
+
+        //check API for unity
+    }
 }

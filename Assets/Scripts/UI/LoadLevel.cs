@@ -15,9 +15,9 @@ public class LoadLevel : MonoBehaviour {
     /// <summary>
     /// GameLevelLoad loads a scene 
     /// </summary>
-    public void GameLevelLoad()
+    public void GameLevelLoad(string Scene)
     {
-        SceneManager.LoadScene(Scene01);
+        SceneManager.LoadScene(Scene);
     }
 
 
