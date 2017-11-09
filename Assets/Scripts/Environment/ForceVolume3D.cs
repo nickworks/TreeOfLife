@@ -8,8 +8,23 @@ using UnityEditor;
 /// </summary>
 public class ForceVolume3D : MonoBehaviour
 {
+    /// <summary>
+    /// A pair of time values.
+    /// </summary>
+    [System.Serializable]
+    public class TimeOnOff
+    {
+        /// <summary>
+        /// How many seconds the force volume should be off.
+        /// </summary>
+        public float secondsOff = 1;
+        /// <summary>
+        /// How many seconds the force volume should be on.
+        /// </summary>
+        public float secondsOn = 1;
+    }
 
-    #region variables
+    #region Variables
 
     /// <summary>
     /// Controls whether this volume will apply force to pawns or not.
@@ -18,15 +33,15 @@ public class ForceVolume3D : MonoBehaviour
     /// <summary>
     /// How strong the force is in this particular volume 
     /// </summary>
-    public float forceMult = 2f;
+    [Range(0, 100)] public float forceMult = 2f;
     /// <summary>
     /// Toggles whether or not to a ray in the scene view in the direction of this volume's force. 
     /// </summary>
-    public bool drawAngleOfForce = false;
+    public bool drawEditorGizmo = false;
     /// <summary>
     /// The angle of the forces applied by this volume. 0 is directly upwards.
     /// </summary>
-    public float angleOfForce = 0f;
+    [Range(-180, 180)] public float angleOfForce = 0f;
     /// <summary>
     /// What directional vector the force of this volume goes.  Should be normalized.
     /// </summary>
@@ -34,19 +49,7 @@ public class ForceVolume3D : MonoBehaviour
     /// <summary>
     /// Should this volume overwrite the other object's gravity, or simply add to it's velocity?
     /// </summary>
-    public bool OverwritesGravity = false;
-    /// <summary>
-    /// Controls whether the volume toggles between active and inactive on a timer
-    /// </summary>
-    public bool isTimed = false;
-    /// <summary>
-    /// The number (in seconds) between deactivating and reactivating (the inactive time)
-    /// </summary>
-    public float offTime = 1f;
-    /// <summary>
-    /// The number (in seconds) between activating and deactivating (the active time)
-    /// </summary>
-    public float activeTime = 1f;
+    public bool overwritesGravity = false;
     /// <summary>
     /// The timer controling toggling (used if isTimed = true)
     /// </summary>
@@ -55,7 +58,14 @@ public class ForceVolume3D : MonoBehaviour
     /// When toggled off, should this object also disable the mesh on this object?
     /// </summary>
     public bool toggleMesh = true;
-
+    /// <summary>
+    /// The property keeps track of which burst we are currently on.
+    /// </summary>
+    private int burstIndex = 0;
+    /// <summary>
+    /// This property stores multiple bursts of wind.
+    /// </summary>
+    public TimeOnOff[] bursts;
     #endregion
 
     /// <summary>
@@ -81,7 +91,13 @@ public class ForceVolume3D : MonoBehaviour
     /// </summary>
     private void OnDrawGizmos()
     {
-        if( drawAngleOfForce ) { Debug.DrawRay(transform.position, forceVector * 5, Color.red); }
+        if( drawEditorGizmo ) {
+            float scalar = Mathf.Min(transform.localScale.x, transform.localScale.y) * .5f;
+            Handles.ArrowHandleCap(0, transform.position, Quaternion.LookRotation(forceVector), scalar, EventType.Repaint);
+            Matrix4x4 camToWorld = SceneView.currentDrawingSceneView.camera.cameraToWorldMatrix;
+            Handles.DrawWireDisc(transform.position, camToWorld * Vector3.forward, scalar / 4);
+            Handles.DrawSolidArc(transform.position, camToWorld * Vector3.forward, camToWorld * Vector3.up, forceMult * 3.6f, scalar / 4);
+        }
     }
 
     #endregion
@@ -91,16 +107,24 @@ public class ForceVolume3D : MonoBehaviour
     /// </summary>
     private void Update()
     {
-        if( isTimed )
+        if(bursts.Length > 0)
         {
-
             timer -= Time.deltaTime;
-
             if( timer < 0f )
             {
-                turnedOn = !turnedOn;//toggle the active state
-                timer = turnedOn ? activeTime : offTime;//apply the time to the timer
-                //toggle visibility of the volume if the option to do so is enabled
+                if(turnedOn)
+                {
+                    timer = bursts[burstIndex].secondsOff;
+                    turnedOn = false;
+                } else
+                {
+                    timer = bursts[burstIndex].secondsOn;
+                    turnedOn = true;
+                    burstIndex++;
+                    if (burstIndex >= bursts.Length) burstIndex = 0;
+                }
+                // print(timer);
+                // toggle visibility of the volume if the option to do so is enabled
                 if( toggleMesh ) GetComponent<MeshRenderer>().enabled = turnedOn;
             }
         }
@@ -116,7 +140,7 @@ public class ForceVolume3D : MonoBehaviour
     {
         if( turnedOn )
         {
-            if( OverwritesGravity )
+            if( overwritesGravity )
             {
                 //only apply this to the player pawns
                 if( collision.tag == "Player" )
@@ -134,7 +158,7 @@ public class ForceVolume3D : MonoBehaviour
     {
         if( turnedOn )
         {
-            if( OverwritesGravity )
+            if( overwritesGravity )
             {
                 if( collision.tag == "Player" )
                 {
@@ -151,7 +175,7 @@ public class ForceVolume3D : MonoBehaviour
     {
         if( turnedOn )
         {
-            if( !OverwritesGravity )
+            if( !overwritesGravity )
             {
                 if( collision.tag == "Player" )
                 {
@@ -173,36 +197,17 @@ public class ForceVolume3DEditor : Editor
 {
     override public void OnInspectorGUI()
     {
+        base.DrawDefaultInspector();
+        /*
+        ForceVolume3D volume = (ForceVolume3D)target;
 
-        var myScript = target as ForceVolume3D;
-
-        new SerializedObject(myScript);
-
-        myScript.turnedOn = EditorGUILayout.Toggle(new GUIContent("Turned On", "Toggles whether or not this volume currently active."), myScript.turnedOn);
-        EditorGUILayout.PrefixLabel(new GUIContent("Force Multiplier:", "How powerful the force volume is. Gravitational forces require much less power."));
-        myScript.forceMult = EditorGUILayout.Slider(myScript.forceMult, 0, 100);
-        myScript.drawAngleOfForce = EditorGUILayout.Toggle(new GUIContent("Draw Angle", "Toggles whether or not to draw a vector in the scene view that represents the angle of force."), myScript.drawAngleOfForce);
-        EditorGUILayout.PrefixLabel(new GUIContent("Angle of Force: ", "What direction should the force vector point?  0 is straight UP. Toggle 'Draw Angle' To see the angle represented in the Scene View."));
-        myScript.angleOfForce = EditorGUILayout.Slider(myScript.angleOfForce, -180, 180);
-        myScript.OverwritesGravity = EditorGUILayout.Toggle(new GUIContent("Overwrites Gravity", "When true, forces overwrite gravity. When false, they are applied separately, and normal gravity is still applied to the pawn."), myScript.OverwritesGravity);
-
-        myScript.isTimed = EditorGUILayout.Toggle(new GUIContent("Use Timer", "Allows the volume to toggle itself on for a set period of time after a set delay."), myScript.isTimed);
-
-        using( var group = new EditorGUILayout.FadeGroupScope(System.Convert.ToSingle(myScript.isTimed)) )
+        if (GUI.changed)
         {
-            if( group.visible == true )
-            {
-                EditorGUI.indentLevel++;
-                EditorGUILayout.PrefixLabel(new GUIContent("Time Off:", "How long the volume is inactive before it is toggled back on."));
-                myScript.offTime = EditorGUILayout.Slider(myScript.offTime, 0, 100);
-                EditorGUILayout.PrefixLabel(new GUIContent("Time On:", "How long the volume is active before it is toggled back off."));
-                myScript.activeTime = EditorGUILayout.Slider(myScript.activeTime, 0, 100);
-                myScript.toggleMesh = EditorGUILayout.Toggle(new GUIContent("Toggle Visibility", "If true, the mesh on this object will be turned off while the volume is in the 'inactive' part of it's timer cycle."), myScript.toggleMesh);
-                EditorGUI.indentLevel--;
-            }
+            EditorUtility.SetDirty(volume);
+            Undo.RegisterCompleteObjectUndo(volume, "Stuff changed");
+            volume.OnValidate();
         }
-
-        //OnValidate doesn't automatically trigger w/ custom inspectors :(
-        if( GUI.changed ) { myScript.OnValidate(); }
+        /**/
     }
+
 }
