@@ -133,21 +133,6 @@ namespace Player {
                 
             }
         }
-        /// <summary>
-        /// This message is called by the 2D physics engine when the player enters a trigger volume.
-        /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter2D(Collider2D other)
-        {
-            // allows the player to attach itself to the raft and passes in a reference to the player
-            switch(other.gameObject.tag)
-            {
-                case "Raft":
-                    other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
-                    break;
-                   
-            }
-        }
 
         /// <summary>
         /// Used to set or reset gravity.  An empty set of parameters will reset gravity values to defaults.
@@ -185,27 +170,6 @@ namespace Player {
             velocity += forceForce * forceDir.normalized * Time.deltaTime;
         }
 
-
-        /// <summary>
-        /// detects the end of collision with objects
-        /// </summary>
-        /// <param name="other"></param> the object the raft WAS colliding with
-        void OnTriggerExit2D(Collider2D other)
-        {
-            // resets the raft's variables for next use
-            switch(other.gameObject.tag)
-            {
-                case "Raft":
-                    other.transform.parent.gameObject.GetComponent<Raft>().Detach();
-                    break;
-                case "StickyWeb":
-                //The player state is set to regular
-                playerState = new PlayerStateRegular();
-                break;
-            }
-        }
-
-
         private void OnTriggerStay(Collider other)
         {
             switch (other.tag)
@@ -223,22 +187,20 @@ namespace Player {
 
             }//End of switch Statement
         }//End of private void OnTriggerStay
-    }
 
-}
-        /// <summary>
-        /// This message is called by the 2D physics engine when the player enters a trigger volume.
-        /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
+         /// <summary>
+         /// This message is called by the 2D physics engine when the player enters a trigger volume.
+         /// </summary>
+         /// <param name="other">The trigger volume of the other object.</param>
         void OnTriggerEnter(Collider other)
         {
             // allows the player to attach itself to the raft and passes in a reference to the player
-            switch(other.gameObject.tag)
+            switch (other.gameObject.tag)
             {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
                     break;
-                   
+
             }
         }
         /// <summary>
@@ -248,14 +210,18 @@ namespace Player {
         void OnTriggerExit(Collider other)
         {
             // resets the raft's variables for next use
-            switch(other.gameObject.tag)
+            switch (other.gameObject.tag)
             {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Detach();
                     break;
                 case "StickyWeb":
-                //The player state is set to regular
-                playerState = new PlayerStateRegular();
-                break;
+                    //The player state is set to regular
+                    playerState = new PlayerStateRegular();
+                    break;
             }
         }
+    }
+
+}
+       

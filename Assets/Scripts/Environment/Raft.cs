@@ -69,8 +69,6 @@ public class Raft : MonoBehaviour
         {
             if (Physics.Raycast(centerMin, Vector3.down, halfH, waterMask))
             {
-                
-                print("iscolliding");
                 isInWater = true;
             }
             else
@@ -121,7 +119,6 @@ public class Raft : MonoBehaviour
             Debug.DrawRay(leftMin, Vector3.down, Color.green, 5);
             if (pawn.velocity.x > 0)
             {
-                print("stop");
                 velocity.x = 0;
                 velocity.z = 0;
             }
@@ -137,7 +134,6 @@ public class Raft : MonoBehaviour
             Debug.DrawRay(rightMin, Vector3.down, Color.green, 5);
             if (pawn.velocity.x < 0)
             {
-                print("stop");
                 velocity.x = 0;
                 velocity.z = 0;
             }
