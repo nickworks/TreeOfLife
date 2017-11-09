@@ -4,7 +4,6 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class MainMenuBehavior : MonoBehaviour {
-
 	// Use this for initialization
 	void Start () {
 		
@@ -21,9 +20,10 @@ public class MainMenuBehavior : MonoBehaviour {
     /// </summary>
    public void GameStart()
     {
-        SceneManager.LoadScene("main");
+        SceneManager.LoadScene("LevelSelection");
     }
 
+   
     /// <summary>
     /// Exits the game
     /// </summary>
