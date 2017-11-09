@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PawnAABB))]
+[RequireComponent(typeof(PawnAABB3D))]
 public class HuggerAI : MonoBehaviour
 {
 
@@ -18,7 +18,7 @@ public class HuggerAI : MonoBehaviour
     /// <summary>
     /// The reference to the pawnAABB component.
     /// </summary>
-    private PawnAABB pawn;
+    private PawnAABB3D pawn;
     /// <summary>
     /// Whether the enemy is grounded.
     /// </summary>
@@ -42,7 +42,7 @@ public class HuggerAI : MonoBehaviour
     /// <summary>
     /// The point that the enemy starts before burrowing.
     /// </summary>
-    private Vector2 preBurrowPoint;
+    private Vector3 preBurrowPoint;
     /// <summary>
     /// Unused constant for when the enemy should surface and leap when burrowed.
     /// </summary>
@@ -70,10 +70,13 @@ public class HuggerAI : MonoBehaviour
 
     private bool isHugging = false;
 
+    private AlignWithPath aligner;
+
     // Use this for initialization
     void Start ()
     {
-        pawn = GetComponent<PawnAABB>();
+        pawn = GetComponent<PawnAABB3D>();
+        aligner = GetComponent<AlignWithPath>();
 	}
 	
 	// Update is called once per frame
@@ -99,12 +102,12 @@ public class HuggerAI : MonoBehaviour
     /// </summary>
     private void DoCollisions()
     {
-        PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
+        PawnAABB3D.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
 
-        float distanceFromPlayer = Vector2.Distance(Player.PlayerController.main.transform.position, transform.position);
+        float distanceFromPlayer = Vector3.Distance(Player.PlayerController.main.transform.position, transform.position);
 
         if (isGrounded)
         {
@@ -118,7 +121,7 @@ public class HuggerAI : MonoBehaviour
             SetHugging();
 
         if (!isHugging)
-            transform.position += results.distance;
+            transform.position += results.distanceLocal;
     }
 
     /// <summary>
@@ -182,7 +185,7 @@ public class HuggerAI : MonoBehaviour
 
         transform.position += (Vector3)velocity * Time.deltaTime;
 
-        float distanceFromPlayer = Vector2.Distance(Player.PlayerController.main.transform.position, transform.position);
+        float distanceFromPlayer = Vector3.Distance(Player.PlayerController.main.transform.position, transform.position);
         if (distanceFromPlayer < 1)
             SetHugging();
 
@@ -196,6 +199,22 @@ public class HuggerAI : MonoBehaviour
     /// <returns></returns>
     int PlayerDirection()
     {
-        return Player.PlayerController.main.transform.position.x > transform.position.x ? 1 : -1;
+        AlignWithPath playerAligner= Player.PlayerController.main.gameObject.GetComponent<AlignWithPath>();
+
+        if (playerAligner.currentNode == aligner.currentNode)
+        {
+            float vx = aligner.pathPercent();
+            return playerAligner.pathPercent() > vx ? 1 : playerAligner.pathPercent() < vx ? -1 : 0;
+        }
+        else if (playerAligner.currentNode == aligner.currentNode.left)
+        {
+            Debug.Log("WHYYYYYYY?");
+            return -1;
+        }
+        else if (playerAligner.currentNode == aligner.currentNode.right)
+        {
+            return 1;
+        }
+        return 0;
     }
 }

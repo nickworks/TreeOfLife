@@ -106,6 +106,7 @@ public class PathNode : MonoBehaviour
     /// </summary>
     private float percentCurveOut;
 
+
     /// <summary>
     /// When this object starts, we call CacheData()
     /// </summary>

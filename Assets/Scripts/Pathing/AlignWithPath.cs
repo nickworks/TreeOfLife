@@ -60,6 +60,7 @@ public class AlignWithPath : MonoBehaviour {
         if (results.newNode != null)
         {
             currentNode = results.newNode;
+
             ProjectionOntoPath(recursions + 1);
         }
         else
@@ -78,5 +79,10 @@ public class AlignWithPath : MonoBehaviour {
     {
         if (!currentNode) return null;
         return currentNode.GetCameraData(percentValueOnPath);
+    }
+
+    public float pathPercent()
+    {
+        return percentValueOnPath;
     }
 }

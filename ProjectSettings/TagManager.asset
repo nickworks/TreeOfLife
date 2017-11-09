@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 2
   tags:
-
   - StickyWeb
   - Ground
   - Stopper
@@ -15,7 +14,7 @@ TagManager:
   - Water
   - Raft
   - RopeTarget
-
+  - Hugger
   layers:
   - Default
   - TransparentFX
@@ -30,7 +29,6 @@ TagManager:
   - SlingShotWeb
   - SlingShot Reciever
   - Player
-  - 
   - 
   - 
   - 

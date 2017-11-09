@@ -207,7 +207,7 @@ namespace Player {
         {
             switch (collision.gameObject.tag)
             {
-                case "RopeTarget":
+                /*case "RopeTarget":
                     if (ropeTarget == null)
                     {
                         if (Input.GetButtonDown("Fire1"))
@@ -232,7 +232,7 @@ namespace Player {
                             ropeTarget = null;
                         }
                     }
-                    break;
+                    break;*/
                case "StickyWeb":
                //And the player grabs the players state is set to climbing
                 if (Input.GetButton("Grab"))
