@@ -16,22 +16,27 @@ public class CameraDataNode : MonoBehaviour {
         /// <summary>
         /// How far away the camera should be from the target. Measured in meters.
         /// </summary>
+        [Tooltip("How far away the camera should be from the target. Measured in meters.")]
         [Range(5, 50)] public float cameraDistance = 15;
         /// <summary>
         /// How much pitch (y-rotation) the camera rig should have. Measured in degrees.
         /// </summary>
+        [Tooltip("How much pitch (y-rotation) the camera rig should have. Measured in degrees.")]
         [Range(-89, 89)] public float pitchOffset;
         /// <summary>
         /// How much yaw (x-rotation) the camera rig should have. Measured in degrees.
         /// </summary>
+        [Tooltip("How much yaw (x-rotation) the camera rig should have. Measured in degrees.")]
         [Range(-80, 80)] public float yawOffset;
         /// <summary>
         /// The field of view of the camera (i.e. lens angle). Measured in degrees.
         /// </summary>
+        [Tooltip("The field of view of the camera (i.e. lens angle). Measured in degrees.")]
         [Range(50, 120)] public float fov = 50;
         /// <summary>
         /// The ease multiplier to use. This affects the interpolation of all other properties.
         /// </summary>
+        [Tooltip("The ease multiplier to use. This affects the interpolation of all other properties.")]
         [Range(0, 5)] public float easeMultiplier = 2;
         /// <summary>
         /// Performs a linear interpolation on all members of two CameraData objects.
@@ -53,24 +58,22 @@ public class CameraDataNode : MonoBehaviour {
 
     }
     /// <summary>
-    /// Stores camera data
+    /// Stores camera data.
     /// </summary>
     public CameraData cameraData;
+
+    #region gizmo rendering
 
     /// <summary>
     /// Draws any gizmos while rendering the scene view.  Projects a representation of the camera.
     /// </summary>
     private void OnDrawGizmosSelected()
     {
-        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, cameraData.yawOffset, 0);
-        Vector3 camPos = new Vector3 (0, 0, -cameraData.cameraDistance);
-        camPos = rotation * camPos;//Applies pitch and yaw to the camera's position relative to the node
-        camPos += transform.position;//Apply relative position to world space
-        Gizmos.DrawIcon(camPos, "icon-camera", true);//draw a camera icon
-        Matrix4x4 temp = Gizmos.matrix;//In order to use frustrum drawing, some matrix translations are required
-        Gizmos.matrix = Matrix4x4.TRS(camPos, rotation, Vector3.one);
+        Gizmos.DrawIcon(GetCameraLocation(), "icon-camera", true);//draw a camera icon where the cam would be.
+        Matrix4x4 temp = Gizmos.matrix;//In order to use frustrum drawing, some matrix translations are required.
+        Gizmos.matrix = Matrix4x4.TRS(GetCameraLocation(), GetCameraRotation(), Vector3.one);
         Gizmos.DrawFrustum(Vector3.zero, cameraData.fov, cameraData.cameraDistance * 2, 0, 4/3);
-        Gizmos.matrix = temp;
+        Gizmos.matrix = temp;//reset the gizmo location.
     }
     /// <summary>
     /// Returns the vector location in worldspace where the camera node will orient the camera.
@@ -90,32 +93,11 @@ public class CameraDataNode : MonoBehaviour {
     /// <returns></returns>
     public Quaternion GetCameraRotation()
     {
-        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, cameraData.yawOffset, 0);
+        Quaternion worldRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
+        float yawAngle = worldRotation.eulerAngles.y;
+        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, yawAngle - cameraData.yawOffset, 0);
+
         return rotation;
     }
-}
-
-[CustomEditor(typeof(CameraDataNode))]
-public class CameraNodeSceneGUI : Editor
-{
-
-    CameraDataNode camNode;
-
-    private void OnEnable()
-    {
-        camNode = (CameraDataNode)target;
-    }
-
-    /// <summary>
-    /// Custom editor events to manipulate things in the scene view
-    /// </summary>
-    private void OnSceneGUI()
-    {
-        //Slider handle for distance
-        camNode.cameraData.cameraDistance = Handles.ScaleValueHandle(camNode.cameraData.cameraDistance, camNode.GetCameraLocation(), camNode.GetCameraRotation(), camNode.cameraData.cameraDistance, Handles.ArrowHandleCap, 5f);
-        if( camNode.cameraData.cameraDistance < 5f ) camNode.cameraData.cameraDistance = 5f;
-        if( camNode.cameraData.cameraDistance > 50f ) camNode.cameraData.cameraDistance = 50f;
-        //Pitch control
-        //Yaw Control
-    }
+    #endregion
 }
