@@ -6,7 +6,8 @@ using UnityEditor;
 /// <summary>
 /// A trigger script for collision volumes that applies forces to objects that enter the volume. Requires some kind of 2D collider! For the volume to work, the collider component on the same object needs to be a trigger!
 /// </summary>
-public class ForceVolume : MonoBehaviour {
+[System.Obsolete("This class has been depreciated in favor of ForceVolume3D!")]
+public class ForceVolume2D : MonoBehaviour {
 
     #region variables
 
@@ -155,13 +156,13 @@ public class ForceVolume : MonoBehaviour {
 /// <summary>
 /// A custom editor that allows for timer options to be hidden if the volume is not timed.
 /// </summary>
-[CustomEditor(typeof(ForceVolume))]
+[CustomEditor(typeof(ForceVolume2D))]
 public class ForceVolumeEditor : Editor
 {
     override public void OnInspectorGUI()
     {
 
-        var myScript = target as ForceVolume;
+        var myScript = target as ForceVolume2D;
 
         new SerializedObject(myScript);
 

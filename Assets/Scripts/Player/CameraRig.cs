@@ -65,7 +65,7 @@ public class CameraRig : MonoBehaviour {
         // TODO: We will probably want to Lerp / Slerp the rotation and somehow limit it so it doesn't
         // always rotate to point directly at its target. This works fine for the player, but not for cutscenes.
         cam.transform.rotation = Quaternion.LookRotation(target.position - cam.transform.position, Vector3.up);
-        cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, new Vector3(0, 0, distance), Time.deltaTime * easing);
+        cam.transform.localPosition = Vector3.Lerp(cam.transform.localPosition, new Vector3(0, 0, -distance), Time.deltaTime * easing);
         cam.fieldOfView = Mathf.Lerp(cam.fieldOfView, fov, Time.deltaTime * easing);
 	}
     /// <summary>
@@ -74,16 +74,18 @@ public class CameraRig : MonoBehaviour {
     /// </summary>
     private void GetTrackData()
     {
+        yaw = target.rotation.eulerAngles.y;
         if (!trackDataSrc) return;
+        if (!trackDataSrc.isActiveAndEnabled) return;
 
         CameraDataNode.CameraData data = trackDataSrc.GetCameraData();
         if (data == null) return;
 
         // Maybe we should ease these values instead of directly applying them...
-        distance = -data.cameraDistance;
+        distance = data.cameraDistance;
         pitch = data.pitchOffset;
         easing = data.easeMultiplier;
-        yaw = data.yawOffset + target.rotation.eulerAngles.y;
+        yaw -= data.yawOffset;
         fov = data.fov;
     }
 }
