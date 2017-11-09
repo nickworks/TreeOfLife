@@ -19,10 +19,28 @@ public class Raft : MonoBehaviour
     /// holds a reference to the player object
     /// </summary>
     private Player.PlayerController pawn;
+    private Transform pawn2;
     /// <summary>
     /// Which layers we want the raft to collide with.
     /// </summary>
     public LayerMask waterMask;
+
+    // gets the boxCollider2D bounds of the object and stores it in a variable
+    private Bounds bounds;
+    // stores the left minimum position of the object in a Vector2
+    private Vector3 leftMin;
+    // stores the right minimum position of the object in a Vector2
+    private Vector3 rightMin;
+    // stores the right minimum position of the object in a Vector2
+    private Vector3 centerMin;
+    // stores the right minimum position of the object in a Vector2
+    private float halfH;
+
+    void Start()
+    {
+        bounds = GetComponent<BoxCollider>().bounds;
+        halfH = Mathf.Abs(bounds.center.y - bounds.min.y);
+    }
 
     /// <summary>
     /// updates gravity every frame if not colliding with water
@@ -30,24 +48,48 @@ public class Raft : MonoBehaviour
     /// </summary>
     void LateUpdate()
     {
+        CalculateBounds();
         // is true when colliding with water, else false
         if (isInWater == false)
         {
-            // applies gravity to the raft position
-            transform.position += gravity * Time.deltaTime;
+            Debug.DrawRay(centerMin, Vector3.down);
+            if (Physics.Raycast(centerMin, Vector3.down, halfH, waterMask))
+            {
+
+                print("iscolliding");
+                isInWater = true;
+            }
+            else
+            {
+                transform.position += gravity * Time.deltaTime;
+            }
+
         }
 
         // is true when the player is attached to the raft
         if (pawn != null)
         {
             // applies velocity to the raft
-            transform.position += DetermineHorizontalMovement() * Time.deltaTime;
+            transform.position += DetermineHorizontalMovement();
+            //transform.position += transform.TransformVector(DetermineHorizontalMovement()) * Time.deltaTime;
         }
 
     }
 
     /// <summary>
-    /// determines the rafts horizontal moevement if it is touching water
+    /// calculates the positions for Raycasts to be sent from by the raft
+    /// </summary>
+    private void CalculateBounds()
+    {
+        bounds = this.GetComponent<BoxCollider>().bounds;
+        leftMin = new Vector3(bounds.min.x, bounds.center.y, bounds.center.z);
+        rightMin = new Vector3(bounds.max.x, bounds.center.y, bounds.center.z);
+        print(bounds.min);
+        print(bounds.max);
+        centerMin = bounds.center;
+    }
+    /// <summary>
+    /// determines the rafts horizontal movement if it is touching water
     /// the raft casts rays from its left minimum y position and right minimum y position
     /// The raycasts make it so that a raft cannot move off of water once colliding
     /// they can however move back onto water if they hit the edge and one raycast is no longer colliding
@@ -55,27 +97,24 @@ public class Raft : MonoBehaviour
     /// <returns>How much velocity to add to the raft.</returns>
     private Vector3 DetermineHorizontalMovement()
     {
-        // obtains the players X velocity and stores it in the playerX variable
-        float playerX = pawn.velocity.x;
-        // stores player's X in a vector3 and stores it in a vector3 that will be used to move the raft
-        Vector3 velocity = new Vector3(playerX, 0, 0);
-        // gets the boxCollider2D bounds of the object and stores it in a variable
-        Bounds bounds = GetComponent<BoxCollider2D>().bounds;
-        // stores the left minimum position of the object in a Vector2
-        Vector2 leftMin = new Vector2(bounds.min.x, bounds.min.y);
-        // stores the right minimum position of the object in a Vector2
-        Vector2 rightMin = new Vector2(bounds.max.x, bounds.min.y);
 
+        Vector3 raftWorldVelocity = new Vector3(pawn.worldSpace.x, 0, pawn.worldSpace.z);
+        float playerX = pawn.velocity.x;
+
+        Vector3 velocity = raftWorldVelocity;
         /// <summary>
         /// casts a ray downwards
         /// if the ray does not collide with water and the player is moving left
         /// stop the rafts horizontal movement
         /// </summary>
-        if (!Physics2D.Raycast(leftMin, Vector2.down, 1, waterMask))
+        if (!Physics.Raycast(leftMin, Vector3.down, 1, waterMask))
         {
-            if (playerX < 0)
+            Debug.DrawRay(leftMin, Vector3.down, Color.green, 5);
+            if (pawn.velocity.x > 0)
             {
+                print("stop");
                 velocity.x = 0;
+                velocity.z = 0;
             }
         }
 
@@ -84,11 +123,14 @@ public class Raft : MonoBehaviour
         /// if the ray does not collide with water and the player is moving right
         /// stop the rafts horizontal movement
         /// </summary>
-        if (!Physics2D.Raycast(rightMin, Vector2.down, 1, waterMask))
+        if (!Physics.Raycast(rightMin, Vector3.down, 1, waterMask))
         {
-            if (playerX > 0)
+            Debug.DrawRay(rightMin, Vector3.down, Color.green, 5);
+            if (pawn.velocity.x < 0)
             {
+                print("stop");
                 velocity.x = 0;
+                velocity.z = 0;
             }
         }
 
@@ -100,17 +142,19 @@ public class Raft : MonoBehaviour
     /// when collision occurs, downward gravity is stopped on the raft
     /// </summary>
     /// <param name="other"></param> the object the raft IS colliding with
-    void OnTriggerEnter2D(Collider2D other)
+    /**
+    void OnTriggerEnter(Collider other)
     {
         // sets isInWater to true if the raft is colliding with an object with "Water" Layer
         int mask = (1 << other.gameObject.layer);
-
+        print("hello");
         if ((mask & waterMask.value) > 0)
         {
             isInWater = true;
         }
         
     }
+    **/
     /// <summary>
     /// This method is called to attach the raft to a player.
     /// </summary>
@@ -118,6 +162,8 @@ public class Raft : MonoBehaviour
     public void Attach(Player.PlayerController player)
     {
         pawn = player;
+        pawn2 = player.GetComponent<Transform>();
+        transform.rotation = pawn2.rotation;
     }
     /// <summary>
     /// This method detaches the raft from a PlayerController.

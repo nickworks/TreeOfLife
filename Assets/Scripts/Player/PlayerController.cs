@@ -71,6 +71,8 @@ namespace Player {
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
 
+        public Vector3 worldSpace;
+
 
           //public SpawnTriggerMover sTM = new SpawnTriggerMover();
         SpawnPointMover sTM;
@@ -135,7 +137,7 @@ namespace Player {
         /// This message is called by the 2D physics engine when the player enters a trigger volume.
         /// </summary>
         /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter2D(Collider2D other)
+        void OnTriggerEnter(Collider other)
         {
             // allows the player to attach itself to the raft and passes in a reference to the player
             switch(other.gameObject.tag)
@@ -188,7 +190,7 @@ namespace Player {
         /// detects the end of collision with objects
         /// </summary>
         /// <param name="other"></param> the object the raft WAS colliding with
-        void OnTriggerExit2D(Collider2D other)
+        void OnTriggerExit(Collider other)
         {
             // resets the raft's variables for next use
             switch(other.gameObject.tag)
