@@ -9,39 +9,35 @@ using Player;
 /// </summary>
 public class TriggerNPC : MonoBehaviour {
 
-    /// <summary>
-    /// Method that detects when collision happens with this trigger
-    /// </summary>
-    /// <param name="collision">The 2D colliding object</param>
-    private void OnTriggerEnter2D(Collider2D collision)
+   
+
+
+    private void OnTriggerEnter(Collider other)
     {
-        if(collision.tag == "Player")
+        if (other.tag == "Player")
         {
             //print("Chase!");
-            GetComponentInParent<BehaviorNPC>().FindsPlayer(collision.GetComponent<PlayerController>());
+            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
         }
     }
-    /// <summary>
-    /// Method constantly updates while a collision is happening
-    /// </summary>
-    /// <param name="collision">The 2D colliding object</param>
-    private void OnTriggerStay2D(Collider2D collision)
+
+    private void OnTriggerStay(Collider other)
     {
-        if (collision.tag == "Player")
+        if (other.tag == "Player")
         {
-            GetComponentInParent<BehaviorNPC>().PlayerNearby(collision.GetComponent<PlayerController>());
+            //print("Chase!");
+            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
         }
-    }
-    /// <summary>
-    /// Method that detects when collision is no longer happening
-    /// </summary>
-    /// <param name="collision">The 2D colliding object</param>
-    private void OnTriggerExit2D(Collider2D collision)
+    }//End of private void OnTriggerStay
+
+    private void OnTriggerExit(Collider other)
     {
-        if(collision.tag == "Player")
+        if (other.tag == "Player")
         {
-            GetComponentInParent<BehaviorNPC>().LosesPlayer();
+            //print("Chase!");
+            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
         }
-        
     }
+
+    
 }

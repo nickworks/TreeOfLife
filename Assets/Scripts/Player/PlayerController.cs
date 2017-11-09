@@ -71,6 +71,8 @@ namespace Player {
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
 
+        public Vector3 worldSpace;
+
 
           //public SpawnTriggerMover sTM = new SpawnTriggerMover();
         SpawnPointMover sTM;
@@ -131,21 +133,6 @@ namespace Player {
                 
             }
         }
-        /// <summary>
-        /// This message is called by the 2D physics engine when the player enters a trigger volume.
-        /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter2D(Collider2D other)
-        {
-            // allows the player to attach itself to the raft and passes in a reference to the player
-            switch(other.gameObject.tag)
-            {
-                case "Raft":
-                    other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
-                    break;
-                   
-            }
-        }
 
         /// <summary>
         /// Used to set or reset gravity.  An empty set of parameters will reset gravity values to defaults.
@@ -183,70 +170,58 @@ namespace Player {
             velocity += forceForce * forceDir.normalized * Time.deltaTime;
         }
 
+        private void OnTriggerStay(Collider other)
+        {
+            switch (other.tag)
+            {
+                case "StickyWeb":
+                    if (Input.GetButton("Grab"))
+                    {
+                        playerState = new PlayerStateClimbing();
+                    }else if (Input.GetButtonUp("Jump"))
+                    {
+                        playerState = new PlayerStateRegular();
+                    }
 
+                    break;
+
+            }//End of switch Statement
+        }//End of private void OnTriggerStay
+
+         /// <summary>
+         /// This message is called by the 2D physics engine when the player enters a trigger volume.
+         /// </summary>
+         /// <param name="other">The trigger volume of the other object.</param>
+        void OnTriggerEnter(Collider other)
+        {
+            // allows the player to attach itself to the raft and passes in a reference to the player
+            switch (other.gameObject.tag)
+            {
+                case "Raft":
+                    other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
+                    break;
+
+            }
+        }
         /// <summary>
         /// detects the end of collision with objects
         /// </summary>
         /// <param name="other"></param> the object the raft WAS colliding with
-        void OnTriggerExit2D(Collider2D other)
+        void OnTriggerExit(Collider other)
         {
             // resets the raft's variables for next use
-            switch(other.gameObject.tag)
+            switch (other.gameObject.tag)
             {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Detach();
                     break;
                 case "StickyWeb":
-                //The player state is set to regular
-                playerState = new PlayerStateRegular();
-                break;
-            }
-        }
-
-        private void OnTriggerStay2D(Collider2D collision)
-        {
-            switch (collision.gameObject.tag)
-            {
-                case "RopeTarget":
-                    if (ropeTarget == null)
-                    {
-                        if (Input.GetButtonDown("Fire1"))
-                        {
-                            ropeTarget = collision.transform;
-                            //collision.gameObject.GetComponent<RopeSpawn>().LinkRope(rigidBody);
-                            playerState = new PlayerStateSwing();
-                            //rigidBody.bodyType = RigidbodyType2D.Dynamic;
-                            rigidBody.velocity = velocity;
-                        }
-                    }
-                    else
-                    {
-                        if (!Input.GetButton("Fire1"))
-                        {
-                            ropeTarget.gameObject.GetComponent<RopeSpawn>().UnlinkRope();
-                            //rigidBody.bodyType = RigidbodyType2D.Kinematic;
-                            playerState = new PlayerStateRegular();
-                            velocity = rigidBody.velocity;
-                            velocity.y += 10;
-                            rigidBody.velocity = Vector2.zero;
-                            ropeTarget = null;
-                        }
-                    }
+                    //The player state is set to regular
+                    playerState = new PlayerStateRegular();
                     break;
-               case "StickyWeb":
-               //And the player grabs the players state is set to climbing
-                if (Input.GetButton("Grab"))
-                {
-                    //We set the playerstate to playerStateClimbing
-                    playerState = new PlayerStateClimbing();
-
-                }else if(Input.GetButtonUp("Jump")){// If the jump button is released
-                    //Player state is set to regular
-                  playerState = new PlayerStateRegular();
-                }
-               break;
             }
         }
     }
 
 }
+       
