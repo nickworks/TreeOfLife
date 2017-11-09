@@ -2266,7 +2266,7 @@ GameObject:
   - component: {fileID: 1285455630}
   - component: {fileID: 1285455629}
   - component: {fileID: 1285455628}
-  m_Layer: 9
+  m_Layer: 0
   m_Name: Rope
   m_TagString: StickyWeb
   m_Icon: {fileID: 0}
