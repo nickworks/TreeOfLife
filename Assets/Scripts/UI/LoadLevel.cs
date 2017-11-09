@@ -4,17 +4,17 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class LoadLevel : MonoBehaviour {
+
+    /// <summary>
+    /// Scene01 is a string that is how we connect.
+    /// </summary>
     public string Scene01;
 
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
+
+
+    /// <summary>
+    /// GameLevelLoad loads a scene 
+    /// </summary>
     public void GameLevelLoad()
     {
         SceneManager.LoadScene(Scene01);
