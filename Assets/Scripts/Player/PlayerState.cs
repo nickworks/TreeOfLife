@@ -85,7 +85,7 @@ namespace Player
         protected bool Jump(float velocityAtTakeoff)
         {
             //Dash
-            if (Input.GetButtonDown("Fire1"))
+            /*if (Input.GetButtonDown("Fire1"))
             {
                 if (isGrounded == false)
                 {
@@ -95,94 +95,39 @@ namespace Player
                         canDash = false;
                     }
                 }
-            }
+            }*/
             //dash ground check
             if (isGrounded)
             {
                 canDash = true;   
             }
-
-
-
-
-
-
-
-
-
-
+            //Dash
             if (Input.GetButton("Action") && canDash )
             {
-
-                if (Input.GetKey("s"))
+                if (Input.GetAxis("Vertical") < 0)
                 {
-                    player.velocity.y = -velocityAtTakeoff;
-                    if (Input.GetKey("a"))
-                    {
-                        player.velocity.x = -velocityAtTakeoff;
-                    }
-                    if (Input.GetKey("d"))
-                    {
-                        player.velocity.x = velocityAtTakeoff;
-                    }
+                    player.velocity.y = -velocityAtTakeoff;                    
                     canDash = false;
                 }
-              
 
-                if (Input.GetKey("w") )
+                if (Input.GetAxis("Vertical") > 0)
                 {
-                    player.velocity.y = velocityAtTakeoff;
-
-                    if (Input.GetKey("a"))
-                    {
-                        player.velocity.x = -velocityAtTakeoff;
-                    }
-                    if (Input.GetKey("d"))
-                    {
-                        player.velocity.x = velocityAtTakeoff;
-                    }
+                    player.velocity.y = velocityAtTakeoff;                   
                     canDash = false;
                 }
-             
 
-                if (Input.GetKey("a"))
+                if (Input.GetAxis("Horizontal") < 0)
                 {
                     player.velocity.x = -velocityAtTakeoff;
                     canDash = false;
                 }
 
-                if (Input.GetKey("d"))
+                if (Input.GetAxis("Horizontal") > 0)
                 {
                     player.velocity.x = velocityAtTakeoff;
                     canDash = false;
                 }
             }
-
-
-
-           
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
             // jump
             if (player.velocity.y < 0 || !Input.GetButton("Jump")) isJumping = false;
