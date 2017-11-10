@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 /// <summary>
 /// This component stores camera data in a GameObject. It is meant to be added to PathNode objects.
 /// </summary>
@@ -15,22 +16,27 @@ public class CameraDataNode : MonoBehaviour {
         /// <summary>
         /// How far away the camera should be from the target. Measured in meters.
         /// </summary>
+        [Tooltip("How far away the camera should be from the target. Measured in meters.")]
         [Range(5, 50)] public float cameraDistance = 15;
         /// <summary>
         /// How much pitch (y-rotation) the camera rig should have. Measured in degrees.
         /// </summary>
+        [Tooltip("How much pitch (y-rotation) the camera rig should have. Measured in degrees.")]
         [Range(-89, 89)] public float pitchOffset;
         /// <summary>
         /// How much yaw (x-rotation) the camera rig should have. Measured in degrees.
         /// </summary>
+        [Tooltip("How much yaw (x-rotation) the camera rig should have. Measured in degrees.")]
         [Range(-80, 80)] public float yawOffset;
         /// <summary>
         /// The field of view of the camera (i.e. lens angle). Measured in degrees.
         /// </summary>
+        [Tooltip("The field of view of the camera (i.e. lens angle). Measured in degrees.")]
         [Range(50, 120)] public float fov = 50;
         /// <summary>
         /// The ease multiplier to use. This affects the interpolation of all other properties.
         /// </summary>
+        [Tooltip("The ease multiplier to use. This affects the interpolation of all other properties.")]
         [Range(0, 5)] public float easeMultiplier = 2;
         /// <summary>
         /// Performs a linear interpolation on all members of two CameraData objects.
@@ -39,7 +45,7 @@ public class CameraDataNode : MonoBehaviour {
         /// <param name="data2"></param>
         /// <param name="p">Percentage (0 - 1). 0 will yield data1; 1 will yield data2.</param>
         /// <returns></returns>
-        static public CameraData Lerp(CameraData data1, CameraData data2, float p)
+        static public CameraData Lerp( CameraData data1, CameraData data2, float p )
         {
             CameraData data3 = new CameraData();
             data3.cameraDistance = Mathf.Lerp(data1.cameraDistance, data2.cameraDistance, p);
@@ -49,11 +55,49 @@ public class CameraDataNode : MonoBehaviour {
             data3.fov = Mathf.Lerp(data1.fov, data2.fov, p);
             return data3;
         }
+
     }
     /// <summary>
-    /// Stores camera data
+    /// Stores camera data.
     /// </summary>
     public CameraData cameraData;
 
-    // TODO: build an in-editor preview of the camera
+    #region gizmo rendering
+
+    /// <summary>
+    /// Draws any gizmos while rendering the scene view.  Projects a representation of the camera.
+    /// </summary>
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawIcon(GetCameraLocation(), "icon-camera", true);//draw a camera icon where the cam would be.
+        Matrix4x4 temp = Gizmos.matrix;//In order to use frustrum drawing, some matrix translations are required.
+        Gizmos.matrix = Matrix4x4.TRS(GetCameraLocation(), GetCameraRotation(), Vector3.one);
+        Gizmos.DrawFrustum(Vector3.zero, cameraData.fov, cameraData.cameraDistance * 2, 0, 4/3);
+        Gizmos.matrix = temp;//reset the gizmo location.
+    }
+    /// <summary>
+    /// Returns the vector location in worldspace where the camera node will orient the camera.
+    /// </summary>
+    /// <returns></returns>
+    public Vector3 GetCameraLocation()
+    {
+        Quaternion rotation = GetCameraRotation();
+        Vector3 camPos = new Vector3(0, 0, -cameraData.cameraDistance);
+        camPos = rotation * camPos;//Applies pitch and yaw to the camera's position relative to the node
+        camPos += transform.position;//Apply relative position to world space
+        return camPos;
+    }
+    /// <summary>
+    /// Returns the Quaternion rotation the camera node will orient the camera to.
+    /// </summary>
+    /// <returns></returns>
+    public Quaternion GetCameraRotation()
+    {
+        Quaternion worldRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
+        float yawAngle = worldRotation.eulerAngles.y;
+        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, yawAngle - cameraData.yawOffset, 0);
+
+        return rotation;
+    }
+    #endregion
 }
