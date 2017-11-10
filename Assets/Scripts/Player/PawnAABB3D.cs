@@ -149,30 +149,36 @@ public class PawnAABB3D : MonoBehaviour
         DoRaycasts(true); // horizontal
         //if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
-        //FinalRaycast();
-
-        //results.distance = transform.InverseTransformVector(results.distance);
-
+        FinalRaycast();
+        
         return results;
     }
     /// <summary>
-    /// This raycast fixes a troubling edge case where the player would get stuck in a slope.
+    /// This raycast fixes a troubling edge case where the player would get stuck in a slope or pass through an object when colliding with a corner.
     /// It casts a ray diagonally in the direction the player is moving.
     /// </summary>
     private void FinalRaycast()
     {
-        /*
-        Vector2 origin = new Vector2(
-                    goingLeft ? bounds.min.x : bounds.max.x,
-                    goingDown ? bounds.min.y : bounds.max.y
-                    );
-        float originalDistance = results.distance.magnitude;
-        RaycastHit2D hit = Physics2D.Raycast(origin, results.distance, originalDistance, collidableWith);
-        if (hit && hit.distance < originalDistance)
+        if (results.hitBottom || results.hitLeft || results.hitRight || results.hitTop) return;
+
+        Vector3 origin = GetPointInQuad(goingLeft ? 0 : 1, goingDown ? 0 : 1);
+        float originalDistance = results.distanceLocal.magnitude + skinWidth;
+        Vector3 dir = transform.TransformVector(results.distanceLocal.normalized * originalDistance);
+
+        if(renderInEditor) Debug.DrawRay(origin, dir);
+
+        RaycastHit hit;
+        if (Physics.Raycast(origin, dir, out hit, originalDistance, collidableWith))
         {
-            results.distance = results.distance.normalized * (hit.distance - skinWidth);
+            if (hit.distance < originalDistance)
+            {
+                //print("corner fix");
+                results.distanceLocal.x = (dir.normalized * hit.distance).x;
+                results.distanceLocal.x += goingLeft ? skinWidth : -skinWidth;
+                results.hitLeft = goingLeft;
+                results.hitRight = !goingLeft;
+            }
         }
-        */
     }
 
     /// <summary>
