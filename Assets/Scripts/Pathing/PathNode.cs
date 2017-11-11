@@ -436,7 +436,7 @@ public class PathNode : MonoBehaviour
     /// </summary>
     /// <param name="t">The percentage (0 is left edge of curve; 1 is right edge of curve).</param>
     /// <returns>The calculated rotation.</returns>
-    Quaternion GetRotationOnCurve(float t)
+    public Quaternion GetRotationOnCurve(float t)
     {
         if (!left) return rotationYaw;
         return Quaternion.Slerp(left.rotationYaw, rotationYaw, t);

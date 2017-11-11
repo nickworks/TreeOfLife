@@ -41,7 +41,6 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 4907313548274920}
-  - component: {fileID: 114738968936243064}
   m_Layer: 0
   m_Name: UI-Dash
   m_TagString: Untagged
@@ -192,6 +191,7 @@ MonoBehaviour:
   swingStrength: 10
   rigidBody: {fileID: 0}
   ropeTarget: {fileID: 0}
+  worldSpace: {x: 0, y: 0, z: 0}
 --- !u!114 &114430381562822350
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -213,17 +213,6 @@ MonoBehaviour:
     m_Bits: 256
   halfWidth: 0.4
   halfHeight: 0.4
---- !u!114 &114738968936243064
-MonoBehaviour:
-  m_ObjectHideFlags: 1
-  m_PrefabParentObject: {fileID: 0}
-  m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1523952501568000}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1466621ffe8d218419739ac14acc5afe, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!114 &114805850361049746
 MonoBehaviour:
   m_ObjectHideFlags: 1
