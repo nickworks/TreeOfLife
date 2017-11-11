@@ -70,6 +70,10 @@ namespace Player {
         public Rigidbody rigidBody;
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
+        /// <summary>
+        /// A boolean that is true when the player pressed jump in the previous frame.
+        /// </summary>
+        public bool jumpInputPrev = false;
 
         public Vector3 worldSpace;
 
@@ -132,6 +136,9 @@ namespace Player {
               transform.position = sTM.transform.position;
                 
             }
+
+            if (Input.GetButtonDown("Jump")) jumpInputPrev = true;
+            else jumpInputPrev = false;
         }
 
         /// <summary>
@@ -175,17 +182,28 @@ namespace Player {
             switch (other.tag)
             {
                 case "StickyWeb":
-                    if (Input.GetButton("Grab"))
+                    if (Input.GetButtonDown("Grab"))
                     {
-                        playerState = new PlayerStateClimbing();
-                    }else if (Input.GetButtonUp("Jump"))
+                        playerState = new PlayerStateClimbing(true);
+                    }
+                    else if (jumpInputPrev)
                     {
                         playerState = new PlayerStateRegular();
                     }
 
                     break;
+                case "Rope":
+                    if (Input.GetButtonDown("Grab"))
+                    {
+                        playerState = new PlayerStateClimbing(false);
+                    }
+                    else if (jumpInputPrev)
+                    {
+                        playerState = new PlayerStateRegular();
+                    }
+                    break;
 
-            }//End of switch Statement
+            }
         }//End of private void OnTriggerStay
 
          /// <summary>
@@ -216,6 +234,7 @@ namespace Player {
                     other.transform.parent.gameObject.GetComponent<Raft>().Detach();
                     break;
                 case "StickyWeb":
+                case "Rope":
                     //The player state is set to regular
                     playerState = new PlayerStateRegular();
                     break;
