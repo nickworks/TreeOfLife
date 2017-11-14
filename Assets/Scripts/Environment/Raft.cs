@@ -15,6 +15,7 @@ public class Raft : MonoBehaviour
     /// The direction of gravity applied when not colliding with water.
     /// </summary>
     private Vector3 gravity = Vector3.down;
+    private Vector3 velocity;
     /// <summary>
     /// Holds a reference to the player object.
     /// </summary>
@@ -33,21 +34,29 @@ public class Raft : MonoBehaviour
     /// </summary>
     private BoxCollider boxCollider;
     /// <summary>
-    /// stores the left minimum value for the raft
+    /// stores the X max point for the raft
     /// </summary>
-    private Vector3 leftMin;
+    private Transform xLocalMax;
     /// <summary>
-    /// stores the right minimum value for the raft
+    /// stores the X min point for the raft
     /// </summary>
-    private Vector3 rightMin;
+    private Transform xLocalMin;
     /// <summary>
     /// stores the centerpoint to the raft
     /// </summary>
-    private Vector3 centerMin;
+    private Vector3 centerPoint;
     /// <summary>
     /// stores the distance of half the height of the raft
     /// </summary>
     private float halfH;
+    /// <summary>
+    /// stores the distance of half the width of the raft
+    /// </summary>
+    private float halfW;
+    /// <summary>
+    /// stores the distance of half the depth of the raft
+    /// </summary>
+    private float halfD;
 
     /// <summary>
     /// gets the bounds of the object and then calculates the half height for it and stores both in a variable
@@ -55,7 +64,11 @@ public class Raft : MonoBehaviour
     void Start()
     {
         boxCollider = GetComponent<BoxCollider>();
-        halfH = Mathf.Abs(boxCollider.bounds.center.y - boxCollider.bounds.min.y);
+        halfH = boxCollider.bounds.extents.y;
+        halfW = boxCollider.bounds.extents.x;
+        halfD = boxCollider.bounds.extents.z;
+        xLocalMax = this.transform.GetChild(1);
+        xLocalMin = this.transform.GetChild(2);
     }
 
     /// <summary>
@@ -64,10 +77,10 @@ public class Raft : MonoBehaviour
     void LateUpdate()
     {
         CalculateBounds();
-        // is true when colliding with water, else false
         if (isInWater == false)
         {
-            if (Physics.Raycast(centerMin, Vector3.down, halfH, waterMask))
+            
+            if (Physics.Raycast(centerPoint, Vector3.down, halfH, waterMask))
             {
                 isInWater = true;
             }
@@ -93,9 +106,8 @@ public class Raft : MonoBehaviour
     private void CalculateBounds()
     {
         boxCollider = this.GetComponent<BoxCollider>();
-        leftMin = new Vector3(boxCollider.bounds.min.x, boxCollider.bounds.center.y, boxCollider.bounds.center.z);
-        rightMin = new Vector3(boxCollider.bounds.max.x, boxCollider.bounds.center.y, boxCollider.bounds.center.z);
-        centerMin = boxCollider.bounds.center;
+        centerPoint = boxCollider.bounds.center;
+        
     }
     /// <summary>
     /// Determines the rafts horizontal movement if it is touching water. The raft casts rays from its left minimum y position and right minimum y position to determine if it can move in that direction initially.
@@ -105,23 +117,27 @@ public class Raft : MonoBehaviour
     {
 
         Vector3 raftWorldVelocity = new Vector3(pawn.worldSpace.x, 0, pawn.worldSpace.z);
-        float playerX = pawn.velocity.x;
+        velocity = raftWorldVelocity;
+        NewMethod();
 
-        Vector3 velocity = raftWorldVelocity;
+        return velocity;
+    }
 
+    private void NewMethod()
+    {
         /*
         casts a ray downwards
         if the ray does not collide with water and the player is moving left
         stop the rafts horizontal movement
         */
-        if (!Physics.Raycast(leftMin, Vector3.down, 1, waterMask))
+        
+        
+        if (!Physics.Raycast(xLocalMax.position, Vector3.down, halfH, waterMask))
         {
-            Debug.DrawRay(leftMin, Vector3.down, Color.green, 5);
-            if (pawn.velocity.x > 0)
-            {
+            // TODO
                 velocity.x = 0;
                 velocity.z = 0;
-            }
+
         }
 
         /*
@@ -129,18 +145,15 @@ public class Raft : MonoBehaviour
         if the ray does not collide with water and the player is moving right
         stop the rafts horizontal movement
         */
-        if( !Physics.Raycast(rightMin, Vector3.down, 1, waterMask))
+        
+        if (!Physics.Raycast(xLocalMin.position, Vector3.down, halfH, waterMask))
         {
-            Debug.DrawRay(rightMin, Vector3.down, Color.green, 5);
-            if (pawn.velocity.x < 0)
-            {
+            // TODO
                 velocity.x = 0;
                 velocity.z = 0;
-            }
         }
-
-        return velocity;
     }
+
     /// <summary>
     /// This method is called to attach the raft to a player.
     /// </summary>
