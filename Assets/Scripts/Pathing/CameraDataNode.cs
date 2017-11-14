@@ -61,6 +61,11 @@ public class CameraDataNode : MonoBehaviour {
     /// Stores camera data.
     /// </summary>
     public CameraData cameraData;
+    /// <summary>
+    /// Determines whether or not a camera window is drawn.
+    /// </summary>
+    [Tooltip("If true, a window will pop up rendering a  camera preview.")]
+    public bool drawCamera = true;
 
     #region gizmo rendering
 
@@ -100,4 +105,67 @@ public class CameraDataNode : MonoBehaviour {
         return rotation;
     }
     #endregion
+}
+
+/// <summary>
+/// A custom editor for the camera node that will draw handles for users to manipulate the camera in the scene view and draw a camera preview window in the scene view.
+/// </summary>
+[CustomEditor(typeof(CameraDataNode))]
+public class CameraNodeSceneGUI : Editor
+{
+    /// <summary>
+    /// Stores a reference to the node this editor is used for.
+    /// </summary>
+    CameraDataNode camNode;
+
+    /// <summary>
+    /// Stores the Rect component of the camera viewport window.
+    /// </summary>
+    private Rect camWindow = new Rect(Screen.width - 430, Screen.height - 360, 400, 300);
+
+    /// <summary>
+    /// Called when the editor is created. Links the node the editor targets to an internal variable.
+    /// </summary>
+    private void OnEnable()
+    {
+        camNode = (CameraDataNode)target;
+    }
+
+    /// <summary>
+    /// Custom functionality called every frame a GUI element is to be rendered in the scene.
+    /// </summary>
+    private void OnSceneGUI()
+    {
+        //If the utility toggle is checked, we'll create a viewport window to see the camera.
+        if( camNode.drawCamera )
+        {
+            //Draw a Window GUI element that we'llr ender the camera in
+            Handles.BeginGUI();//start a 2dGUI drawing session
+            int id = 0;
+            camWindow = GUI.Window(id, camWindow, DrawWindow, new GUIContent("Camera View", "A preview of what the camera will see when oriented to this camera node."));
+            Handles.EndGUI();//End the 2dGUI session
+        }        
+    }
+
+    /// <summary>
+    /// A callback function that draws the contents of a custom GUI window.
+    /// </summary>
+    /// <param name="id">The ID # of the window being drawn</param>
+    void DrawWindow(int id)
+    {
+        /*We need a separate camera to preview this. If it hasn't already been done in this scene, we create a new camera, and name it separate from the main camera.  Now we can move this camera around to each node as a preview.*/
+        GameObject cam;
+        if( GameObject.Find("NodePreviewCam") ) { cam = GameObject.Find("NodePreviewCam"); } else
+        {
+            cam = Instantiate(GameObject.FindGameObjectWithTag("MainCamera"));
+            cam.name = "NodePreviewCam";
+        }
+        //place this camera where the node would place it
+        cam.transform.position = camNode.GetCameraLocation();
+        cam.transform.rotation = camNode.GetCameraRotation();
+        //draw the camera's view (offsets compensate for window name bar and border)
+        Handles.DrawCamera(new Rect(0, 16, camWindow.width-1, camWindow.height - 17), cam.GetComponent<Camera>(), DrawCameraMode.Normal);
+
+        GUI.DragWindow();//allows the window to be dragged around the scene view.
+    }
 }
