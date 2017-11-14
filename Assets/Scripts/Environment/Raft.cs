@@ -49,14 +49,15 @@ public class Raft : MonoBehaviour
     /// stores the distance of half the height of the raft
     /// </summary>
     private float halfH;
-    /// <summary>
-    /// stores the distance of half the width of the raft
-    /// </summary>
-    private float halfW;
-    /// <summary>
-    /// stores the distance of half the depth of the raft
-    /// </summary>
-    private float halfD;
+
+    private Vector3 lastWithinWaterEdgePosition;
+    private Vector3 imaginaryWaterEdgePoint;
+    private Vector3 currentOverWaterEdgePosition;
+    private bool isCompletelyOnWater;
+    private float totalReturnDistance;
+    private float totalImaginaryDistance;
+    private float totalCurrentDistance;
+    private float currentDistanceFromImaginary;
 
     /// <summary>
     /// gets the bounds of the object and then calculates the half height for it and stores both in a variable
@@ -65,8 +66,6 @@ public class Raft : MonoBehaviour
     {
         boxCollider = GetComponent<BoxCollider>();
         halfH = boxCollider.bounds.extents.y;
-        halfW = boxCollider.bounds.extents.x;
-        halfD = boxCollider.bounds.extents.z;
         xLocalMax = this.transform.GetChild(1);
         xLocalMin = this.transform.GetChild(2);
     }
@@ -109,35 +108,100 @@ public class Raft : MonoBehaviour
         centerPoint = boxCollider.bounds.center;
         
     }
+
     /// <summary>
     /// Determines the rafts horizontal movement if it is touching water. The raft casts rays from its left minimum y position and right minimum y position to determine if it can move in that direction initially.
     /// </summary>
     /// <returns>How much velocity to add to the raft.</returns>
     private Vector3 DetermineHorizontalMovement()
     {
-
         Vector3 raftWorldVelocity = new Vector3(pawn.worldSpace.x, 0, pawn.worldSpace.z);
         velocity = raftWorldVelocity;
-        NewMethod();
 
+        if(isCompletelyOnWater)
+        {
+            print("isInWater");
+            CheckEdges();
+        } else
+        {
+            print("isNotInWater");
+            Vector3 offDistance = currentOverWaterEdgePosition - lastWithinWaterEdgePosition;
+            imaginaryWaterEdgePoint = lastWithinWaterEdgePosition;
+
+            if(Mathf.Sign(offDistance.x) >= 0)
+            {
+                imaginaryWaterEdgePoint.x += 1;
+            }
+            else
+            {
+                imaginaryWaterEdgePoint.x -= 1;
+            }
+            if (Mathf.Sign(offDistance.z) >= 0)
+            {
+                imaginaryWaterEdgePoint.z += 1;
+            }
+            else
+            {
+                imaginaryWaterEdgePoint.z -= 1;
+            }
+
+            Vector3 imaginaryOffDistance = currentOverWaterEdgePosition - imaginaryWaterEdgePoint;
+
+            totalReturnDistance = CalcDistance(offDistance);
+            totalImaginaryDistance = CalcDistance(imaginaryOffDistance);
+
+            Vector3 nextFramePosition = centerPoint + velocity;
+            Vector3 nextFrameDistance = currentOverWaterEdgePosition - nextFramePosition;
+            Vector3 imaginaryFrameDistance = imaginaryWaterEdgePoint - nextFramePosition;
+
+            totalCurrentDistance = CalcDistance(nextFrameDistance);
+            currentDistanceFromImaginary = CalcDistance(imaginaryFrameDistance);
+
+            if (currentDistanceFromImaginary > totalImaginaryDistance)
+            {
+                if(totalReturnDistance / totalImaginaryDistance <= totalCurrentDistance / totalImaginaryDistance)
+                {
+                    isCompletelyOnWater = true;
+                }
+            } else
+            {
+                print(currentDistanceFromImaginary + " + " + totalImaginaryDistance);
+                velocity.x = 0;
+                velocity.z = 0;
+            }
+
+        }
         return velocity;
     }
 
-    private void NewMethod()
+    private float CalcDistance(Vector3 distance)
+    {
+        float xDistance = distance.x;
+        float zDistance = distance.z;
+        float returnDistance = Mathf.Sqrt((xDistance * xDistance) + (zDistance * zDistance));
+
+
+        return returnDistance;
+    }
+
+    private void CheckEdges()
     {
         /*
         casts a ray downwards
         if the ray does not collide with water and the player is moving left
         stop the rafts horizontal movement
         */
-        
-        
-        if (!Physics.Raycast(xLocalMax.position, Vector3.down, halfH, waterMask))
+        if (!Physics.Raycast(xLocalMax.position, Vector3.down, halfH, waterMask) || !Physics.Raycast(xLocalMin.position, Vector3.down, halfH, waterMask))
         {
             // TODO
-                velocity.x = 0;
-                velocity.z = 0;
+            currentOverWaterEdgePosition = centerPoint;
+            velocity.x = 0;
+            velocity.z = 0;
+            isCompletelyOnWater = false;
 
+        } else
+        {
+            lastWithinWaterEdgePosition = centerPoint;
         }
 
         /*
@@ -146,12 +210,6 @@ public class Raft : MonoBehaviour
         stop the rafts horizontal movement
         */
         
-        if (!Physics.Raycast(xLocalMin.position, Vector3.down, halfH, waterMask))
-        {
-            // TODO
-                velocity.x = 0;
-                velocity.z = 0;
-        }
     }
 
     /// <summary>
@@ -163,6 +221,7 @@ public class Raft : MonoBehaviour
         pawn = player;
         transform.rotation = player.GetComponent<Transform>().rotation;
     }
+
     /// <summary>
     /// This method detaches the raft from a PlayerController.
     /// </summary>
