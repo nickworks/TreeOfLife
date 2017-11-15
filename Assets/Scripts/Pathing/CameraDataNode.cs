@@ -64,7 +64,7 @@ public class CameraDataNode : MonoBehaviour {
     /// <summary>
     /// Determines whether or not a camera window is drawn.
     /// </summary>
-    [Tooltip("If true, a window will pop up rendering a  camera preview.")]
+    [HideInInspector]
     public bool drawCamera = true;
 
     #region gizmo rendering
@@ -117,7 +117,10 @@ public class CameraNodeSceneGUI : Editor
     /// Stores a reference to the node this editor is used for.
     /// </summary>
     CameraDataNode camNode;
-
+    /// <summary>
+    /// Stores a camera that the editor will manipulate for preview windows.
+    /// </summary>
+    GameObject cam;
     /// <summary>
     /// Stores the Rect component of the camera viewport window.
     /// </summary>
@@ -130,13 +133,29 @@ public class CameraNodeSceneGUI : Editor
     {
         camNode = (CameraDataNode)target;
     }
+    /// <summary>
+    /// Called to when the interface of the inspector is changed.  Adds 2 new buttons to activate viewing.
+    /// </summary>
+    public override void OnInspectorGUI()
+    {
+        DrawDefaultInspector();//Make sure we have the normal camera data node inspector elements.
+        if(cam) OrientGUICamera();//Aligns the camera to the node's specifications.
+        if(GUILayout.Button(new GUIContent("View in Scene Window", "Draw a viewport window in the scene view that displays the camera node's camera view.  May take a second to respond.")) )
+        {
+            camNode.drawCamera = !camNode.drawCamera;
+        }
+        if( GUILayout.Button(new GUIContent("View in Editor Window", "Opens a new editor window that displays the camera nodes' camera view.")) )
+        {
+            EditorWindow.GetWindow<CameraNodeWindow>();
+        }
+    }
 
     /// <summary>
     /// Custom functionality called every frame a GUI element is to be rendered in the scene.
     /// </summary>
     private void OnSceneGUI()
     {
-        //If the utility toggle is checked, we'll create a viewport window to see the camera.
+        //If the draw camera has been toggled on we'll create a viewport window to see the camera.
         if( camNode.drawCamera )
         {
             //Draw a Window GUI element that we'llr ender the camera in
@@ -146,26 +165,90 @@ public class CameraNodeSceneGUI : Editor
             Handles.EndGUI();//End the 2dGUI session
         }        
     }
-
     /// <summary>
     /// A callback function that draws the contents of a custom GUI window.
     /// </summary>
     /// <param name="id">The ID # of the window being drawn</param>
     void DrawWindow(int id)
     {
+        CreateGUICam();
+        //draw the camera's view (offsets compensate for window name bar and border)
+        Handles.DrawCamera(new Rect(0, 16, camWindow.width-1, camWindow.height - 17), cam.GetComponent<Camera>(), DrawCameraMode.Normal);
+
+        GUI.DragWindow();//allows the window to be dragged around the scene view.
+    }
+    /// <summary>
+    /// Maves a GUIcam to the orientation suggested by the camera node.
+    /// </summary>
+    void OrientGUICamera()
+    {
+        //place this camera where the node would place it
+        cam.transform.position = camNode.GetCameraLocation();
+        cam.transform.rotation = camNode.GetCameraRotation();
+        cam.GetComponent<Camera>().fieldOfView = camNode.cameraData.fov;
+    }
+    /// <summary>
+    /// Creates a new GUI camera if one isn't in existence
+    /// </summary>
+    void CreateGUICam()
+    {
         /*We need a separate camera to preview this. If it hasn't already been done in this scene, we create a new camera, and name it separate from the main camera.  Now we can move this camera around to each node as a preview.*/
-        GameObject cam;
         if( GameObject.Find("NodePreviewCam") ) { cam = GameObject.Find("NodePreviewCam"); } else
         {
             cam = Instantiate(GameObject.FindGameObjectWithTag("MainCamera"));
             cam.name = "NodePreviewCam";
         }
-        //place this camera where the node would place it
-        cam.transform.position = camNode.GetCameraLocation();
-        cam.transform.rotation = camNode.GetCameraRotation();
-        //draw the camera's view (offsets compensate for window name bar and border)
-        Handles.DrawCamera(new Rect(0, 16, camWindow.width-1, camWindow.height - 17), cam.GetComponent<Camera>(), DrawCameraMode.Normal);
+    }
+}
 
-        GUI.DragWindow();//allows the window to be dragged around the scene view.
+/// <summary>
+/// A custom draggable, dockable editor window that will render a camera view as dictated by a camera node.
+/// </summary>
+public class CameraNodeWindow : EditorWindow
+{
+    /// <summary>
+    /// Stores a reference to the camera to be viewed.
+    /// </summary>
+    GameObject cam;
+
+    /// <summary>
+    /// Initialize the window
+    /// </summary>
+    [MenuItem("Window/Camera Node Viewer")]// Add menu to the Window menu
+    static void Init()
+    {
+        //Make a new window and give it a name and tooltip
+        CameraNodeWindow window = (CameraNodeWindow)EditorWindow.GetWindow(typeof(CameraNodeWindow));
+        window.titleContent = new GUIContent("Camera Node Viewer", "Displays a render window of the selected camera node.");
+        window.Show();//display the window
+    }
+    /// <summary>
+    /// Called when the window finishes intializing.  Registers the camera.
+    /// </summary>
+    private void Awake()
+    {
+        if(!cam) CreateGUICam();
+    }
+    /// <summary>
+    /// Called every frame to draw GUI elements.  Draws the camera view in the window.
+    /// </summary>
+    private void OnGUI()
+    {
+        if( !cam ) CreateGUICam();
+        Rect camRect = new Rect(0, 0, Screen.width, Screen.height);//use the size of the window, can be dynamically resized.
+        Handles.DrawCamera(camRect, cam.GetComponent<Camera>());
+        Repaint();//manually repaints the window
+    }
+    /// <summary>
+    /// Creates a new GUI camera if one isn't in existence
+    /// </summary>
+    void CreateGUICam()
+    {
+        /*We need a separate camera to preview this. If it hasn't already been done in this scene, we create a new camera, and name it separate from the main camera.  Now we can move this camera around to each node as a preview.*/
+        if( GameObject.Find("NodePreviewCam") ) { cam = GameObject.Find("NodePreviewCam"); } else
+        {
+            cam = Instantiate(GameObject.FindGameObjectWithTag("MainCamera"));
+            cam.name = "NodePreviewCam";
+        }
     }
 }
