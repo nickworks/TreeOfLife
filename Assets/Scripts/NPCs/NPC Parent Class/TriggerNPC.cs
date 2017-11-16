@@ -18,6 +18,9 @@ public class TriggerNPC : MonoBehaviour {
         {
             //print("Chase!");
             GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+        }else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
         }
     }
 
@@ -27,6 +30,10 @@ public class TriggerNPC : MonoBehaviour {
         {
             //print("Chase!");
             GetComponentInParent<BehaviorNPC>().PlayerNearby(other.GetComponent<PlayerController>());
+        }
+        else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
         }
     }//End of private void OnTriggerStay
 
@@ -38,6 +45,8 @@ public class TriggerNPC : MonoBehaviour {
             GetComponentInParent<BehaviorNPC>().LosesPlayer();
         }
     }
+
+    
 
     
 }

@@ -10,7 +10,9 @@ public class FollowerBugController : MonoBehaviour {
 
 
 
-#region Variable Region
+    #region Variable Region
+
+    
     /// <summary>
     /// A float variable to hold the distance between the player and the fly
     /// </summary>

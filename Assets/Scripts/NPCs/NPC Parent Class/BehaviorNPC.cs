@@ -23,4 +23,6 @@ public abstract class BehaviorNPC : MonoBehaviour {
     /// </summary>
     /// <param name="player">The player</param>
     public abstract void LosesPlayer();
+
+    public abstract void IsStopped();
 }
