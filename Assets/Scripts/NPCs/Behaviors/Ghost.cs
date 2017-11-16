@@ -105,4 +105,8 @@ public class Ghost : BehaviorNPC
         isAggro = false;
     }
 
+    public override void IsStopped()
+    {
+       
+    }
 }
