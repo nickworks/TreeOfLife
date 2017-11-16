@@ -7,7 +7,7 @@ public class ThrowTrigger : MonoBehaviour {
     /// <summary>
     /// this method runs when collision with the 2d collider is detected 
     /// </summary>
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider collision)
     {
         if (collision.tag == "Player")
         {           
@@ -19,7 +19,7 @@ public class ThrowTrigger : MonoBehaviour {
     /// <summary>
     /// this method runs every frame that the collision with the 2d collider is still happening
     /// </summary>
-    private void OnTriggerStay2D(Collider2D collision)
+    private void OnTriggerStay(Collider collision)
     {
         if (collision.tag == "Player")
         {           
@@ -29,7 +29,7 @@ public class ThrowTrigger : MonoBehaviour {
     /// <summary>
     /// this method runs when the collision is no longer happening with the 2d collider
     /// </summary>
-    private void OnTriggerExit2D(Collider2D collision)
+    private void OnTriggerExit(Collider collision)
     {
         if (collision.tag == "Player")
         {           

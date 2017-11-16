@@ -4,7 +4,7 @@ using UnityEngine;
 /// <summary>
 /// This component turns a GameObject into a and enemy that can be Thrown.
 /// </summary>
-[RequireComponent(typeof(PawnAABB))]
+[RequireComponent(typeof(PawnAABB3D))]
 public class EnemyDasher : MonoBehaviour
 {
     /// <summary>
@@ -26,7 +26,7 @@ public class EnemyDasher : MonoBehaviour
     /// <summary>
     /// pawnAABB used for collision detection
     /// </summary>
-    private PawnAABB pawn;
+    private PawnAABB3D pawn;
     /// <summary>
     /// float used to give gravity to the object
     /// </summary>
@@ -49,7 +49,7 @@ public class EnemyDasher : MonoBehaviour
     /// </summary>
     void Start()
     {
-        pawn = GetComponent<PawnAABB>();       
+        pawn = GetComponent<PawnAABB3D>();       
     }
 	/// <summary>	
     /// this method runs every frame and is used to call other methods and check to see if the player is in range of the object
@@ -81,6 +81,7 @@ public class EnemyDasher : MonoBehaviour
                 if (Input.GetButtonDown("Fire2"))
                 {
                     //velocity = DirectionalDash.rot * enemeyImpulse;
+                    print("ahhhhhh");
                     
                     canBeThrown = false;
                 }
@@ -92,7 +93,7 @@ public class EnemyDasher : MonoBehaviour
     /// </summary>
     private void DecelerateX(float amount)
     {
-        // slow down the player
+        // slow down the object
         if (velocity.x > 0) // moving right...
         {
             AccelerateX(-amount);
@@ -117,10 +118,10 @@ public class EnemyDasher : MonoBehaviour
     /// </summary>
     private void DoCollisions()
     {
-        PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
+        PawnAABB3D.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
-        transform.position += results.distance;
+        transform.position += results.distanceLocal;
     }
 }
