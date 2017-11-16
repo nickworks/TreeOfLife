@@ -650,6 +650,11 @@ Prefab:
       propertyPath: isStopped
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 114235346869978966, guid: 8bff0dbcba75a2d46b868c5e7758e8a6,
+        type: 2}
+      propertyPath: speed
+      value: 0.05
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: 8bff0dbcba75a2d46b868c5e7758e8a6, type: 2}
   m_IsPrefabParent: 0
@@ -814,8 +819,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9a1f0cadf3c819947800a6047e7ebc0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spawnNumber: 5
+  state: 1
   fly: {fileID: 114235346869978966, guid: 8bff0dbcba75a2d46b868c5e7758e8a6, type: 2}
   playerTransform: {fileID: 0}
+  secondaryTarget: {fileID: 0}
 --- !u!23 &1447550103
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -876,7 +884,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1447550101}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 163.89569, y: 42.47, z: -11.83}
+  m_LocalPosition: {x: 153.12, y: 42.47, z: -11.83}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
