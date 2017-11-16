@@ -32,7 +32,7 @@ public class SceneDictionary : MonoBehaviour {
     }
 
     /// <summary>
-    /// These are the methods that will be used to load different scenes, especailly for use in editor with buttons
+    /// These are the methods that will be used to load different scenes, especailly for use in editor with buttons.
     /// Just add a new method for loading a new scene as needed
     /// </summary>
     public void LoadMainHub()
@@ -40,6 +40,9 @@ public class SceneDictionary : MonoBehaviour {
         LoadScene(mainHub);
     }
 
+    /// <summary>
+    /// TODO
+    /// </summary>
     public void LoadTestingGrounds()
     {
         LoadScene(testingGrounds);
