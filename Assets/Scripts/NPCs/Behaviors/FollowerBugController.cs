@@ -124,7 +124,7 @@ public class FollowerBugController : MonoBehaviour {
     ///A 2d trigger enter method used to handle collision data
     /// </summary>
     /// <param name="collision"> A collision event</param>
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider collision)
     {
         //If the bugs hit a stickyweb their velocity is set to zero
         if(collision.gameObject.tag == "StickyWeb")
@@ -139,7 +139,7 @@ public class FollowerBugController : MonoBehaviour {
     ///A 2d trigger stay method used to handle collision data
     /// </summary>
     /// <param name="collision"> A collision event</param>
-    private void OnTriggerStay2D(Collider2D collision)
+    private void OnTriggerStay(Collider collision)
     {
         //If the bugs hit a stickyweb their velocity is set to zero
         if (collision.gameObject.tag == "StickyWeb")

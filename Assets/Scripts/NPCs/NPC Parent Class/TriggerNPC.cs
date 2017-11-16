@@ -26,7 +26,7 @@ public class TriggerNPC : MonoBehaviour {
         if (other.tag == "Player")
         {
             //print("Chase!");
-            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+            GetComponentInParent<BehaviorNPC>().PlayerNearby(other.GetComponent<PlayerController>());
         }
     }//End of private void OnTriggerStay
 
@@ -35,7 +35,7 @@ public class TriggerNPC : MonoBehaviour {
         if (other.tag == "Player")
         {
             //print("Chase!");
-            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+            GetComponentInParent<BehaviorNPC>().LosesPlayer();
         }
     }
 
