@@ -5,6 +5,21 @@ using UnityEngine;
 public class HiveBehavior : MonoBehaviour {
 
     /// <summary>
+    /// A vector used to randomize the bugs starting position
+    /// </summary>
+	Vector3 randomize = new Vector3();
+
+    /// <summary>
+    /// The number of flies to be spawned
+    /// </summary>
+    public int spawnNumber;
+
+    /// <summary>
+    /// The state of the hive
+    /// </summary>
+    public int state;
+
+    /// <summary>
     /// A reference to the FlyBehavior script that we will use to instantiate the Flies
     /// </summary>
     public FlyBehavior fly;
@@ -22,24 +37,34 @@ public class HiveBehavior : MonoBehaviour {
     /// <summary>
     /// A reference to a secondary target for the bugs to follow
     /// </summary>
+    public Transform secondaryTarget;
+
 
     // Use this for initialization
-    void Start () {
-        //TODO: Randomize fly positions
-        //TODO: Make it so flies are able to follow a leader
-        
-        playerTransform = GameObject.Find("Player").GetComponent<Transform>();
-		while(flies.Count < 5)
-        {
-            FlyBehavior newFly = Instantiate(fly, transform.position, transform.rotation);
-            newFly.target = playerTransform;
-            flies.Add(newFly);
-        }
-        
+    void Start ()
+    {       
+       playerTransform = GameObject.Find("Player").GetComponent<Transform>();		     
 	}
 	
 	// Update is called once per frame
 	void Update () {
-        flies[1].isStopped = true;
+        
+        while (flies.Count < spawnNumber)
+        {
+            randomize.x = Random.Range(1, 5);
+            randomize.y = Random.Range(1, 5);
+            randomize.z = Random.Range(1, 5);
+            FlyBehavior newFly = Instantiate(fly, transform.position + randomize, transform.rotation);
+            if(state == 1)
+            {
+                newFly.target = playerTransform;
+                secondaryTarget = newFly.GetComponent<Transform>();
+                state++;
+            }else if(state == 2)
+            {
+                newFly.target = secondaryTarget;
+            }
+            flies.Add(newFly);
+        }
     }
 }
