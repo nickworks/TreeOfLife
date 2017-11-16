@@ -74,6 +74,8 @@ public class PawnAABB3D : MonoBehaviour
     /// </summary>
     private CollisionResults results = new CollisionResults();
 
+    private const float HALF_PI = Mathf.PI / 2;
+
     #region Inspector Properties
     /// <summary>
     /// This is the maximum angle, in degrees, that this PawnAABB can ascend.
@@ -145,7 +147,7 @@ public class PawnAABB3D : MonoBehaviour
 
         if (renderInEditor) RenderBounds();
 
-        //if (distance.y < 0) DescendSlope();
+        if (distance.y < 0) DescendSlope();
         DoRaycasts(true); // horizontal
         //if (results.ascendSlope) ExtraRaycastFromToes();
         DoRaycasts(false); // vertical
@@ -205,16 +207,20 @@ public class PawnAABB3D : MonoBehaviour
 
             if (doHorizontal)
             {
-                /*
+                // slope ascending is currently handled when casting horizontal rays
+                // but the vertical rays seem to be causing ascending as well...
+
                 if (i == 0 && slopeAngle <= maxSlopeAscend)
                 {
-                    AscendSlope(slopeAngle);
+                    //AscendSlope(slopeAngle);
                 }
-                if ((!results.ascendSlope && !results.descendSlope) || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
-                {*/
-                if (hit.distance < rayLength) {
-                    rayLength = hit.distance;
-                    SetRayLength(rayLength, doHorizontal);
+                //if ((!results.ascendSlope && !results.descendSlope) || slopeAngle > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
+                {
+                    if (hit.distance < rayLength)
+                    {
+                        rayLength = hit.distance;
+                        SetRayLength(rayLength, doHorizontal);
+                    }
                 }
             }
             else
@@ -354,6 +360,7 @@ public class PawnAABB3D : MonoBehaviour
         float dis = goingLeft ? -results.distanceLocal.x : results.distanceLocal.x;
         float newDistanceY = dis * Mathf.Sin(slopeRadians);
 
+
         if (newDistanceY < results.distanceLocal.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
 
         results.distanceLocal.x = dis * Mathf.Cos(slopeRadians) * signX;
@@ -368,35 +375,31 @@ public class PawnAABB3D : MonoBehaviour
     /// If the slope is less than maxSlopeDescend, horizontal movement is translated into movement along the surface.
     /// </summary>
     private void DescendSlope()
-    {
-        /*
-        Vector2 origin = new Vector2(goingLeft ? bounds.max.x : bounds.min.x, bounds.min.y); // cast from the bottom, trailing corner
-        RaycastHit2D hit = Physics2D.Raycast(origin, Vector2.down, float.PositiveInfinity, collidableWith); // cast ray down!
-
+    {        
+        Vector3 origin = GetPointInQuad(goingLeft ? 1 : 0, 0);
         if (renderInEditor) Debug.DrawRay(origin, Vector2.down * 10, Color.blue);
 
-        if (hit) // there's ground below us!
+        RaycastHit hit;
+        if (Physics.Raycast(origin, Vector3.down, out hit, float.PositiveInfinity, collidableWith)) // there's ground below us!
         {
-            float slopeDegrees = GetSlopeAngleFromNormal(hit.normal); // get the angle of the slope of that ground below us
-            if (slopeDegrees > 0 && slopeDegrees <= maxSlopeDescend) // we only do this trick for slopes between 0 and maxSlopeDescend
-            {
-                bool slopeDescendsLeft = (hit.normal.x <= 0); // whether or not the slope descends to the left (/ true) (\ false)
+            float slopeRadians = GetSlopeAngleFromNormal(hit.normal); // get the angle of the slope of that ground below us
+            float slopeDegrees = slopeRadians * Mathf.Rad2Deg;
 
+            if (Mathf.Abs(slopeDegrees) <= maxSlopeDescend) // we only do this trick for slopes below maxSlopeDescend
+            {
+                bool slopeDescendsLeft = (slopeDegrees <= 0); // whether or not the slope descends to the left (/ true) (\ false)
                 if (slopeDescendsLeft == goingLeft) // If the player is moving down the slope... (either left or right)
                 {
-                    float slopeRadians = slopeDegrees * Mathf.Deg2Rad; // get radians
-                    float distanceX = Mathf.Abs(results.distance.x); // absolute value of horizontal distance
+                    float distanceX = results.distanceLocal.x; // value of horizontal distance
                     float distanceToHit = hit.distance - skinWidth;
-
                     float slope = Mathf.Tan(slopeRadians);
                     float dropFromSlope = slope * distanceX; // if we were moving down this slope, our horizontal "run" would result in how much "rise"?
 
                     if (distanceToHit <= dropFromSlope) // the ground is closer than the slope's drop in height
                     {
-
                         float howFarToDrop = distanceX * Mathf.Sin(slopeRadians); // calculate how far to move DOWN
-                        results.distance.x = distanceX * Mathf.Cos(slopeRadians) * signX; // calculate how far to move LEFT / RIGHT 
-                        results.distance.y = -(distanceToHit + howFarToDrop);
+                        results.distanceLocal.x = distanceX * Mathf.Cos(slopeRadians); // calculate how far to move LEFT / RIGHT 
+                        results.distanceLocal.y = -(distanceToHit + howFarToDrop);
 
                         results.hitBottom = true;
                         results.slopeAngle = slopeDegrees;
@@ -405,15 +408,15 @@ public class PawnAABB3D : MonoBehaviour
                 }
             }
         }
-        */
+        /**/
     }
     /// <summary>
-    /// Given a surface's normal, get the angle of the surface's slope.
+    /// Given a surface's normal, get the angle of the surface's slope along the transform's right direction.
     /// </summary>
     /// <param name="normal">The angle of a surface normal.</param>
-    /// <returns>The angle of the slope, in degrees.</returns>
-    private float GetSlopeAngleFromNormal(Vector2 normal)
+    /// <returns>The angle of the slope, in radians.</returns>
+    private float GetSlopeAngleFromNormal(Vector3 normal)
     {
-        return Vector2.Angle(normal, Vector3.up);
+        return HALF_PI - Mathf.Acos(Vector3.Dot(normal, transform.right));
     }
 }
