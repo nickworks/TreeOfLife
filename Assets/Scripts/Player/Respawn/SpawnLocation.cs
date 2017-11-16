@@ -11,14 +11,4 @@ public class SpawnLocation : MonoBehaviour {
     /// Reference to the PathNode the spawnpoint is at
     /// </summary>
     public PathNode spawnNode;
-
-    // Use this for initialization
-    void Start () {
-		
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		
-	}
 }
