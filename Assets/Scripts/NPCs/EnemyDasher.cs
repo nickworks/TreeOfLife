@@ -61,7 +61,7 @@ public class EnemyDasher : MonoBehaviour
        
         if (inRange)
         {
-            print("inrange");
+            
             Throw();
         }
         float gravityScale = 2;
@@ -80,8 +80,8 @@ public class EnemyDasher : MonoBehaviour
             {
                 if (Input.GetButtonDown("Fire2"))
                 {
-                    //velocity = DirectionalDash.rot * enemeyImpulse;
-                    print("ahhhhhh");
+                    velocity = DirectionalDash.rot * enemeyImpulse;
+                    print("MC HAMMER THROW");
                     
                     canBeThrown = false;
                 }
