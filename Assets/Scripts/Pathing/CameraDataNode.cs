@@ -190,7 +190,32 @@ public class CameraNodeSceneGUI : Editor
             int id = 0;
             camWindow = GUI.Window(id, camWindow, DrawSceneViewerWindow, new GUIContent("Camera View", "A preview of what the camera will see when oriented to this camera node."));
             Handles.EndGUI();//End the 2dGUI session
-        }        
+        }
+        DrawRotationHandles();
+        DrawDistanceHandles();      
+        
+    }
+    /// <summary>
+    /// Draws circular disks that act as rotation handles to affect yaw and pitch values.
+    /// </summary>
+    void DrawRotationHandles()
+    {
+        //Draw rotation handles in the scene that can be manipulated to change the yaw/pitch offsets
+        Handles.color = Color.black;
+        Vector3 pitchAxis = camNode.GetCameraRotation() * Vector3.right;
+        camNode.cameraData.pitchOffset = Handles.Disc(camNode.GetCameraRotation(), camNode.transform.position, pitchAxis, 1f, false, 1f).eulerAngles.x;
+        Handles.color = Color.magenta;
+        camNode.cameraData.yawOffset = Handles.Disc(camNode.GetCameraRotation(), camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;
+    }
+    /// <summary>
+    /// Draws an arrow that acts as a move handle to affect the camera distance value.
+    /// </summary>
+    void DrawDistanceHandles()
+    {
+        //Draw a handle for camera distance
+        Handles.color = Color.cyan;
+        Handles.DrawDottedLine(camNode.GetCameraLocation(), camNode.transform.position, 4);
+        camNode.cameraData.cameraDistance = Handles.ScaleValueHandle(camNode.cameraData.cameraDistance, camNode.GetCameraLocation(), camNode.GetCameraRotation(), camNode.cameraData.cameraDistance, Handles.ArrowHandleCap, 5f);
     }
     /// <summary>
     /// A callback function that draws the contents of a custom GUI window.
