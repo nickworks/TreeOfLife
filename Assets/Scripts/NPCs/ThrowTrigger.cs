@@ -13,7 +13,7 @@ public class ThrowTrigger : MonoBehaviour {
         {           
             GetComponentInParent<EnemyDasher>().inRange = true;
             GetComponentInParent<EnemyDasher>().canBeThrown = true;
-            GetComponentInParent<EnemyDasher>().isHit = true;
+            
         }
     }
     /// <summary>
@@ -23,7 +23,7 @@ public class ThrowTrigger : MonoBehaviour {
     {
         if (collision.tag == "Player")
         {           
-            GetComponentInParent<EnemyDasher>().targetPos = collision.transform.position;
+           // GetComponentInParent<EnemyDasher>().targetPos = collision.transform.position;
         }
     }
     /// <summary>
@@ -34,6 +34,8 @@ public class ThrowTrigger : MonoBehaviour {
         if (collision.tag == "Player")
         {           
             GetComponentInParent<EnemyDasher>().inRange = false;
+            GetComponentInParent<EnemyDasher>().canBeThrown = false;
+
         }
 
     }

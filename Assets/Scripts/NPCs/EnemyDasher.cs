@@ -58,8 +58,10 @@ public class EnemyDasher : MonoBehaviour
     {
         DoCollisions();
         DecelerateX(20);
+       
         if (inRange)
-        {                 
+        {
+            print("inrange");
             Throw();
         }
         float gravityScale = 2;
@@ -73,9 +75,7 @@ public class EnemyDasher : MonoBehaviour
     /// this method is used to "Throw" the enemy  
     /// </summary>
     private void Throw()
-    {
-        if (isHit)
-        {
+    {        
             if (canBeThrown)
             {
                 if (Input.GetButtonDown("Fire2"))
@@ -85,8 +85,7 @@ public class EnemyDasher : MonoBehaviour
                     
                     canBeThrown = false;
                 }
-            }
-        }
+            }        
     }
     /// <summary>
     /// This method Decelerates the horizontal speed of the object.
