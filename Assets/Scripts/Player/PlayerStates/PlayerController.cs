@@ -181,6 +181,7 @@ namespace Player {
         {
             switch (other.tag)
             {
+
                 case "StickyWeb":
                     if (Input.GetButtonDown("Grab"))
                     {

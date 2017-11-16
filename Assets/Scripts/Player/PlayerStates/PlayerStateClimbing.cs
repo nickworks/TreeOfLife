@@ -27,6 +27,7 @@ namespace Player
         private bool isWeb;
 
 #endregion
+        //FIXME: Make Web and Rope climbing seperate states / Integers
         /// <summary>
         /// The class constructor. It's purpose is to figure out what climbing volume the player is in.
         /// </summary>
@@ -60,8 +61,8 @@ namespace Player
         /// </summary>
         /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
         override public void OnEnter(PlayerController player) {
-            
 
+            ///FIX ME : multiply velocity by an amount to slow down the downward force, or on enter with Y velocity brief moment velocity stops, because player is grabbing so velocity should stop, should then be used on enter stay.
         }
         /// <summary>
         /// This method is called by the PlayerController when this state ends.
@@ -70,12 +71,15 @@ namespace Player
         override public void OnExit(PlayerController player) {
             //Slows the player down when they exit
             //player.velocity.y *= jumpSlowDown;
+
+            ///FIX ME : slows the gravity down on the player exit
         }
         /// <summary>
         /// This method uses input to manipulate this object's physics.
         /// </summary>
         private void HandleInput()
         {
+ 
             //Sets the players horizontal and vertical movement equal to a horizontal and vertical axis variable
             float axisH = Input.GetAxisRaw("Horizontal");
             float axisV = Input.GetAxisRaw("Vertical");
