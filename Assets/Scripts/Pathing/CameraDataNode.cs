@@ -82,7 +82,10 @@ public class CameraDataNode : MonoBehaviour {
     {
         Gizmos.DrawIcon(GetCameraLocation(), "icon-camera", true);//draw a camera icon where the cam would be.
         Matrix4x4 temp = Gizmos.matrix;//In order to use frustrum drawing, some matrix translations are required.
-        Gizmos.matrix = Matrix4x4.TRS(GetCameraLocation(), GetCameraRotation(), Vector3.one);
+
+        Vector3 p = GetCameraLocation();
+        //print("gizmo position: " + p);
+        Gizmos.matrix = Matrix4x4.TRS(p, GetCameraRotation(), Vector3.one);
         Gizmos.DrawFrustum(Vector3.zero, cameraData.fov, cameraData.cameraDistance * 2, 0, 4/3);
         Gizmos.matrix = temp;//reset the gizmo location.
     }
@@ -105,11 +108,9 @@ public class CameraDataNode : MonoBehaviour {
     public Quaternion GetCameraRotation()
     {
         /* Camera yaw (movement around the y axis (along the horizon) is calculated in two parts.  The first part is the orientation of the path node itself, and then the additional yaw offset specified by the camera node.  Both need to be added together. */
-        Quaternion worldRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
-        float yawAngle = worldRotation.eulerAngles.y;
-        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, yawAngle - cameraData.yawOffset, 0);
-
-        return rotation;
+        // the rotation of the player:
+        Quaternion playerRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
+        return Quaternion.Euler(cameraData.pitchOffset, playerRotation.eulerAngles.y - cameraData.yawOffset, 0);
     }
 
     /// <summary>
@@ -203,9 +204,13 @@ public class CameraNodeSceneGUI : Editor
         //Draw rotation handles in the scene that can be manipulated to change the yaw/pitch offsets
         Handles.color = Color.black;
         Vector3 pitchAxis = camNode.GetCameraRotation() * Vector3.right;
-        camNode.cameraData.pitchOffset = Handles.Disc(camNode.GetCameraRotation(), camNode.transform.position, pitchAxis, 1f, false, 1f).eulerAngles.x;
+        Quaternion rot = camNode.GetCameraRotation();
+
+        float newPitchOffset = Handles.Disc(rot, camNode.transform.position, pitchAxis, 1f, false, 1f).eulerAngles.x;
+        camNode.cameraData.pitchOffset = AngleWrapFromTo(newPitchOffset, 0);
+
         Handles.color = Color.magenta;
-        camNode.cameraData.yawOffset = Handles.Disc(camNode.GetCameraRotation(), camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;
+        camNode.cameraData.yawOffset += rot.eulerAngles.y - Handles.Disc(rot, camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;
     }
     /// <summary>
     /// Draws an arrow that acts as a move handle to affect the camera distance value.
@@ -214,7 +219,12 @@ public class CameraNodeSceneGUI : Editor
     {
         //Draw a handle for camera distance
         Handles.color = Color.cyan;
-        Handles.DrawDottedLine(camNode.GetCameraLocation(), camNode.transform.position, 4);
+
+        Vector3 p = camNode.GetCameraLocation();
+        //Debug.Log("editor position: " + p);
+        Handles.DrawWireCube(p, Vector3.one);
+
+        Handles.DrawDottedLine(p, camNode.transform.position, 4);
         camNode.cameraData.cameraDistance = Handles.ScaleValueHandle(camNode.cameraData.cameraDistance, camNode.GetCameraLocation(), camNode.GetCameraRotation(), camNode.cameraData.cameraDistance, Handles.ArrowHandleCap, 5f);
     }
     /// <summary>
@@ -238,6 +248,18 @@ public class CameraNodeSceneGUI : Editor
         CameraDataNode.GUIcam.transform.position = camNode.GetCameraLocation();
         CameraDataNode.GUIcam.transform.rotation = camNode.GetCameraRotation();
         CameraDataNode.GUIcam.GetComponent<Camera>().fieldOfView = camNode.cameraData.fov;
+    }
+    /// <summary>
+    /// This utility function converts one angle to be within 180 degrees of second angle.
+    /// </summary>
+    /// <param name="a">The angle to adjust.</param>
+    /// <param name="b">The stationary reference angle.</param>
+    /// <returns>The adjusted angle.</returns>
+    float AngleWrapFromTo(float a, float b)
+    {
+        while (a - b > 180) a -= 360;
+        while (a - b < -180) a += 360;
+        return a;
     }
 }
 
