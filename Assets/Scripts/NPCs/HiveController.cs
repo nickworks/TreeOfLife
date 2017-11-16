@@ -113,6 +113,7 @@ public class HiveController : MonoBehaviour {
                         randomize.y = Random.Range(1, 5);
                         //Instantiate a new bug
                         GameObject newBug = Instantiate(prefabBugs, transform.position + randomize, Quaternion.identity);
+                        
                         //Add the newBug to the bugs list
                         bugs.Add(newBug);
 
