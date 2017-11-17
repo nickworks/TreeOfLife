@@ -805,7 +805,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 868113933}
   cameraDataNode: {fileID: 868113935}
-  curveRadius: 2
+  curveRadius: 20
   left: {fileID: 999713059}
   right: {fileID: 2085088084}
 --- !u!4 &868113934
@@ -1099,7 +1099,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pathNodePrefab: {fileID: 999713059}
   cameraDataNode: {fileID: 999713061}
-  curveRadius: 0
+  curveRadius: 20
   left: {fileID: 70188069}
   right: {fileID: 868113933}
 --- !u!4 &999713060
@@ -1209,13 +1209,13 @@ Transform:
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1008799978}
-  m_LocalRotation: {x: -0.10737883, y: 0.18131378, z: 0.20283107, w: 0.95627123}
+  m_LocalRotation: {x: -0.13764422, y: 0.17479168, z: 0.20847781, w: 0.95238596}
   m_LocalPosition: {x: -9.61, y: -3.61, z: 0.07}
   m_LocalScale: {x: 8.431707, y: 1.1331526, z: 2.562166}
   m_Children: []
   m_Father: {fileID: 814660994}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: -16.196001, y: 18.406, z: 21.310001}
+  m_LocalEulerAnglesHint: {x: -19.576, y: 17.005001, z: 21.740002}
 --- !u!1 &1020820387
 GameObject:
   m_ObjectHideFlags: 0
@@ -2666,7 +2666,7 @@ Prefab:
         type: 2}
       propertyPath: currentNode
       value: 
-      objectReference: {fileID: 999713059}
+      objectReference: {fileID: 1374010915}
     - target: {fileID: 114738968936243064, guid: f028640214710694e91e5814722cac50,
         type: 2}
       propertyPath: m_Enabled
@@ -2675,7 +2675,12 @@ Prefab:
     - target: {fileID: 114430381562822350, guid: f028640214710694e91e5814722cac50,
         type: 2}
       propertyPath: maxSlopeAscend
-      value: 80
+      value: 60
+      objectReference: {fileID: 0}
+    - target: {fileID: 114430381562822350, guid: f028640214710694e91e5814722cac50,
+        type: 2}
+      propertyPath: maxSlopeDescend
+      value: 60
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 114738968936243064, guid: f028640214710694e91e5814722cac50, type: 2}
