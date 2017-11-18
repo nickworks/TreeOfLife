@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 /// <summary>
 /// A single node for building paths. This class forms the backbone of a linked list of nodes.
@@ -43,12 +44,9 @@ public class PathNode : MonoBehaviour
     }
 
     /// <summary>
-    /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
-    /// </summary>
-    public PathNode pathNodePrefab;
-    /// <summary>
     /// A reference to a CameraDataNode component, if one exists on this GameObject.
     /// </summary>
+    [HideInInspector]
     public CameraDataNode cameraDataNode;
 
     /// <summary>
@@ -270,7 +268,6 @@ public class PathNode : MonoBehaviour
 
             spawnPos = Vector3.Lerp(transform.position, right.transform.position, .33f);
             transform.position = Vector3.Lerp(transform.position, left.transform.position, .33f);
-
         }
         else if (left)
         {
@@ -286,8 +283,10 @@ public class PathNode : MonoBehaviour
         }
 
         // spawn a new node:
-        PathNode newNode = Instantiate(pathNodePrefab, spawnPos, Quaternion.identity);
-
+        PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetPrefabParent(this));
+        if (!newNode) return null; // FAILED TO SPAWN!
+        newNode.transform.position = spawnPos;
+        
         // insert the node into our linked list of nodes:
 
         if (spawnToTheLeft) // if this is the left-most node
