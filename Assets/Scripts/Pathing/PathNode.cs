@@ -56,12 +56,12 @@ public class PathNode : MonoBehaviour
     /// <summary>
     /// The PathNode to the left of this one. This is the previous item in the linked List.
     /// </summary>
-    [HideInInspector]
+    //[HideInInspector]
     public PathNode left;
     /// <summary>
     /// The PathNode to the right of this one. This is the next item in the linked list.
     /// </summary>
-    [HideInInspector]
+    //[HideInInspector]
     public PathNode right;
     /// <summary>
     /// The left anchor point of the curved section. If there is no curved section, then this is equal to transform.position.
@@ -125,7 +125,7 @@ public class PathNode : MonoBehaviour
     void CacheData(bool shouldRipple)
     {
         cameraDataNode = GetComponent<CameraDataNode>();
-        percentCurveIn = percentCurveOut = length = 0;
+        angleCurveIn = angleCurveOut = percentCurveIn = percentCurveOut = length = 0;
         curveCenter = curveIn = curveOut = transform.position;
 
         if (shouldRipple)
@@ -154,19 +154,26 @@ public class PathNode : MonoBehaviour
             Vector3 leftDiff = OverwriteY(p1 - p2); // get the FLAT vector to left
             Vector3 rightDiff = OverwriteY(p3 - p2); // get the FLAT vector to right
 
-            Vector3 leftAxis = leftDiff.normalized;
-            Vector3 rightAxis = rightDiff.normalized;
+            Vector3 leftAxis = leftDiff.normalized; // direction to left
+            Vector3 rightAxis = rightDiff.normalized; // direction to right
 
             // the YAW to angle1 and angle2
-            float angleToP3 = Mathf.Atan2(rightDiff.z, rightDiff.x);
-            float angleToP1 = Mathf.Atan2(leftDiff.z, leftDiff.x);
-            angleToP3 = AngleWrapFromTo(angleToP3, angleToP1);
+            float angleToP3 = Mathf.Atan2(rightDiff.z, rightDiff.x); // YAW from this to right
+            float angleToP1 = Mathf.Atan2(leftDiff.z, leftDiff.x); // YAW from this to left
+            angleToP3 = AngleWrapFromTo(angleToP3, angleToP1); // wrap the values into the same 180-degree arc
+
+            if(Mathf.Abs(angleToP1 - angleToP3) >= Mathf.PI) // if in a straight line... don't try to curve.
+            {
+                clampedCurveRadius = 0;
+                return;
+            }
 
             float angleBetween = Mathf.Abs(angleToP3 - angleToP1) / 2; // save a step, and half the difference
             float angleToCenter = (angleToP3 + angleToP1) / 2; // angle from p2 to center... use the average of our previous two angles
 
             float maxAdjacent = Mathf.Min(leftDiff.magnitude, rightDiff.magnitude) * 0.5f;
-            float maxDistance = maxAdjacent / Mathf.Cos(angleBetween);
+            float cos = Mathf.Cos(angleBetween);
+            float maxDistance = maxAdjacent / cos;
             float disToCenter = curveRadius / Mathf.Sin(angleBetween);
 
             if (maxDistance < disToCenter)
@@ -178,7 +185,8 @@ public class PathNode : MonoBehaviour
             Vector3 axisToCenter = new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter));
             curveCenter = transform.position + axisToCenter * disToCenter;
 
-            float disToInOut = Mathf.Cos(angleBetween) * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+            float disToInOut = cos * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+
             percentCurveIn = disToInOut / leftDiff.magnitude; // percent of the way from p2 to p1
             percentCurveOut = disToInOut / rightDiff.magnitude; // percent of the way from p2 to p3
 
