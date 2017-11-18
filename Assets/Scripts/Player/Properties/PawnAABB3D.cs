@@ -189,7 +189,6 @@ public class PawnAABB3D : MonoBehaviour
     /// <param name="doHorizontal">Whether or not to cast rays horizontally. If false, the function will cast rays vertically.</param>
     private void DoRaycasts(bool doHorizontal)
     {
-
         float rayLength = GetRayLength(doHorizontal);
 
         for (int i = 0; i < resolution; i++)
@@ -212,8 +211,7 @@ public class PawnAABB3D : MonoBehaviour
 
                 if (i == 0 && Mathf.Abs(slopeDegrees) <= maxSlopeAscend)
                 {
-                    //print("ASCEND: " + slopeDegrees + " normal: " + hit.normal + " right: " + transform.right.normalized);
-                    AscendSlope(slopeDegrees);
+                    AscendSlope(slopeDegrees * Mathf.Deg2Rad);
                 }
                 if ((!results.ascendSlope && !results.descendSlope) || slopeDegrees > maxSlopeAscend) // if we're not ascending OR if the slope is too steep to climb
                 {
@@ -333,7 +331,6 @@ public class PawnAABB3D : MonoBehaviour
     private void SetRayLength(float length, bool isHorizontal)
     {
         length -= skinWidth;
-        
         // DON'T clamp length to 0, otherwise we can't move the player out of a collider if they end up slightly within one
 
         if (isHorizontal)
@@ -357,21 +354,15 @@ public class PawnAABB3D : MonoBehaviour
     /// <param name="slopeDegrees">The slope of the surface, in degrees.</param>
     private void AscendSlope(float slopeRadians)
     {
-
         float dis = results.distanceLocal.x;// goingLeft ? -results.distanceLocal.x : results.distanceLocal.x;
-        float newDistanceY = dis * Mathf.Sin(slopeRadians);
-        
+        float newDistanceY = -dis * Mathf.Sin(slopeRadians);
         if (newDistanceY < results.distanceLocal.y) return; // If moving up the slope would result in LESS height gained, then don't bother ascending the slope.
-
-        float newDistanceX = -dis * Mathf.Cos(slopeRadians);
-        //print(newDistanceX);
-
-        results.distanceLocal.x = newDistanceX;
+        
+        results.distanceLocal.x = dis * Mathf.Cos(slopeRadians);
         results.distanceLocal.y = newDistanceY;
         results.slopeAngle = slopeRadians * Mathf.Rad2Deg;
         results.ascendSlope = true;
         results.hitBottom = true;
-
     }
     /// <summary>
     /// This method casts a ray down. If it hits ground, the slope of the ground is calculated.
