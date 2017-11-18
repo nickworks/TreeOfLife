@@ -294,6 +294,8 @@ public class PathNode : MonoBehaviour
         PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetPrefabParent(this));
         if (!newNode) return null; // FAILED TO SPAWN!
         newNode.transform.position = spawnPos;
+
+        newNode.transform.parent = transform.parent;
         
         // insert the node into our linked list of nodes:
 
@@ -312,6 +314,7 @@ public class PathNode : MonoBehaviour
             if (this.right) this.right.left = newNode;
             this.right = newNode;
         }
+        EditorUtility.SetDirty(this); // remember these changes in the editor...
 
         return newNode; // return the new node
     }
@@ -391,7 +394,18 @@ public class PathNode : MonoBehaviour
     void OnDrawGizmos()
     {
         DrawLines();
+
+        //Gizmos.color = (!left || !right) ? Color.red : Color.white;
+        //Gizmos.DrawCube(transform.position, Vector3.one * .5f);
         Gizmos.DrawIcon(transform.position, "icon-path.png", true);
+        //Gizmos.color = Color.white;
+    }
+    /// <summary>
+    /// What gizmos get drawn in the editor when this object is selected.
+    /// </summary>
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawCube(transform.position, Vector3.one);
     }
     /// <summary>
     /// This method draws the path line in the editor.
