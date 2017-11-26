@@ -26,13 +26,11 @@ public class PathNodeEditor : Editor
         }
         if (GUILayout.Button("- NODE"))
         {
-            PathNode temp = null;
-            if (node.right) temp = node.right;
-            node.RemoveAndDestroy();
-            Rename(temp);
+            PathNode temp = node.right ? node.right : null;
+            Undo.DestroyObjectImmediate(node.gameObject);
+            Rename(temp);   
         }
-        GUILayout.EndHorizontal();
-        
+        GUILayout.EndHorizontal(); 
     }
     /// <summary>
     /// This method renames all of the PathNode objects in a path.
@@ -44,4 +42,3 @@ public class PathNodeEditor : Editor
         node.GetLeftMostNode().RenameNodes("Node");
     }
 }
-
