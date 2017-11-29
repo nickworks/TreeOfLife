@@ -11,10 +11,9 @@ using UnityEngine.SceneManagement;
 public class SceneDictionary : MonoBehaviour {
 
     /// <summary>
-    /// Add levels that will be used as static public strings here. Don't forget they need to be added to the building settings for the methods to work
+    /// Add levels that will be used as static public strings here. Don't forget the levels need to be added to the building settings for the methods to work
     /// </summary>
-    static public string mainHub = "";
-    static public string testingGrounds = "3dtrack";
+    static public List<string> scenes = new List<string> { "3dtrack" };
 
     /// <summary>
     /// This will hold a reference to the current scene for whatever it may be used for, starting the level over, ect.
@@ -25,27 +24,24 @@ public class SceneDictionary : MonoBehaviour {
     /// This method is used for loading new scenes and setting the current scene to the new scene
     /// </summary>
     /// <param name="scene"></param>
-    void LoadScene(string scene)
+    public void LoadScene(string scene)
     {
         currentScene = scene;
         SceneManager.LoadScene(scene);
     }
-
     /// <summary>
-    /// These are the methods that will be used to load different scenes, especailly for use in editor with buttons.
-    /// Just add a new method for loading a new scene as needed
+    /// This method is used for loading new scenes and setting the current scene to the new scene
     /// </summary>
-    public void LoadMainHub()
+    /// <param name="sceneNumber">This is the index of the scene in the list scenes to be loaded</param>
+    public void LoadScene(int sceneNumber)
     {
-        LoadScene(mainHub);
-    }
-
-    /// <summary>
-    /// TODO
-    /// </summary>
-    public void LoadTestingGrounds()
-    {
-        LoadScene(testingGrounds);
+        string newScene = scenes[sceneNumber];
+        if(newScene != null)
+        {
+            currentScene = newScene;
+            SceneManager.LoadScene(newScene);
+        }
+        
     }
 
     /// <summary>
