@@ -16,21 +16,35 @@ namespace Player
         /// <summary>
         /// A private float to handle the players climbspeed
         /// </summary>
-        private float climbSpeed = 30;
+        private float climbSpeed = 15;
         /// <summary>
-        /// A private float to handle the players jumping momentum
+        /// A private float to slow the player down in the volume
         /// </summary>
-        private float jumpPulse = 850;
+        private float slowDown = .8f;
         /// <summary>
-        /// A private float to slow the player down in the web
+        /// An int that stores what kind of climbing volume the player is in.
         /// </summary>
-        private float slowDown = .55f;
-        /// <summary>
-        /// A private float to slow the player down when they jump
-        /// </summary>
-        private float jumpSlowDown = .75f;
+        private string climbingVolumeID;
 
+        private bool doingStuff;
 #endregion
+        /// <summary>
+        /// The class constructor. It's purpose is to set the ID of the climbing volume.
+        /// </summary>
+        /// <param name="ID">Identifies the climbing volume</param>
+        public PlayerStateClimbing(string ID)
+        {
+            climbingVolumeID = ID;
+        }
+
+        /// <summary>
+        /// This is called on state start, to immediately decelerate the player.
+        /// </summary>
+        public void Start()
+        {
+            doingStuff = true;
+            player.velocity.y = player.velocity.y * 0.05f;
+        }
 
         /// <summary>
         /// This method is called by the PlayerController every tick.
@@ -44,30 +58,29 @@ namespace Player
             
             //Appies gravity at a value of zero so the player does not fall
             ApplyGravity(0f);
-            //Hanldes the players input
+            //Handles the players input
             HandleInput();
             //Does collisions
             DoCollisions();
-
-            return this;
+            /*
+            while (!doingStuff)
+            {
+                return this;
+            }*/
+            return null;
         }
 
         /// <summary>
         /// This method is called by the PlayerController when this state begins.
         /// </summary>
         /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
-        override public void OnEnter(PlayerController player) {
-            
-
-        }
+        public override void OnEnter(PlayerController player) { }
         /// <summary>
         /// This method is called by the PlayerController when this state ends.
         /// </summary>
         /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
-        override public void OnExit(PlayerController player) {
-            //Slows the player down when they exit
-            player.velocity.y *= jumpSlowDown;
-        }
+        public override void OnExit(PlayerController player) { }
+
         /// <summary>
         /// This method uses input to manipulate this object's physics.
         /// </summary>
@@ -76,35 +89,32 @@ namespace Player
             //Sets the players horizontal and vertical movement equal to a horizontal and vertical axis variable
             float axisH = Input.GetAxisRaw("Horizontal");
             float axisV = Input.GetAxisRaw("Vertical");
-            //If the player presses the jump key
-            if (Input.GetButtonDown("Jump"))
-            {
-                //We remove upward momentum resulting from climbing in the web
-                player.velocity.y = 0;
-                //then we add the jump pulse to their velocity
-                player.velocity.y += jumpPulse * Time.deltaTime;
-                //We add the players horizontal velocity
-                player.velocity.x += axisH * climbSpeed * Time.deltaTime;
-                
-                
-                
-            }
-            //If the input is horizontal or vertical
-            if(Input.GetButton("Horizontal") || Input.GetButton("Vertical"))
-            {
-                //We add the players climbspeed to their velocity
-                player.velocity.x += axisH * climbSpeed * Time.deltaTime;
-                player.velocity.y += axisV * climbSpeed * Time.deltaTime;
-            }
-            else
-            {
-                //Otherwise we multiply the velocity by the slowdown variable
-                player.velocity.x *= slowDown;
-                player.velocity.y *= slowDown;
-            }
-            
-            
-        }
 
+            // Velocity in the x-axis is slowed by 90% if the climbing volume is a rope
+            switch (climbingVolumeID)
+            {
+                case "StickyWeb":
+                    player.velocity.x += axisH * climbSpeed * Time.deltaTime;
+                    if (player.velocity.x > climbSpeed * 0.5f) player.velocity.x = climbSpeed * 0.5f; // Speed cap
+                    break;
+                case "Rope":
+                    player.velocity.x += axisH * climbSpeed * Time.deltaTime * .1f;
+                    if (player.velocity.x > climbSpeed * 0.05f) player.velocity.x = climbSpeed * 0.05f; // Speed cap
+                    break;
+            }
+
+            player.velocity.y += axisV * climbSpeed * Time.deltaTime;
+            if (player.velocity.y > climbSpeed * 0.5f) player.velocity.y = climbSpeed * 0.5f; // Speed cap
+            
+            if (axisH == 0) player.velocity.x *= slowDown;
+            if (axisV == 0) player.velocity.y *= slowDown;           
+
+            //If the player presses the jump key
+            if (Input.GetButton("Jump"))
+            {
+                player.velocity = new Vector3(0, player.velocity.y * 0.3f, player.velocity.z);      // 'Normalize' the velocity
+                player.velocity += new Vector3(axisH * impulseJump * 0.2f, impulseJump * 0.8f, 0);  // add Jump Impulse
+            }
+        }
     }
 }

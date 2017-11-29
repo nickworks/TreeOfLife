@@ -17,7 +17,7 @@ public class OnScreenSpawner : MonoBehaviour {
     /// <summary>
     /// The spawner collider, used to determine if it's on the screen
     /// </summary>
-    private Collider2D spawnCollider;
+    private Collider spawnCollider;
     /// <summary>
     /// Storing the prefab to spawn.
     /// </summary>
@@ -36,7 +36,7 @@ public class OnScreenSpawner : MonoBehaviour {
     /// </summary>
 	void Start () {
         cam = Camera.main;
-        spawnCollider = GetComponent<Collider2D>();
+        spawnCollider = GetComponent<Collider>();
 	}
     /// <summary>
     /// This message runs every tick.

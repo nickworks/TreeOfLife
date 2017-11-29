@@ -89,7 +89,7 @@ public class HiveController : MonoBehaviour {
     /// A private void to handle Trigger collision events
     /// </summary>
     /// <param name="collision"> A variable to handle collisions</param>
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider collision)
     {
         /// <summary>
         /// A switch statement to handle the many collision events
@@ -113,6 +113,7 @@ public class HiveController : MonoBehaviour {
                         randomize.y = Random.Range(1, 5);
                         //Instantiate a new bug
                         GameObject newBug = Instantiate(prefabBugs, transform.position + randomize, Quaternion.identity);
+                        
                         //Add the newBug to the bugs list
                         bugs.Add(newBug);
 
