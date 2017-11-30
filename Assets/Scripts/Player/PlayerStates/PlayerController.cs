@@ -83,6 +83,16 @@ namespace Player
         public const int STATE_REGULAR = 1;
         public const int STATE_CLIMBING = 2;
         public const int STATE_SWINGING = 3;
+        public const int STATE_BUGGED = 4;
+
+        /// <summary>
+        ///  //A timer for the bugged status effect
+        /// </summary>
+        public float bugTimer = 3;
+        /// <summary>
+        ///A boolean to control when the timer is started
+        /// </summary>
+        public bool startTimer = false;
 
         public Vector3 worldSpace;
 
@@ -133,6 +143,13 @@ namespace Player
         /// </summary>
         void Update()
         {
+            //If start timer is true
+            if (startTimer)
+            {
+                //we subtract the bug timer from time.deltatime
+                bugTimer -= Time.deltaTime;
+            }
+            
             if (playerState == null)
             {
                 playerState = new PlayerStateRegular();
@@ -165,6 +182,19 @@ namespace Player
             if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
             {
                 playerState = new PlayerStateRegular();
+                currentState = STATE_REGULAR;
+            }
+
+            //If bug timer is less than or equal to zero
+            if (bugTimer <= 0)
+            {
+                //we set the bug timer equal to 3
+                bugTimer = 3;
+                //we set startTimer to false so it doesn't keep subtracting
+                startTimer = false;
+                //we set player state to PlayerStateRegular
+                playerState = new PlayerStateRegular();
+                //We set current state to STATE_REGULAR
                 currentState = STATE_REGULAR;
             }
         }
@@ -225,7 +255,24 @@ namespace Player
                         playerState = new PlayerStateClimbing("Rope"); // ID 2 = Rope
                         currentState = STATE_CLIMBING;
                         break;
+                   
                 }
+            }//End of Grab if statement
+            //These are switch statements for just hitting other colliders
+            switch (other.tag)
+            {
+                //For case bugging collider
+                case "BuggingCollider":
+                    //WE set the bug timer to 3
+                    bugTimer = 3;
+                    //We start the timer 
+                    startTimer = true;
+                    //we set playerState to PlayerStateBugged
+                    playerState = new PlayerStateBugged();
+                    //We set currentState to state bugged
+                    currentState = STATE_BUGGED;
+                    //WE break out of the case
+                    break;
             }
         }
 
@@ -258,9 +305,12 @@ namespace Player
                     break;
                 case "StickyWeb":
                 case "Rope":
+                case "BuggingCollider":
                     playerState = new PlayerStateRegular();
                     currentState = STATE_REGULAR;
                     break;
+                
+                    
             }
         }
     }

@@ -4,7 +4,6 @@
 TagManager:
   serializedVersion: 2
   tags:
-
   - StickyWeb
   - Ground
   - Stopper
@@ -17,7 +16,7 @@ TagManager:
   - RopeTarget
   - Enemy
   - Volume
-
+  - BuggingCollider
   layers:
   - Default
   - TransparentFX
@@ -32,7 +31,6 @@ TagManager:
   - SlingShotWeb
   - SlingShot Reciever
   - Player
-  - 
   - 
   - 
   - 
