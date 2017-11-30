@@ -85,7 +85,7 @@ namespace Player
         protected bool Jump(float velocityAtTakeoff)
         {
             //Dash
-            if (Input.GetButton("Action") && canDash )
+            if (Input.GetButton("Dash") && canDash )
             {
                 if (Input.GetAxis("Vertical") < 0)
                 {

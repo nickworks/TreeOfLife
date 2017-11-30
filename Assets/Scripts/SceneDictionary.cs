@@ -20,6 +20,11 @@ public class SceneDictionary : MonoBehaviour {
     /// </summary>
     static public string currentScene = "";
 
+    private void Start()
+    {
+        currentScene = SceneManager.GetActiveScene().name;
+    }
+
     /// <summary>
     /// This method is used for loading new scenes and setting the current scene to the new scene
     /// </summary>

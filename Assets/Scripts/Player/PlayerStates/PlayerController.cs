@@ -1,9 +1,10 @@
 
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Player {
+namespace Player
+{
     /// <summary>
     /// This component turns a GameObject into a controllable avatar.
     /// </summary>
@@ -88,6 +89,11 @@ namespace Player {
         //public SpawnTriggerMover sTM = new SpawnTriggerMover();
         SpawnPointMover sTM;
 
+        /// <summary>
+        /// Reference to the SpawnPoint object in the scene
+        /// </summary>
+        GameObject spawnRef;
+
         #endregion
         #region Setup
 
@@ -102,6 +108,7 @@ namespace Player {
             rigidBody = GetComponent<Rigidbody>();
             rigidBody.isKinematic = true;
             main = this;
+            spawnRef = GameObject.Find("SpawnPoint");
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -126,7 +133,8 @@ namespace Player {
         /// </summary>
         void Update()
         {
-            if (playerState == null) {
+            if (playerState == null)
+            {
                 playerState = new PlayerStateRegular();
                 currentState = STATE_REGULAR;
             }
@@ -138,15 +146,24 @@ namespace Player {
                 playerState = nextState;
                 playerState.OnEnter(this);
             }
-            
+
             //If the player hits the respawn button
-            if (Input.GetButtonDown("Respawn"))
+            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("Respawn"))
             {
-              //We set their current transform to the STM's transform
-              transform.position = sTM.transform.position;
+                FindObjectOfType<SceneDictionary>().RestartLevel();
             }
 
-            if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump")) {
+            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("LeftTrigger"))
+            {
+                gameObject.SetActive(false);
+                velocity = Vector3.zero;
+                transform.localPosition = spawnRef.transform.localPosition;
+                GetComponent<AlignWithPath>().currentNode = spawnRef.GetComponent<SpawnLocation>().spawnNode;
+                gameObject.SetActive(true);
+            }
+
+            if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
+            {
                 playerState = new PlayerStateRegular();
                 currentState = STATE_REGULAR;
             }
@@ -157,22 +174,24 @@ namespace Player {
         /// </summary>
         /// <param name ="gravityDirection">Which direction should gravity point?  Will be normalized.</param>
         /// <param name ="gravityForce">The power of the gravitational force</param>
-        public void SetGravity(Vector3? gravityDirection = null, float? gravityForce = null )
+        public void SetGravity(Vector3? gravityDirection = null, float? gravityForce = null)
         {
             //If gravity direction isn't specified, set it to the default "down"
-            if( gravityDirection == null )
+            if (gravityDirection == null)
             {
                 gravityDir = Vector3.down;
-            } else//Otherwise we set gravity to the new direction, and normalize that value
+            }
+            else//Otherwise we set gravity to the new direction, and normalize that value
             {
                 Vector3 tempDirection = (Vector3)gravityDirection;//converts the Vector3? to a vector3
                 gravityDir = tempDirection.normalized;
             }
             //If gravity force isn't specified, set it to the default value created at startup
-            if( gravityForce == null )
+            if (gravityForce == null)
             {
                 gravityTemporary = gravityStandard;
-            } else//Otherwise we set the force of gravity to the new value
+            }
+            else//Otherwise we set the force of gravity to the new value
             {
                 gravityTemporary = (float)gravityForce;//Convert the float? to a normal float
             }
@@ -247,4 +266,3 @@ namespace Player {
     }
 
 }
-       
