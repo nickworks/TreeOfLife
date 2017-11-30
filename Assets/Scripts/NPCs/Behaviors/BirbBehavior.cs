@@ -26,7 +26,7 @@ public class BirbBehavior : MonoBehaviour {
     /// <summary>
     /// Storing the birb's rigidbody in a variable
     /// </summary>
-    public Rigidbody2D birb;
+    //public Rigidbody birb;
     /// <summary>
     /// A small random number that makes the birb's paths slightly varied.
     /// </summary>
@@ -47,7 +47,7 @@ public class BirbBehavior : MonoBehaviour {
 	void Start () {
         randomOffset = new Vector3(Random.Range(-1, 1), Random.Range(-1, 1), 0);
         player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
-
+        thrust = 30;
     }
 	/// <summary>
     /// This message is called every tick.
@@ -77,7 +77,7 @@ public class BirbBehavior : MonoBehaviour {
     /// This is called when the player collides with the birb (The birb enemy is just a trigger object).
     /// </summary>
     /// <param name="collision"></param>
-    private void OnTriggerEnter2D(Collider2D collision)
+    private void OnTriggerEnter(Collider collision)
     {
         //Hurt the Player and knock them back
     }

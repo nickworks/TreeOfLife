@@ -1,10 +1,12 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEditor;
 
 /// <summary>
 /// A single node for building paths. This class forms the backbone of a linked list of nodes.
 /// </summary>
+[ExecuteInEditMode]
 public class PathNode : MonoBehaviour
 {
 
@@ -43,12 +45,9 @@ public class PathNode : MonoBehaviour
     }
 
     /// <summary>
-    /// The prefab to use to spawn more PathNodes. This feels strangely recursive...
-    /// </summary>
-    public PathNode pathNodePrefab;
-    /// <summary>
     /// A reference to a CameraDataNode component, if one exists on this GameObject.
     /// </summary>
+    [HideInInspector]
     public CameraDataNode cameraDataNode;
 
     /// <summary>
@@ -58,12 +57,12 @@ public class PathNode : MonoBehaviour
     /// <summary>
     /// The PathNode to the left of this one. This is the previous item in the linked List.
     /// </summary>
-    [HideInInspector]
+    //[HideInInspector]
     public PathNode left;
     /// <summary>
     /// The PathNode to the right of this one. This is the next item in the linked list.
     /// </summary>
-    [HideInInspector]
+    //[HideInInspector]
     public PathNode right;
     /// <summary>
     /// The left anchor point of the curved section. If there is no curved section, then this is equal to transform.position.
@@ -105,7 +104,6 @@ public class PathNode : MonoBehaviour
     /// How far (in percent) the curveOut is between this node and the neighboring right node. For performance, this is calculated once and cached.
     /// </summary>
     private float percentCurveOut;
-
     /// <summary>
     /// When this object starts, we call CacheData()
     /// </summary>
@@ -127,7 +125,7 @@ public class PathNode : MonoBehaviour
     void CacheData(bool shouldRipple)
     {
         cameraDataNode = GetComponent<CameraDataNode>();
-        percentCurveIn = percentCurveOut = length = 0;
+        angleCurveIn = angleCurveOut = percentCurveIn = percentCurveOut = length = 0;
         curveCenter = curveIn = curveOut = transform.position;
 
         if (shouldRipple)
@@ -156,19 +154,26 @@ public class PathNode : MonoBehaviour
             Vector3 leftDiff = OverwriteY(p1 - p2); // get the FLAT vector to left
             Vector3 rightDiff = OverwriteY(p3 - p2); // get the FLAT vector to right
 
-            Vector3 leftAxis = leftDiff.normalized;
-            Vector3 rightAxis = rightDiff.normalized;
+            Vector3 leftAxis = leftDiff.normalized; // direction to left
+            Vector3 rightAxis = rightDiff.normalized; // direction to right
 
             // the YAW to angle1 and angle2
-            float angleToP3 = Mathf.Atan2(rightDiff.z, rightDiff.x);
-            float angleToP1 = Mathf.Atan2(leftDiff.z, leftDiff.x);
-            angleToP3 = AngleWrapFromTo(angleToP3, angleToP1);
+            float angleToP3 = Mathf.Atan2(rightDiff.z, rightDiff.x); // YAW from this to right
+            float angleToP1 = Mathf.Atan2(leftDiff.z, leftDiff.x); // YAW from this to left
+            angleToP3 = AngleWrapFromTo(angleToP3, angleToP1); // wrap the values into the same 180-degree arc
+
+            if (Mathf.Abs(angleToP1 - angleToP3) >= Mathf.PI) // if in a straight line... don't try to curve.
+            {
+                clampedCurveRadius = 0;
+                return;
+            }
 
             float angleBetween = Mathf.Abs(angleToP3 - angleToP1) / 2; // save a step, and half the difference
             float angleToCenter = (angleToP3 + angleToP1) / 2; // angle from p2 to center... use the average of our previous two angles
 
             float maxAdjacent = Mathf.Min(leftDiff.magnitude, rightDiff.magnitude) * 0.5f;
-            float maxDistance = maxAdjacent / Mathf.Cos(angleBetween);
+            float cos = Mathf.Cos(angleBetween);
+            float maxDistance = maxAdjacent / cos;
             float disToCenter = curveRadius / Mathf.Sin(angleBetween);
 
             if (maxDistance < disToCenter)
@@ -180,7 +185,8 @@ public class PathNode : MonoBehaviour
             Vector3 axisToCenter = new Vector3(Mathf.Cos(angleToCenter), 0, Mathf.Sin(angleToCenter));
             curveCenter = transform.position + axisToCenter * disToCenter;
 
-            float disToInOut = Mathf.Cos(angleBetween) * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+            float disToInOut = cos * disToCenter; // use trig to find FLAT distance to curveIn and curveOut
+
             percentCurveIn = disToInOut / leftDiff.magnitude; // percent of the way from p2 to p1
             percentCurveOut = disToInOut / rightDiff.magnitude; // percent of the way from p2 to p3
 
@@ -259,36 +265,36 @@ public class PathNode : MonoBehaviour
     /// <returns>The newly inserted PathNode.</returns>
     public PathNode Split()
     {
+        // spawn a new node:
+        PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetPrefabParent(this));
+        if (!newNode) return null; // FAILED TO SPAWN!
+
+        // register the upcoming changes in the undo list: (this should also mark the objects as "dirty")
+        string undoName = "Insert a new path node";
+        Undo.RegisterCreatedObjectUndo(newNode.gameObject, undoName);
+        RegisterLinkedListUndo(undoName);
+
+        // determin the positions of the affected nodes:
+
         bool spawnToTheLeft = (this.right && !this.left);
         bool trueSplit = (this.right && this.left);
 
-        // determine position of new node:
-        Vector3 spawnPos = transform.position;
+        Vector3 spawnPos = transform.position; // new position for the new node
+        Vector3 newPosThis = transform.position; // new position for this node
         if (trueSplit)
         {
-            float length = (right.transform.position - left.transform.position).magnitude / 3;
-
             spawnPos = Vector3.Lerp(transform.position, right.transform.position, .33f);
-            transform.position = Vector3.Lerp(transform.position, left.transform.position, .33f);
+            newPosThis = Vector3.Lerp(transform.position, left.transform.position, .33f);
+        }
+        else if (left)      spawnPos += (transform.position - left.transform.position);
+        else if (right)     spawnPos += (transform.position - right.transform.position);
+        else                spawnPos += Vector3.right * 10;
 
-        }
-        else if (left)
-        {
-            spawnPos += (transform.position - left.transform.position);
-        }
-        else if (right)
-        {
-            spawnPos += (transform.position - right.transform.position);
-        }
-        else
-        {
-            spawnPos += Vector3.right * 10;
-        }
+        // position the new node (and this node, if necessary),
+        // AND insert the node into our linked list of nodes:
 
-        // spawn a new node:
-        PathNode newNode = Instantiate(pathNodePrefab, spawnPos, Quaternion.identity);
-
-        // insert the node into our linked list of nodes:
+        newNode.transform.position = spawnPos;
+        newNode.transform.parent = transform.parent;
 
         if (spawnToTheLeft) // if this is the left-most node
         {
@@ -304,18 +310,37 @@ public class PathNode : MonoBehaviour
             newNode.right = this.right;
             if (this.right) this.right.left = newNode;
             this.right = newNode;
+            this.transform.position = newPosThis;
         }
-
         return newNode; // return the new node
+    }
+    /// <summary>
+    /// This method prepares the entire path for changes, by caching the current state in the undo history.
+    /// </summary>
+    /// <param name="undoName">A name of the impending changes. This shows up in the undo history.</param>
+    private void RegisterLinkedListUndo(string undoName)
+    {
+        PathNode node = GetLeftMostNode();
+        List<Object> nodes = new List<Object>();
+        do
+        {
+            nodes.Add(node);
+            node = node.right;
+        } while (node);
+        // this seems really redundant...
+        // I want to call RegisterCompleteOnjectUndo() since it remembers object references after deletion,
+        // but it doesn't seem to result in marking any changes as dirty.
+        // so RecordObjects() is called to mark changed objects as dirty.
+        Undo.RegisterCompleteObjectUndo(nodes.ToArray(), undoName);
+        Undo.RecordObjects(nodes.ToArray(), undoName);
     }
     /// <summary>
     /// Remove this PathNode from the linked list and destroy the GameObject.
     /// </summary>
-    public void RemoveAndDestroy()
+    public void RemoveFromLinkedList()
     {
         if (left) left.right = right;
         if (right) right.left = left;
-        DestroyImmediate(gameObject);
     }
     /// <summary>
     /// Renames all of the PathNode objects in this linked list.
@@ -384,7 +409,18 @@ public class PathNode : MonoBehaviour
     void OnDrawGizmos()
     {
         DrawLines();
+
+        //Gizmos.color = (!left || !right) ? Color.red : Color.white;
+        //Gizmos.DrawCube(transform.position, Vector3.one * .5f);
         Gizmos.DrawIcon(transform.position, "icon-path.png", true);
+        //Gizmos.color = Color.white;
+    }
+    /// <summary>
+    /// What gizmos get drawn in the editor when this object is selected.
+    /// </summary>
+    void OnDrawGizmosSelected()
+    {
+        Gizmos.DrawCube(transform.position, Vector3.one);
     }
     /// <summary>
     /// This method draws the path line in the editor.
@@ -491,5 +527,13 @@ public class PathNode : MonoBehaviour
 
         if (p < 0) p *= -1; // make percent positive
         return CameraDataNode.CameraData.Lerp(data1, data2, p); // lerp
+    }
+    /// <summary>
+    /// This is called when this object is about to be destroyed. It will cleanly remove this node from the linked list, and it registers undo history for the deletion / removal.
+    /// </summary>
+    void OnDestroy()
+    {
+        RegisterLinkedListUndo("Remove node from path");
+        RemoveFromLinkedList();
     }
 }

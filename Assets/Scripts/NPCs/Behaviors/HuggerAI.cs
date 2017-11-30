@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[RequireComponent(typeof(PawnAABB))]
+[RequireComponent(typeof(PawnAABB3D))]
 public class HuggerAI : MonoBehaviour
 {
 
@@ -18,7 +18,7 @@ public class HuggerAI : MonoBehaviour
     /// <summary>
     /// The reference to the pawnAABB component.
     /// </summary>
-    private PawnAABB pawn;
+    private PawnAABB3D pawn;
     /// <summary>
     /// Whether the enemy is grounded.
     /// </summary>
@@ -73,7 +73,7 @@ public class HuggerAI : MonoBehaviour
     // Use this for initialization
     void Start ()
     {
-        pawn = GetComponent<PawnAABB>();
+        pawn = GetComponent<PawnAABB3D>();
 	}
 	
 	// Update is called once per frame
@@ -99,7 +99,7 @@ public class HuggerAI : MonoBehaviour
     /// </summary>
     private void DoCollisions()
     {
-        PawnAABB.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
+        PawnAABB3D.CollisionResults results = pawn.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         if (results.hitLeft || results.hitRight) velocity.x = 0;
         isGrounded = results.hitBottom || results.ascendSlope;
@@ -118,7 +118,7 @@ public class HuggerAI : MonoBehaviour
             SetHugging();
 
         if (!isHugging)
-            transform.position += results.distance;
+            transform.position += results.distanceLocal;
     }
 
     /// <summary>
