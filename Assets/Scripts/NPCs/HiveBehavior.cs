@@ -49,7 +49,6 @@ public class HiveBehavior : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         
-        //TODO: Comment
         while (flies.Count < spawnNumber)
         {
             randomize.x = Random.Range(1, 5);
@@ -69,3 +68,24 @@ public class HiveBehavior : MonoBehaviour {
         }
     }
 }
+
+	void Update () {
+        
+        //TODO: Comment
+        while (flies.Count < spawnNumber)
+        {
+            randomize.x = Random.Range(1, 5);
+            randomize.y = Random.Range(1, 5);
+            randomize.z = Random.Range(1, 5);
+            FlyBehavior newFly = Instantiate(fly, transform.position + randomize, transform.rotation);
+            if(state == 1)
+            {
+                newFly.target = playerTransform;
+                secondaryTarget = newFly.GetComponent<Transform>();
+                state++;
+            }else if(state == 2)
+            {
+                newFly.target = secondaryTarget;
+            }
+            flies.Add(newFly);
+        }
