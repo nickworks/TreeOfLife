@@ -49,6 +49,7 @@ public class HiveBehavior : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         
+        //TODO: Comment
         while (flies.Count < spawnNumber)
         {
             randomize.x = Random.Range(1, 5);
