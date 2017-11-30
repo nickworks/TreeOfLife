@@ -1,9 +1,10 @@
 
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-namespace Player {
+namespace Player
+{
     /// <summary>
     /// This component turns a GameObject into a controllable avatar.
     /// </summary>
@@ -71,11 +72,27 @@ namespace Player {
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
 
+        /// <summary>
+        /// This int stores what state the player is currently in.
+        /// </summary>
+        public int currentState = 1;
+
+        /// <summary>
+        /// These constants represent what state the player is in, used only by currentState (above).
+        /// </summary>
+        public const int STATE_REGULAR = 1;
+        public const int STATE_CLIMBING = 2;
+        public const int STATE_SWINGING = 3;
+
         public Vector3 worldSpace;
 
-
-          //public SpawnTriggerMover sTM = new SpawnTriggerMover();
+        //public SpawnTriggerMover sTM = new SpawnTriggerMover();
         SpawnPointMover sTM;
+
+        /// <summary>
+        /// Reference to the SpawnPoint object in the scene
+        /// </summary>
+        GameObject spawnRef;
 
         #endregion
         #region Setup
@@ -91,6 +108,7 @@ namespace Player {
             rigidBody = GetComponent<Rigidbody>();
             rigidBody.isKinematic = true;
             main = this;
+            spawnRef = GameObject.Find("SpawnPoint");
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -115,7 +133,11 @@ namespace Player {
         /// </summary>
         void Update()
         {
-            if (playerState == null) playerState = new PlayerStateRegular();
+            if (playerState == null)
+            {
+                playerState = new PlayerStateRegular();
+                currentState = STATE_REGULAR;
+            }
 
             PlayerState nextState = playerState.Update(this);
             if (nextState != null)
@@ -124,13 +146,26 @@ namespace Player {
                 playerState = nextState;
                 playerState.OnEnter(this);
             }
-            
+
             //If the player hits the respawn button
-            if (Input.GetButton("Respawn"))
+            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("Respawn"))
             {
-                //We set their current transform to the STM's transform
-              transform.position = sTM.transform.position;
-                
+                FindObjectOfType<SceneDictionary>().RestartLevel();
+            }
+
+            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("LeftTrigger"))
+            {
+                gameObject.SetActive(false);
+                velocity = Vector3.zero;
+                transform.localPosition = spawnRef.transform.localPosition;
+                GetComponent<AlignWithPath>().currentNode = spawnRef.GetComponent<SpawnLocation>().spawnNode;
+                gameObject.SetActive(true);
+            }
+
+            if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
+            {
+                playerState = new PlayerStateRegular();
+                currentState = STATE_REGULAR;
             }
         }
 
@@ -139,22 +174,24 @@ namespace Player {
         /// </summary>
         /// <param name ="gravityDirection">Which direction should gravity point?  Will be normalized.</param>
         /// <param name ="gravityForce">The power of the gravitational force</param>
-        public void SetGravity(Vector3? gravityDirection = null, float? gravityForce = null )
+        public void SetGravity(Vector3? gravityDirection = null, float? gravityForce = null)
         {
             //If gravity direction isn't specified, set it to the default "down"
-            if( gravityDirection == null )
+            if (gravityDirection == null)
             {
                 gravityDir = Vector3.down;
-            } else//Otherwise we set gravity to the new direction, and normalize that value
+            }
+            else//Otherwise we set gravity to the new direction, and normalize that value
             {
                 Vector3 tempDirection = (Vector3)gravityDirection;//converts the Vector3? to a vector3
                 gravityDir = tempDirection.normalized;
             }
             //If gravity force isn't specified, set it to the default value created at startup
-            if( gravityForce == null )
+            if (gravityForce == null)
             {
                 gravityTemporary = gravityStandard;
-            } else//Otherwise we set the force of gravity to the new value
+            }
+            else//Otherwise we set the force of gravity to the new value
             {
                 gravityTemporary = (float)gravityForce;//Convert the float? to a normal float
             }
@@ -165,33 +202,37 @@ namespace Player {
         /// </summary>
         /// <param name="forceForce">The power of the force to be applied to this pawn.</param>
         /// <param name="forceDir">The directional vector of the force.  Will be normalized.</param>
-        public void ApplyForce( float forceForce, Vector3 forceDir )
+        public void ApplyForce(float forceForce, Vector3 forceDir)
         {
             velocity += forceForce * forceDir.normalized * Time.deltaTime;
         }
 
+        /// <summary>
+        /// This message is called by the physics engine while the player is in a trigger volume.
+        /// </summary>
+        /// <param name="other">The trigger volume of the other object.</param>
         private void OnTriggerStay(Collider other)
         {
-            switch (other.tag)
+            if (Input.GetButton("Grab"))
             {
-                case "StickyWeb":
-                    if (Input.GetButton("Grab"))
-                    {
-                        playerState = new PlayerStateClimbing();
-                    }else if (Input.GetButtonUp("Jump"))
-                    {
-                        playerState = new PlayerStateRegular();
-                    }
+                switch (other.tag)
+                {
+                    case "StickyWeb":
+                        playerState = new PlayerStateClimbing("StickyWeb"); // ID 1 = StickyWeb
+                        currentState = STATE_CLIMBING;
+                        break;
+                    case "Rope":
+                        playerState = new PlayerStateClimbing("Rope"); // ID 2 = Rope
+                        currentState = STATE_CLIMBING;
+                        break;
+                }
+            }
+        }
 
-                    break;
-
-            }//End of switch Statement
-        }//End of private void OnTriggerStay
-
-         /// <summary>
-         /// This message is called by the 2D physics engine when the player enters a trigger volume.
-         /// </summary>
-         /// <param name="other">The trigger volume of the other object.</param>
+        /// <summary>
+        /// This message is called by the physics engine when the player enters a trigger volume.
+        /// </summary>
+        /// <param name="other">The trigger volume of the other object.</param>
         void OnTriggerEnter(Collider other)
         {
             // allows the player to attach itself to the raft and passes in a reference to the player
@@ -200,9 +241,9 @@ namespace Player {
                 case "Raft":
                     other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
                     break;
-
             }
         }
+
         /// <summary>
         /// detects the end of collision with objects
         /// </summary>
@@ -216,12 +257,12 @@ namespace Player {
                     other.transform.parent.gameObject.GetComponent<Raft>().Detach();
                     break;
                 case "StickyWeb":
-                    //The player state is set to regular
+                case "Rope":
                     playerState = new PlayerStateRegular();
+                    currentState = STATE_REGULAR;
                     break;
             }
         }
     }
 
 }
-       

@@ -1064,6 +1064,7 @@ GameObject:
   - component: {fileID: 305090451}
   - component: {fileID: 305090450}
   - component: {fileID: 305090448}
+  - component: {fileID: 305090449}
   m_Layer: 0
   m_Name: LeaderBug
   m_TagString: LeaderBug
@@ -1089,6 +1090,18 @@ MonoBehaviour:
   speed: 0.5
   target: {fileID: 1355600175}
   isStopped: 0
+--- !u!65 &305090449
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 305090447}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.0000001, y: 2, z: 1.0000002}
+  m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
 --- !u!23 &305090450
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2310,6 +2323,7 @@ GameObject:
   - component: {fileID: 982099928}
   - component: {fileID: 982099927}
   - component: {fileID: 982099926}
+  - component: {fileID: 982099925}
   m_Layer: 8
   m_Name: Platform (2)
   m_TagString: Untagged
@@ -2317,6 +2331,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!65 &982099925
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 982099924}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 1, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &982099926
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -2716,11 +2742,11 @@ Prefab:
     m_Modifications:
     - target: {fileID: 4711316976598028, guid: f028640214710694e91e5814722cac50, type: 2}
       propertyPath: m_LocalPosition.x
-      value: 12.79
+      value: -40.9
       objectReference: {fileID: 0}
     - target: {fileID: 4711316976598028, guid: f028640214710694e91e5814722cac50, type: 2}
       propertyPath: m_LocalPosition.y
-      value: -2.54
+      value: 7.2
       objectReference: {fileID: 0}
     - target: {fileID: 4711316976598028, guid: f028640214710694e91e5814722cac50, type: 2}
       propertyPath: m_LocalPosition.z
@@ -4746,6 +4772,7 @@ GameObject:
   - component: {fileID: 2128189867}
   - component: {fileID: 2128189866}
   - component: {fileID: 2128189864}
+  - component: {fileID: 2128189865}
   m_Layer: 0
   m_Name: Hive
   m_TagString: Untagged
@@ -4770,6 +4797,18 @@ MonoBehaviour:
   state: 2
   action: 0
   canSpawn: 0
+--- !u!65 &2128189865
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 0}
+  m_GameObject: {fileID: 2128189863}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1, y: 0.99999994, z: 1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!23 &2128189866
 MeshRenderer:
   m_ObjectHideFlags: 0

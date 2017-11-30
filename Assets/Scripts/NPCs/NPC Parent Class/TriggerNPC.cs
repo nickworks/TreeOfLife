@@ -40,4 +40,30 @@ public class TriggerNPC : MonoBehaviour {
     }
 
     
+
+    
+
+ /*
+        }else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
+        }
+    }
+
+    private void OnTriggerStay(Collider other)
+    {
+            GetComponentInParent<BehaviorNPC>().PlayerNearby(other.GetComponent<PlayerController>());
+        }
+        else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
+        }
+    }//End of private void OnTriggerStay
+
+    private void OnTriggerExit(Collider other)
+    {
+            GetComponentInParent<BehaviorNPC>().LosesPlayer();
+        }
+    }
+ */
 }

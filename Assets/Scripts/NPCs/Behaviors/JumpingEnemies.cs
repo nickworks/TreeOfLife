@@ -23,8 +23,8 @@ using UnityEditor;
 ///     1. New objects using this script will need to choose "Ground" under Collidable With within the editor 
 ///        of the Pawn AABB (script). This will make it so that enemies will collide with the ground.
 /// </summary>
-[RequireComponent(typeof(PawnAABB))]
-[RequireComponent(typeof(BoxCollider2D))]
+[RequireComponent(typeof(PawnAABB3D))]
+[RequireComponent(typeof(BoxCollider))]
 public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// holds object tags for the type of enemy you want the object to be.
@@ -113,7 +113,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// stores a reference to this objects PawnAABB script.
     /// </summary>
-    private PawnAABB enemyAABB;
+    private PawnAABB3D enemyAABB;
     /// <summary>
     /// stores a reference to the player object in the scene.
     /// </summary>
@@ -127,7 +127,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
     void Start () {
         enemy = gameObject.GetComponent<Transform>();
-        enemyAABB = gameObject.GetComponent<PawnAABB>();
+        enemyAABB = gameObject.GetComponent<PawnAABB3D>();
         Player.PlayerController playerControl = (Player.PlayerController)FindObjectOfType(typeof(Player.PlayerController));
         player = playerControl.GetComponent<Transform>();
         if (useActivationDistance == false) isActivated = true;
@@ -237,7 +237,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
     private void HandleCollisions()
     {
-        PawnAABB.CollisionResults results = enemyAABB.Move(velocity * Time.deltaTime);
+        PawnAABB3D.CollisionResults results = enemyAABB.Move(velocity * Time.deltaTime);
         if (results.hitTop || results.hitBottom) velocity.y = 0;
         // THIS IF STATEMENT IS ONLY USED FOR OBJECTS WITH THE TAG: "jumpingEnemy3"
         if (enemyType == JumpingEnemies.EnemyType.directionJumpingEnemy)
@@ -249,7 +249,7 @@ public class JumpingEnemies : MonoBehaviour {
             } 
         }
         isGrounded = results.hitBottom || results.ascendSlope;
-        transform.position += results.distance;
+        transform.position += results.distanceLocal;
     }
     /// <summary>
     /// applies damage to the player if colliding

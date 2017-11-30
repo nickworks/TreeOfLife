@@ -52,8 +52,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 96f331f99458f344c838a22a31ef74e1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  pathNodePrefab: {fileID: 114400119598113034}
-  cameraDataNode: {fileID: 0}
+  cameraDataNode: {fileID: 114617691073835292}
   curveRadius: 2
   left: {fileID: 0}
   right: {fileID: 0}
@@ -68,9 +67,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: be735a4a758f63d4b845fc7f4f1e4236, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  previewFrustrumGizmo: 0
   cameraData:
     cameraDistance: 10
     pitchOffset: 0
     yawOffset: 0
     fov: 80
     easeMultiplier: 1.5
+  drawSceneViewer: 1
