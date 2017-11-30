@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class HiveBehavior : MonoBehaviour {
+public class HiveBehavior : MonoBehaviour
+{
 
     /// <summary>
     /// A vector used to randomize the bugs starting position
@@ -41,26 +42,28 @@ public class HiveBehavior : MonoBehaviour {
 
 
     // Use this for initialization
-    void Start ()
-    {       
-       playerTransform = GameObject.Find("Player").GetComponent<Transform>();		     
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        
+    void Start()
+    {
+        playerTransform = GameObject.Find("Player").GetComponent<Transform>();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+
         while (flies.Count < spawnNumber)
         {
             randomize.x = Random.Range(1, 5);
             randomize.y = Random.Range(1, 5);
             randomize.z = Random.Range(1, 5);
             FlyBehavior newFly = Instantiate(fly, transform.position + randomize, transform.rotation);
-            if(state == 1)
+            if (state == 1)
             {
                 newFly.target = playerTransform;
                 secondaryTarget = newFly.GetComponent<Transform>();
                 state++;
-            }else if(state == 2)
+            }
+            else if (state == 2)
             {
                 newFly.target = secondaryTarget;
             }
@@ -68,24 +71,3 @@ public class HiveBehavior : MonoBehaviour {
         }
     }
 }
-
-	void Update () {
-        
-        //TODO: Comment
-        while (flies.Count < spawnNumber)
-        {
-            randomize.x = Random.Range(1, 5);
-            randomize.y = Random.Range(1, 5);
-            randomize.z = Random.Range(1, 5);
-            FlyBehavior newFly = Instantiate(fly, transform.position + randomize, transform.rotation);
-            if(state == 1)
-            {
-                newFly.target = playerTransform;
-                secondaryTarget = newFly.GetComponent<Transform>();
-                state++;
-            }else if(state == 2)
-            {
-                newFly.target = secondaryTarget;
-            }
-            flies.Add(newFly);
-        }
