@@ -18,7 +18,7 @@ public class EnemyDasher : MonoBehaviour
     /// <summary>
     /// float used to store the throw power 
 	/// </summary>
-    public float enemeyImpulse;
+    public float enemeyImpulse = 20;
     /// <summary>
     /// vector3 used to store and change the objects velocity 
     /// </summary>

@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Player;
 
 public class ThrowTrigger : MonoBehaviour {   
     // FIX ME - needs to check for 0 velocity to reset canBeThrown
