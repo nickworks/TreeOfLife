@@ -42,8 +42,8 @@ public class TriggerNPC : MonoBehaviour {
     
 
     
-}
 
+ /*
         }else if (other.tag == "StickyWeb")
         {
             GetComponentInParent<BehaviorNPC>().IsStopped();
@@ -65,3 +65,5 @@ public class TriggerNPC : MonoBehaviour {
             GetComponentInParent<BehaviorNPC>().LosesPlayer();
         }
     }
+ */
+}
