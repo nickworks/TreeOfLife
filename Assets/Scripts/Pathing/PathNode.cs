@@ -414,10 +414,14 @@ public class PathNode : MonoBehaviour
     {
         DrawLines();
 
-        //Gizmos.color = (!left || !right) ? Color.red : Color.white;
-        //Gizmos.DrawCube(transform.position, Vector3.one * .5f);
-        Gizmos.DrawIcon(transform.position, "icon-path.png", true);
-        //Gizmos.color = Color.white;
+        string icon = "icon-path-no-lr.png";
+
+        if (left && right) icon = "icon-path.png";
+        else if (left) icon = "icon-path-no-r.png";
+        else if (right) icon = "icon-path-no-l.png";
+
+        Gizmos.DrawIcon(transform.position, icon, true);
+        
     }
     /// <summary>
     /// What gizmos get drawn in the editor when this object is selected.
