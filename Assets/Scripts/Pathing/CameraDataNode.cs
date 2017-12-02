@@ -165,9 +165,9 @@ public class CameraNodeSceneGUI : Editor
         }
         if (GUI.changed)
         {
+            Debug.Log("orient?");
             UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
         }
-
     }
     /// <summary>
     /// Custom functionality called every frame a GUI element is to be rendered in the scene.
@@ -185,14 +185,18 @@ public class CameraNodeSceneGUI : Editor
     {
         //Draw rotation handles in the scene that can be manipulated to change the yaw/pitch offsets
         Handles.color = Color.black;
+        EditorGUI.BeginChangeCheck();
         Vector3 pitchAxis = camNode.GetCameraRotation() * Vector3.right;//horizontal axis creates vertical rotaiton
         Quaternion rot = camNode.GetCameraRotation();
-
         float newPitchOffset = Handles.Disc(rot, camNode.transform.position, pitchAxis, 1f, false, 1f).eulerAngles.x;
-        camNode.cameraData.pitchOffset = AngleWrapFromTo(newPitchOffset, 0);//create the disk handle and assign it's value to the variable
-
+        float yawDelta = Handles.Disc(rot, camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;
         Handles.color = Color.magenta;
-        camNode.cameraData.yawOffset += rot.eulerAngles.y - Handles.Disc(rot, camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;//create a disk handle and assign it's value to the variable
+        if (EditorGUI.EndChangeCheck())
+        {
+            Undo.RecordObject(camNode, "adjust path camera data");
+            camNode.cameraData.pitchOffset = AngleWrapFromTo(newPitchOffset, 0);//create the disk handle and assign it's value to the variable
+            camNode.cameraData.yawOffset += rot.eulerAngles.y - yawDelta; //create a disk handle and assign it's value to the variable
+        }
     }
     /// <summary>
     /// Draws an arrow that acts as a move handle to affect the camera distance value.
