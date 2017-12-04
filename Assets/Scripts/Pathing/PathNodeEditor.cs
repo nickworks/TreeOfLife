@@ -16,7 +16,6 @@ public class PathNodeEditor : Editor
     override public void OnInspectorGUI()
     {
         base.DrawDefaultInspector();
-
         PathNode node = ((PathNode)target);
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("+ NODE"))
@@ -30,7 +29,13 @@ public class PathNodeEditor : Editor
             Undo.DestroyObjectImmediate(node.gameObject);
             Rename(temp);   
         }
-        GUILayout.EndHorizontal(); 
+        GUILayout.EndHorizontal();
+        EditorGUILayout.LabelField("Debugging:");
+        PathNode.showSharpTurns = EditorGUILayout.Toggle("Show Sharp Turns", PathNode.showSharpTurns);
+        if (GUI.changed)
+        {
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews(); // force a redraw...
+        }
     }
     /// <summary>
     /// This method renames all of the PathNode objects in a path.

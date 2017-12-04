@@ -33,10 +33,17 @@ public class FlyBehavior : BehaviorNPC {
     /// A vector 3 that is used to move the bug around
     /// </summary>
     Vector3 flyMover = new Vector3();
+
+    
+
+
     /// <summary>
     /// A public boolean used to control wiether or not the bug is stopped
     /// </summary>
     public bool isStopped;
+
+    //An array of box colliders
+    public BoxCollider[] colliders;
 
     #endregion
 
@@ -44,22 +51,22 @@ public class FlyBehavior : BehaviorNPC {
     // Use this for initialization
     void Start ()
     {
-		
+       
+        
 	}
 	
 	// Update is called once per frame
 	void Update ()
     {
-        //TODO: Expand Fly AI Logic
-        //TODO: Change Fly AI logic to differentiate between follower and leader
-        //TODO: SPawn Flies from Hives
+        //If the fly is not stopped
         if (!isStopped)
         {
-            
+            //Then we use the distance function built into unity to calculate the distance between the fly and it's target
             distance = Vector3.Distance(target.position, transform.position);
-
+            //We call the chase player method
             ChasePlayer();
-            transform.position += flyMover;
+            //We add the flymover vector to it's transform position
+            transform.position += flyMover*Time.deltaTime;
             
         }
         
@@ -109,7 +116,7 @@ public class FlyBehavior : BehaviorNPC {
             //We subtract speed multiplied by deltaTime to the flymover.y
             flyMover.z -= speed * Time.deltaTime;
         }
-    }
+    }//End of chase player
 
     public override void FindsPlayer(PlayerController player)
     {
@@ -128,8 +135,29 @@ public class FlyBehavior : BehaviorNPC {
 
     public override void IsStopped()
     {
+        //This loops through all of the collider objects in colliders
+        foreach(BoxCollider collider in colliders)
+        {
+            //Then sets them to false so we can no longer collide with them
+            collider.enabled = false;
+        }
+        //We set isStopped to true
         isStopped = true;
-        print("Working?");
+        
+    }
+
+    void OnTriggerEnter(Collider other)
+    {
+        //If the fly hits a web it is stopped
+        switch (other.gameObject.tag)
+        {
+            case "StickyWeb":
+                //At the start we get the boxColliders in children objects
+                colliders = GetComponentsInChildren<BoxCollider>();
+                //we call is Stopped
+                IsStopped();
+                break;
+        }
     }
 
 }
