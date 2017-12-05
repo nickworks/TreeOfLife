@@ -69,6 +69,27 @@ public class CameraDataNode : MonoBehaviour {
     public CameraData cameraData;
     public static bool drawFrustumGizmos = false;
 
+    /// <summary>
+    /// Called when the script is started in game.  Disables GUI camera so it doesn't show up in game.
+    /// </summary>
+    private void Start()
+    {
+        if( GameObject.Find("NodePreviewCam"))
+        {
+            GameObject.Find("NodePreviewCam").GetComponent<Camera>().enabled = false;
+        }
+    }
+    /// <summary>
+    /// Called when the game is exited.  Re-enables GUICamera for editor use
+    /// </summary>
+    private void OnApplicationQuit()
+    {
+        if( GameObject.Find("NodePreviewCam") )
+        {
+            GameObject.Find("NodePreviewCam").GetComponent<Camera>().enabled = true;
+        }
+    }
+
     #region gizmo rendering
 
     /// <summary>
@@ -121,6 +142,7 @@ public class CameraDataNode : MonoBehaviour {
         {
             CameraDataNode.GUIcam = Instantiate(GameObject.FindGameObjectWithTag("MainCamera"));
             CameraDataNode.GUIcam.name = "NodePreviewCam";
+            CameraDataNode.GUIcam.tag = "Untagged";
             CameraDataNode.GUIcam.hideFlags = HideFlags.HideInHierarchy;
         }
     }
