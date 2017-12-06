@@ -12,7 +12,7 @@ public class KillVolume : MonoBehaviour
     /// <summary>
     /// Reference to the SpawnPoint object in the scene
     /// </summary>
-    GameObject spawnRef;
+    public GameObject spawnRef;
 
     /// <summary>
     /// Used to set the reference
