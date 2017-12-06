@@ -47,7 +47,7 @@ public class FallingPlatform : MonoBehaviour
         /// Tag of Player
         if (collider.CompareTag("Player"))
         {
-            print("Hello");
+       //     print("Hello");
 
             isFalling = true;
         }
@@ -64,7 +64,7 @@ public class FallingPlatform : MonoBehaviour
     {
         if (isFalling)
         {
-            print("fuck");
+           // print("");
             downSpeed += Time.deltaTime / 100;
             transform.position = new Vector3(transform.position.x, transform.position.y - downSpeed, transform.position.z);
 

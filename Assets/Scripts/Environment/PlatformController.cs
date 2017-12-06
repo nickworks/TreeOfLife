@@ -47,7 +47,7 @@ public class PlatformController : MonoBehaviour
     /// <summary>
     /// This holds a reference to the platforms collider
     /// </summary>
-    BoxCollider2D collider;
+    BoxCollider collider;
     /// <summary>
     /// This determines the origins of the raycast
     /// </summary>
@@ -59,7 +59,7 @@ public class PlatformController : MonoBehaviour
     public void Start()
     {
         //Set the collider
-        collider = GetComponent<BoxCollider2D>();
+        collider = GetComponent<BoxCollider>();
         //Calculate the space that will be between each ray
         CalculateRaySpacing();
         //Set the player reference
