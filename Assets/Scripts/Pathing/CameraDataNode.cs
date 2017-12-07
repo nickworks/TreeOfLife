@@ -67,11 +67,28 @@ public class CameraDataNode : MonoBehaviour {
     /// Stores camera data.
     /// </summary>
     public CameraData cameraData;
+    public static bool drawFrustumGizmos = false;
+
     /// <summary>
-    /// Determines whether or not a camera window is drawn in the scene.
+    /// Called when the script is started in game.  Disables GUI camera so it doesn't show up in game.
     /// </summary>
-    [HideInInspector]
-    public bool drawSceneViewer = true;
+    private void Start()
+    {
+        if( GameObject.Find("NodePreviewCam"))
+        {
+            GameObject.Find("NodePreviewCam").GetComponent<Camera>().enabled = false;
+        }
+    }
+    /// <summary>
+    /// Called when the game is exited.  Re-enables GUICamera for editor use
+    /// </summary>
+    private void OnApplicationQuit()
+    {
+        if( GameObject.Find("NodePreviewCam") )
+        {
+            GameObject.Find("NodePreviewCam").GetComponent<Camera>().enabled = true;
+        }
+    }
 
     #region gizmo rendering
 
@@ -80,9 +97,14 @@ public class CameraDataNode : MonoBehaviour {
     /// </summary>
     private void OnDrawGizmosSelected()
     {
+        if (!drawFrustumGizmos) return;
+
         Gizmos.DrawIcon(GetCameraLocation(), "icon-camera", true);//draw a camera icon where the cam would be.
         Matrix4x4 temp = Gizmos.matrix;//In order to use frustrum drawing, some matrix translations are required.
-        Gizmos.matrix = Matrix4x4.TRS(GetCameraLocation(), GetCameraRotation(), Vector3.one);
+
+        Vector3 p = GetCameraLocation();
+        //print("gizmo position: " + p);
+        Gizmos.matrix = Matrix4x4.TRS(p, GetCameraRotation(), Vector3.one);
         Gizmos.DrawFrustum(Vector3.zero, cameraData.fov, cameraData.cameraDistance * 2, 0, 4/3);
         Gizmos.matrix = temp;//reset the gizmo location.
     }
@@ -105,11 +127,9 @@ public class CameraDataNode : MonoBehaviour {
     public Quaternion GetCameraRotation()
     {
         /* Camera yaw (movement around the y axis (along the horizon) is calculated in two parts.  The first part is the orientation of the path node itself, and then the additional yaw offset specified by the camera node.  Both need to be added together. */
-        Quaternion worldRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
-        float yawAngle = worldRotation.eulerAngles.y;
-        Quaternion rotation = Quaternion.Euler(cameraData.pitchOffset, yawAngle - cameraData.yawOffset, 0);
-
-        return rotation;
+        // the rotation of the player:
+        Quaternion playerRotation = GetComponent<PathNode>().GetRotationOnCurve(.5f);
+        return Quaternion.Euler(cameraData.pitchOffset, playerRotation.eulerAngles.y - cameraData.yawOffset, 0);
     }
 
     /// <summary>
@@ -122,6 +142,7 @@ public class CameraDataNode : MonoBehaviour {
         {
             CameraDataNode.GUIcam = Instantiate(GameObject.FindGameObjectWithTag("MainCamera"));
             CameraDataNode.GUIcam.name = "NodePreviewCam";
+            CameraDataNode.GUIcam.tag = "Untagged";
             CameraDataNode.GUIcam.hideFlags = HideFlags.HideInHierarchy;
         }
     }
@@ -142,7 +163,7 @@ public class CameraNodeSceneGUI : Editor
     /// <summary>
     /// Stores the Rect component of the camera viewport window.
     /// </summary>
-    private Rect camWindow = new Rect(Screen.width - 430, Screen.height - 360, 400, 300);//TODO: adjustable size scalar & aspect ratio?
+    private Rect camWindowRect = new Rect(Screen.width - 430, Screen.height - 360, 400, 300);//TODO: adjustable size scalar & aspect ratio?
 
     /// <summary>
     /// Called when the editor is created. Links the node the editor targets to an internal variable.
@@ -158,39 +179,57 @@ public class CameraNodeSceneGUI : Editor
     {
         DrawDefaultInspector();//Make sure we have the normal camera data node inspector elements.
         if(CameraDataNode.GUIcam) OrientGUICamera();//Aligns the camera to the node's specifications.  This needs to be done every time a change is made so that it's updated for the editor version of the viewing window
-        if(GUILayout.Button(new GUIContent("View in Scene Window", "Draw a viewport window in the scene view that displays the camera node's camera view.  May take a second to respond.")) )
-        {
-            camNode.drawSceneViewer = !camNode.drawSceneViewer;//toggle the variable
-            if( !camNode.drawSceneViewer )//if we're not drawing the scene-viewing window
-            {
-                if(!FindObjectOfType<CameraNodeWindow>())//if there isn't an editor window
-                {
-                    //clean up the GUI camera
-                    DestroyImmediate(CameraDataNode.GUIcam);
-                    CameraDataNode.GUIcam = null;
-                }
-            } 
-        }
-        if( GUILayout.Button(new GUIContent("View in Editor Window", "Opens a new editor window that displays the camera nodes' camera view.")) )
+
+        CameraDataNode.drawFrustumGizmos = EditorGUILayout.Toggle("Draw Camera Gizmos", CameraDataNode.drawFrustumGizmos);
+        if (GUILayout.Button(new GUIContent("Open Preview Window", "Opens a new window that displays the camera nodes' camera view.")))
         {
             EditorWindow.GetWindow<CameraNodeWindow>();
         }
+        if (GUI.changed)
+        {
+            Debug.Log("orient?");
+            UnityEditorInternal.InternalEditorUtility.RepaintAllViews();
+        }
     }
-
     /// <summary>
     /// Custom functionality called every frame a GUI element is to be rendered in the scene.
     /// </summary>
     private void OnSceneGUI()
     {
-        //If the draw camera has been toggled on we'll create a viewport window to see the camera.
-        if( camNode.drawSceneViewer )
+        if (!CameraDataNode.drawFrustumGizmos) return;
+        DrawDistanceHandles();
+        DrawRotationHandles();   
+    }
+    /// <summary>
+    /// Draws circular disks that act as rotation handles to affect yaw and pitch values.
+    /// </summary>
+    void DrawRotationHandles()
+    {
+        //Draw rotation handles in the scene that can be manipulated to change the yaw/pitch offsets
+        Handles.color = Color.black;
+        EditorGUI.BeginChangeCheck();
+        Vector3 pitchAxis = camNode.GetCameraRotation() * Vector3.right;//horizontal axis creates vertical rotaiton
+        Quaternion rot = camNode.GetCameraRotation();
+        float newPitchOffset = Handles.Disc(rot, camNode.transform.position, pitchAxis, 1f, false, 1f).eulerAngles.x;
+        float yawDelta = Handles.Disc(rot, camNode.transform.position, Vector3.up, 1f, false, 1f).eulerAngles.y;
+        Handles.color = Color.magenta;
+        if (EditorGUI.EndChangeCheck())
         {
-            //Draw a Window GUI element that we'llr ender the camera in
-            Handles.BeginGUI();//start a 2dGUI drawing session
-            int id = 0;
-            camWindow = GUI.Window(id, camWindow, DrawSceneViewerWindow, new GUIContent("Camera View", "A preview of what the camera will see when oriented to this camera node."));
-            Handles.EndGUI();//End the 2dGUI session
-        }        
+            Undo.RecordObject(camNode, "adjust path camera data");
+            camNode.cameraData.pitchOffset = AngleWrapFromTo(newPitchOffset, 0);//create the disk handle and assign it's value to the variable
+            camNode.cameraData.yawOffset += rot.eulerAngles.y - yawDelta; //create a disk handle and assign it's value to the variable
+        }
+    }
+    /// <summary>
+    /// Draws an arrow that acts as a move handle to affect the camera distance value.
+    /// </summary>
+    void DrawDistanceHandles()
+    {
+        //Draw a handle for camera distance
+        Handles.color = Color.cyan;
+        Vector3 position = camNode.GetCameraLocation();
+        Handles.DrawDottedLine(position, camNode.transform.position, 4);//simple line help align camera
+        camNode.cameraData.cameraDistance = Handles.ScaleValueHandle(camNode.cameraData.cameraDistance, camNode.GetCameraLocation(), camNode.GetCameraRotation(), camNode.cameraData.cameraDistance, Handles.ArrowHandleCap, .25f);
     }
     /// <summary>
     /// A callback function that draws the contents of a custom GUI window.
@@ -200,7 +239,7 @@ public class CameraNodeSceneGUI : Editor
     {
         CameraDataNode.CreateGUICam();
         //draw the camera's view (offsets compensate for window name bar and border)
-        Handles.DrawCamera(new Rect(0, 16, camWindow.width-1, camWindow.height - 17), CameraDataNode.GUIcam.GetComponent<Camera>(), DrawCameraMode.Normal);
+		Handles.DrawCamera(new Rect(0, 16, camWindowRect.width-1, camWindowRect.height - 17), CameraDataNode.GUIcam.GetComponent<Camera>(), DrawCameraMode.Normal);
 
         GUI.DragWindow();//allows the window to be dragged around the scene view.
     }
@@ -213,6 +252,18 @@ public class CameraNodeSceneGUI : Editor
         CameraDataNode.GUIcam.transform.position = camNode.GetCameraLocation();
         CameraDataNode.GUIcam.transform.rotation = camNode.GetCameraRotation();
         CameraDataNode.GUIcam.GetComponent<Camera>().fieldOfView = camNode.cameraData.fov;
+    }
+    /// <summary>TODO: Static Utility Class?
+    /// This utility function converts one angle to be within 180 degrees of second angle.
+    /// </summary>
+    /// <param name="a">The angle to adjust.</param>
+    /// <param name="b">The stationary reference angle.</param>
+    /// <returns>The adjusted angle.</returns>
+    float AngleWrapFromTo(float a, float b)
+    {
+        while (a - b > 180) a -= 360;
+        while (a - b < -180) a += 360;
+        return a;
     }
 }
 
@@ -237,24 +288,24 @@ public class CameraNodeWindow : EditorWindow
     /// </summary>
     private void Awake()
     {
-        if(!CameraDataNode.GUIcam ) CameraDataNode.CreateGUICam();
+        if(!CameraDataNode.GUIcam ) CameraDataNode.CreateGUICam();//when the window is opened, make sure there's a camera
     }
     /// <summary>
     /// Called every frame to draw GUI elements.  Draws the camera view in the window.
     /// </summary>
     private void OnGUI()
     {
-        if( !CameraDataNode.GUIcam ) CameraDataNode.CreateGUICam();
+        if( !CameraDataNode.GUIcam ) CameraDataNode.CreateGUICam();//instantiate a GUI-use camera if one isn't in use.
         Rect camRect = new Rect(0, 0, Screen.width, Screen.height);//use the size of the window, can be dynamically resized.
         Handles.DrawCamera(camRect, CameraDataNode.GUIcam.GetComponent<Camera>());
         Repaint();//manually repaints the window
     }
     /// <summary>
-    /// Called when the window is closed.  Cleans up the GUI camera.
+    /// Called when the window is closed.  Cleans up the GUI camera if it's not being used.
     /// </summary>
     private void OnDestroy()
     {
-        if( CameraDataNode.GUIcam )
+        if (CameraDataNode.GUIcam)//we don't wanna delete a camera that doesn't exist, just in case
         {
             DestroyImmediate(CameraDataNode.GUIcam);//Destroy Immediate is for editor destruction, use instead of destroy
             CameraDataNode.GUIcam = null;

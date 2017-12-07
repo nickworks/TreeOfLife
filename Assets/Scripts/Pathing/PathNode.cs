@@ -53,7 +53,11 @@ public class PathNode : MonoBehaviour
     /// <summary>
     /// How much to curve this corner (if space allows).
     /// </summary>
-    [Range(0, 20)] public float curveRadius = 0;
+    [Range(0, 50)] public float curveRadius = 0;
+    /// <summary>
+    /// This renders sharp turns as RED.
+    /// </summary>
+    static public bool showSharpTurns = true;
     /// <summary>
     /// The PathNode to the left of this one. This is the previous item in the linked List.
     /// </summary>
@@ -410,10 +414,14 @@ public class PathNode : MonoBehaviour
     {
         DrawLines();
 
-        //Gizmos.color = (!left || !right) ? Color.red : Color.white;
-        //Gizmos.DrawCube(transform.position, Vector3.one * .5f);
-        Gizmos.DrawIcon(transform.position, "icon-path.png", true);
-        //Gizmos.color = Color.white;
+        string icon = "icon-path-no-lr.png";
+
+        if (left && right) icon = "icon-path.png";
+        else if (left) icon = "icon-path-no-r.png";
+        else if (right) icon = "icon-path-no-l.png";
+
+        Gizmos.DrawIcon(transform.position, icon, true);
+        
     }
     /// <summary>
     /// What gizmos get drawn in the editor when this object is selected.
@@ -439,6 +447,17 @@ public class PathNode : MonoBehaviour
 
             int segments = 10;
             Vector3 pt1 = curveIn;
+
+            if (showSharpTurns)
+            {
+                float p1 = 2 * Mathf.Abs(angleCurveIn - angleCurveOut) / Mathf.PI;
+                float p2 = 1 - (clampedCurveRadius / 10);
+                Gizmos.color = Color.Lerp(Color.green, Color.red, p1 * p2);
+            } else
+            {
+                Gizmos.color = Color.white;
+            }
+
             for (int i = 0; i < segments; i++)
             {
                 float t = i / (float)segments;
@@ -448,6 +467,7 @@ public class PathNode : MonoBehaviour
                 pt1 = pt2;
             }
             Gizmos.DrawLine(pt1, curveOut);
+            Gizmos.color = Color.white;
         }
     }
     /// <summary>
