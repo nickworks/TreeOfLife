@@ -47,7 +47,7 @@ public class PlatformController : MonoBehaviour
     /// <summary>
     /// This holds a reference to the platforms collider
     /// </summary>
-    BoxCollider2D collider;
+    BoxCollider box;
     /// <summary>
     /// This determines the origins of the raycast
     /// </summary>
@@ -59,7 +59,7 @@ public class PlatformController : MonoBehaviour
     public void Start()
     {
         //Set the collider
-        collider = GetComponent<BoxCollider2D>();
+        box = GetComponent<BoxCollider>();
         //Calculate the space that will be between each ray
         CalculateRaySpacing();
         //Set the player reference
@@ -131,10 +131,12 @@ public class PlatformController : MonoBehaviour
             {
                 Vector2 rayOrigin = (directionY == -1) ? raycastOrigins.bottomLeft : raycastOrigins.topLeft;
                 rayOrigin += Vector2.right * (verticalRaySpacing * i);
-                RaycastHit2D hit = Physics2D.Raycast(rayOrigin, Vector2.up * directionY, rayLength, playerMask);
+                Debug.DrawRay(rayOrigin, Vector3.up * directionY * rayLength);
+                RaycastHit hit;
                 //Is there a hit?
-                if (hit)
+                if (Physics.Raycast(rayOrigin, Vector2.up * directionY, out hit, rayLength, playerMask))
                 {
+                    print("hit");
                     //Has the player already moved?
                     if (!movedPlayers.Contains(hit.transform))
                     {
@@ -252,7 +254,7 @@ public class PlatformController : MonoBehaviour
     /// </summary>
     public void UpdateRaycastOrigins()
     {
-        Bounds bounds = collider.bounds;
+        Bounds bounds = box.bounds;
         bounds.Expand(skinWidth * -2);
 
         raycastOrigins.bottomLeft = new Vector2(bounds.min.x, bounds.min.y);
@@ -271,7 +273,7 @@ public class PlatformController : MonoBehaviour
     /// </summary>
     public void CalculateRaySpacing()
     {
-        Bounds bounds = collider.bounds;
+        Bounds bounds = box.bounds;
         bounds.Expand(skinWidth * -2);
 
         horizontalRayCount = Mathf.Clamp(horizontalRayCount, 2, int.MaxValue);
