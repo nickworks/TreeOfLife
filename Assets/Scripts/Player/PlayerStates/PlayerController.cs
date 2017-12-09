@@ -178,6 +178,10 @@ namespace Player
                 GetComponent<AlignWithPath>().currentNode = spawnRef.GetComponent<SpawnLocation>().spawnNode;
                 gameObject.SetActive(true);
             }
+            if(Input.GetButton("RightTrigger") && Input.GetButtonDown("Circle"))
+            {
+                ImageEffect.active = !ImageEffect.active;
+            }
 
             if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
             {
