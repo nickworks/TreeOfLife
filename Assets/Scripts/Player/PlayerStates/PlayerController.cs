@@ -104,6 +104,11 @@ namespace Player
         /// </summary>
         GameObject spawnRef;
 
+        /// <summary>
+        /// Particle system to play while spirit vision is active
+        /// </summary>
+        public ParticleSystem spiritParticles;
+
         #endregion
         #region Setup
 
@@ -180,6 +185,15 @@ namespace Player
             }
             if(Input.GetButton("RightTrigger") && Input.GetButtonDown("Circle"))
             {
+                if (spiritParticles.isPlaying)
+                {
+                    spiritParticles.Stop();
+                }
+                else
+                {
+                    spiritParticles.Play();
+
+                }
                 ImageEffect.active = !ImageEffect.active;
             }
 
