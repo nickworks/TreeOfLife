@@ -29,6 +29,10 @@ public class MainMenuBehavior : MonoBehaviour {
     //    SceneManager.
     }
 
+    /// <summary>
+    /// Sets Volume
+    /// </summary>
+    /// <param name="value"></param>
     public void SaveVolumeSetting(float value)
     {
         PlayerPrefs.SetFloat("volume", value);
