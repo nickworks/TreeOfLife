@@ -124,6 +124,7 @@ namespace Player
             rigidBody.isKinematic = true;
             main = this;
             spawnRef = GameObject.Find("SpawnPoint");
+
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -188,10 +189,13 @@ namespace Player
                 if (spiritParticles.isPlaying)
                 {
                     spiritParticles.Stop();
+                    print("STOP");
                 }
                 else
                 {
                     spiritParticles.Play();
+                    //GetComponentInChildren<ParticleSystem>().Play();
+                    print("PLAY");
 
                 }
                 ImageEffect.active = !ImageEffect.active;
