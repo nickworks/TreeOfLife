@@ -7,7 +7,6 @@ namespace Player
 {
     public class PlayerStateRegular : PlayerState
     {
-
         /// <summary>
         /// This method is called by the PlayerController every tick.
         /// </summary>
@@ -55,7 +54,6 @@ namespace Player
                 bool acceleratingLeft = (axisH <= 0);
                 // if the player pushes the opposite direction from how they're moving, the player turns around quicker!
                 float scaleAcceleration = (movingLeft != acceleratingLeft) ? player.turnAroundMultiplier : 1;
-
                 AccelerateX(axisH * player.walkAcceleration * scaleAcceleration);
             }
         }

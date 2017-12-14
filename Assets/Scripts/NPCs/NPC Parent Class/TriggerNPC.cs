@@ -11,13 +11,45 @@ public class TriggerNPC : MonoBehaviour {
 
    
 
-
+    //used to see if the player enters the trigger area
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
         {
             //print("Chase!");
             GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+        }
+    }
+   
+    //used to see if the player is in the trigger area
+    private void OnTriggerStay(Collider other)
+    {
+        if (other.tag == "Player")
+        {
+            //print("Chase!");
+            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+        }
+        else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
+        }
+    }
+
+     //used to see if the player leaves the trigger area
+    private void OnTriggerExit(Collider other)
+    {
+        if (other.tag == "Player")
+        {
+            //print("Chase!");
+            GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
+        }
+    }
+
+    
+
+    
+
+ /*
         }else if (other.tag == "StickyWeb")
         {
             GetComponentInParent<BehaviorNPC>().IsStopped();
@@ -26,9 +58,6 @@ public class TriggerNPC : MonoBehaviour {
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.tag == "Player")
-        {
-            //print("Chase!");
             GetComponentInParent<BehaviorNPC>().PlayerNearby(other.GetComponent<PlayerController>());
         }
         else if (other.tag == "StickyWeb")
@@ -39,14 +68,8 @@ public class TriggerNPC : MonoBehaviour {
 
     private void OnTriggerExit(Collider other)
     {
-        if (other.tag == "Player")
-        {
-            //print("Chase!");
             GetComponentInParent<BehaviorNPC>().LosesPlayer();
         }
     }
-
-    
-
-    
+ */
 }

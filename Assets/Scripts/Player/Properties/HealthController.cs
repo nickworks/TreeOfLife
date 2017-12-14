@@ -64,6 +64,7 @@ public class HealthController : MonoBehaviour {
     /// </summary>
     /// <param name="amt">How much to heal this object.</param>
     /// <returns>Whether or not the player was healed.</returns>
+    /// 
     public bool Heal(int amt)
     {
         if (amt < 0)

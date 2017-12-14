@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0.44657868, g: 0.4964127, b: 0.57481724, a: 1}
+  m_IndirectSpecularColor: {r: 0.44657844, g: 0.49641222, b: 0.57481694, a: 1}
 --- !u!157 &3
 LightmapSettings:
   m_ObjectHideFlags: 0
@@ -2832,7 +2832,7 @@ Transform:
   m_Children:
   - {fileID: 1551095605}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1862298656
 GameObject:
@@ -2902,8 +2902,8 @@ GameObject:
   serializedVersion: 5
   m_Component:
   - component: {fileID: 1913011489}
-  - component: {fileID: 1913011488}
   - component: {fileID: 1913011490}
+  - component: {fileID: 1913011488}
   m_Layer: 0
   m_Name: ShootyMcShootyGuy
   m_TagString: Enemy
@@ -2911,31 +2911,18 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!61 &1913011488
-BoxCollider2D:
+--- !u!135 &1913011488
+SphereCollider:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 1913011487}
-  m_Enabled: 1
-  m_Density: 1
   m_Material: {fileID: 0}
   m_IsTrigger: 1
-  m_UsedByEffector: 0
-  m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0, y: 0}
-    oldSize: {x: 0, y: 0}
-    newSize: {x: 0, y: 0}
-    adaptiveTilingThreshold: 0
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
+  m_Enabled: 1
   serializedVersion: 2
-  m_Size: {x: 20, y: 20}
-  m_EdgeRadius: 0
+  m_Radius: 0.5
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!4 &1913011489
 Transform:
   m_ObjectHideFlags: 0
@@ -2945,11 +2932,9 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 10, y: 10, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_Children:
-  - {fileID: 166258620}
-  - {fileID: 1958925858}
+  m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 5
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1913011490
 MonoBehaviour:
@@ -2965,8 +2950,8 @@ MonoBehaviour:
   projectile: {fileID: 1118876291326314, guid: 13bce071535ffd44ca34dd090d6aa4a5, type: 2}
   RPM: 200
   turretSpeed: 0.5
-  shootFrom: {fileID: 1403146442}
-  barrel: {fileID: 166258620}
+  shootFrom: {fileID: 0}
+  rotateAround: {fileID: 0}
 --- !u!1 &1956469563
 GameObject:
   m_ObjectHideFlags: 0
@@ -3533,5 +3518,5 @@ Transform:
   m_LocalScale: {x: 8.028908, y: 8.028905, z: 8.028905}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 4
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -26.137001}

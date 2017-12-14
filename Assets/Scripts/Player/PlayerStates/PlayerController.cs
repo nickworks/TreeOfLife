@@ -169,7 +169,7 @@ namespace Player
             {
                 FindObjectOfType<SceneDictionary>().RestartLevel();
             }
-
+           
             if (Input.GetButton("RightTrigger") && Input.GetButtonDown("LeftTrigger"))
             {
                 gameObject.SetActive(false);
@@ -178,7 +178,11 @@ namespace Player
                 GetComponent<AlignWithPath>().currentNode = spawnRef.GetComponent<SpawnLocation>().spawnNode;
                 gameObject.SetActive(true);
             }
-
+            if(Input.GetButton("RightTrigger") && Input.GetButtonDown("Circle"))
+            {
+                ImageEffect.active = !ImageEffect.active;
+            }
+            //resets currentstate when the player jumps
             if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
             {
                 playerState = new PlayerStateRegular();
