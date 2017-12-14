@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-// FIX ME - add commenting
 public class DirectionalDash : MonoBehaviour {
     public Camera cameraToLookAt;
     /// <summary>

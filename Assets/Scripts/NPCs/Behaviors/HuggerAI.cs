@@ -10,7 +10,6 @@ public class HuggerAI : MonoBehaviour
     /// The acceleration to use for gravity. This will be calculated from the jumpTime and jumpHeight fields.
     /// </summary>
     private float gravity = .5f;
-
     /// <summary>
     /// The velocity of the enemy.
     /// </summary>

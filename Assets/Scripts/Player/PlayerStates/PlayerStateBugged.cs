@@ -65,8 +65,7 @@ namespace Player
             float axisH = Input.GetAxisRaw("Horizontal");
             //Most of this is similar to player state regular
            if(Input.GetButton("Jump"))
-            {
-               
+            {               
                 Jump(player.jumpVelocity);
             }
            if(axisH == 0)
@@ -79,13 +78,8 @@ namespace Player
                 bool acceleratingLeft = (axisH <= 0);
                 //Except for here where we scale down the players acceleration so they move slower
                 float scaleAcceleration = (movingLeft != acceleratingLeft) ? player.turnAroundMultiplier : .55f;
-
                 AccelerateX(axisH * player.walkAcceleration * scaleAcceleration);
-            }
-           
-                
-
-            
+            }           
         }
         
     }//End of public class PlayerStateBugged

@@ -106,6 +106,7 @@ namespace Player
             player.velocity.y += axisV * climbSpeed * Time.deltaTime;
             if (player.velocity.y > climbSpeed * 0.5f) player.velocity.y = climbSpeed * 0.5f; // Speed cap
             
+            //Drag
             if (axisH == 0) player.velocity.x *= slowDown;
             if (axisV == 0) player.velocity.y *= slowDown;           
 

@@ -41,13 +41,13 @@ public class HiveBehavior : MonoBehaviour
     public Transform secondaryTarget;
 
 
-    // Use this for initialization
+    // initialization
     void Start()
     {
         playerTransform = GameObject.Find("Player").GetComponent<Transform>();
     }
 
-    // Update is called once per frame
+    // Update used to control the flies every scene
     void Update()
     {
 

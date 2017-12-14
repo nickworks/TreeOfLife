@@ -6,7 +6,6 @@ namespace Player
 {
     public abstract class PlayerState
     {
-
         public PlayerController player;
         /// <summary>
         /// This method is called by the PlayerController every tick.
@@ -28,7 +27,6 @@ namespace Player
         /// </summary>
         /// <param name="player">The state-machine driven PlayerController object that called this method.</param>
         public abstract void OnExit(PlayerController player);
-
         /// <summary>
         /// This boolean tracks whether or not the player has a jump active. It allows us to have variable jump heights.
         /// </summary>
@@ -45,9 +43,6 @@ namespace Player
         /// This float stores the power of the jump impulse.
         /// </summary>
         protected float impulseJump = 20;
-
-
-
 
         /// <summary>
         /// This method decelerates the horizontal speed of the object.
@@ -128,7 +123,6 @@ namespace Player
 
             }
             return (Input.GetButton("Jump") && isJumping);
-
         }
         /// <summary>
         /// Apply the player.gravity to player.velocity. 
@@ -151,7 +145,6 @@ namespace Player
                 // FIXME: this might not be working correctly on slopes...
                 player.velocity.x = Mathf.Sign(player.velocity.x) * player.maxSpeed;
             }
-
             PawnAABB3D.CollisionResults results = player.pawn.Move(player.velocity * Time.deltaTime);
             if (results.hitTop || results.hitBottom) player.velocity.y = 0;
             if (results.hitLeft || results.hitRight) player.velocity.x = 0;

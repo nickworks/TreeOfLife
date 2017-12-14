@@ -93,7 +93,6 @@ public class ForceVolume2D : MonoBehaviour {
             }
         }
     }
-
     #region Trigger Events
 
     /// <summary>
