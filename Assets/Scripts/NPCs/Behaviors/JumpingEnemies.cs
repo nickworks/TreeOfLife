@@ -9,7 +9,6 @@ using UnityEditor;
 /// ENEMY TYPE CHOICES:
 ///     "basicJumpingEnemy": an enemy that jumps in an upward velocity when it hits the ground
 ///     "playerJumpingEnemy": an enemy that jumps at the player when it hits the ground
-///     "directionJumpingEnemy": an enemy that jumps in a direction until a wall is hit, then jumps in the opposite direction
 /// 	-New Enemy Type descriptions added here- (STEP 5)
 /// ADDING ENEMY TYPES:
 ///     1. Add an enemy name to the public enum EnemyType variable.
@@ -23,8 +22,8 @@ using UnityEditor;
 ///     1. New objects using this script will need to choose "Ground" under Collidable With within the editor 
 ///        of the Pawn AABB (script). This will make it so that enemies will collide with the ground.
 /// </summary>
-[RequireComponent(typeof(PawnAABB3D))]
 [RequireComponent(typeof(BoxCollider))]
+[RequireComponent(typeof(AlignWithPath))]
 public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// holds object tags for the type of enemy you want the object to be.
@@ -32,8 +31,7 @@ public class JumpingEnemies : MonoBehaviour {
     public enum EnemyType
     {
         basicJumpingEnemy,
-        playerJumpingEnemy,
-        directionJumpingEnemy
+        playerJumpingEnemy
         // new Enemy Types added here, dont forget the comma <STEP 1>
     }
     /// <summary>
@@ -48,11 +46,6 @@ public class JumpingEnemies : MonoBehaviour {
     /// controls what the jump delay timer of the object is based on time inputted in the editor.
     /// </summary>
     public float jumpDelay;
-    /// <summary>
-    /// IS ONLY USED FOR OBJECTS WITH THE TAG: "jumpingEnemy3"
-    /// the distance, in meters, of the object's horizontal jump distance.
-    /// </summary>
-    public float jumpDistance;
     /// <summary>
     /// The height, in meters, of the player's vertical jump distance.
     /// </summary>
@@ -83,18 +76,11 @@ public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// is true when the object is colliding with the ground on its bottom edge.
     /// </summary>
-    private bool isGrounded;
+    private bool isGrounded = false;
     /// <summary>
     /// this float is used to track when the object is allowed to jump again.
     /// </summary>
     private float jumpDelayTimer;
-    /// <summary>
-    /// IS ONLY USED FOR OBJECTS WITH THE TAG: "jumpingEnemy3"
-    /// determines the direction the object will be jumping
-    /// True = Right Velocity
-    /// False = Left Velocity
-    /// </summary>
-    private bool horizontalDirection;
     /// <summary>
     /// the impulse to start this objects jump.
     /// This is determined from Gravity * JumpTime  in the OnValidate function.
@@ -105,6 +91,10 @@ public class JumpingEnemies : MonoBehaviour {
     /// This is based off of player to object distance.
     /// </summary>
     private bool isActivated = false;
+    /// <summary>
+    /// used at the beginning of the level so that the enemies don't fall through the floor during the launch/load of the level.
+    /// </summary>
+    private float startingLagAvoidance = 1;
 
     /// <summary>
     /// stores a reference to this objects TRANSFORM class.
@@ -113,7 +103,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// stores a reference to this objects PawnAABB script.
     /// </summary>
-    private PawnAABB3D enemyAABB;
+    private BoxCollider enemyBoxCollider;
     /// <summary>
     /// stores a reference to the player object in the scene.
     /// </summary>
@@ -127,7 +117,7 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
     void Start () {
         enemy = gameObject.GetComponent<Transform>();
-        enemyAABB = gameObject.GetComponent<PawnAABB3D>();
+        enemyBoxCollider = gameObject.GetComponent<BoxCollider>();
         Player.PlayerController playerControl = (Player.PlayerController)FindObjectOfType(typeof(Player.PlayerController));
         player = playerControl.GetComponent<Transform>();
         if (useActivationDistance == false) isActivated = true;
@@ -149,15 +139,23 @@ public class JumpingEnemies : MonoBehaviour {
     /// </summary>
 	void Update ()
     {
-        if (CalculateActivationDistance() < activationDistance && useActivationDistance == true) isActivated = true;
+        if (startingLagAvoidance >= 0)
+        {
+            startingLagAvoidance -= Time.deltaTime;
+            return;
+        }
 
-        velocity.y -= gravity * Time.deltaTime;
+        if (useActivationDistance == true)
+        {
+            if (CalculateActivationDistance() < activationDistance) isActivated = true;
+        }
 
         if (isGrounded)
         {
             velocity.y = 0;
             velocity.x = 0;
-                
+            velocity.z = 0;
+
             jumpDelayTimer -= Time.deltaTime;
 
             if (jumpDelayTimer <= 0)
@@ -166,14 +164,22 @@ public class JumpingEnemies : MonoBehaviour {
                 {
                     ApplyJumpType();
                     jumpDelayTimer = jumpDelay;
+                    isGrounded = false;
                 }
             }
-            if (CalculateActivationDistance() > activationDistance && useActivationDistance == true)
+            if (useActivationDistance == true)
             {
-                jumpDelayTimer = 0;
-                isActivated = false;
+                if (CalculateActivationDistance() > activationDistance)
+                {
+                    jumpDelayTimer = 0;
+                    isActivated = false;
+                }
             }
+        } else
+        {
+            velocity.y -= gravity * Time.deltaTime;
         }
+        enemy.position += velocity * Time.deltaTime;
         HandleCollisions();
     }
     /// <summary>
@@ -210,21 +216,7 @@ public class JumpingEnemies : MonoBehaviour {
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 velocity.y = jumpImpulse;
                 velocity.x = (player.position.x - enemy.position.x) / (jumpTime * 2);
-                break;
-			/// <summary>
-			/// this case is called when Enemy Type is equal to Direction Jumping Enemy
-			/// this case contains the movement logic for the Direction Jumping Enemy
-			/// </summary>
-            case JumpingEnemies.EnemyType.directionJumpingEnemy:
-                velocity.y = jumpImpulse;
-                if (horizontalDirection)
-                {
-                    velocity.x = jumpDistance / (jumpTime * 2);
-                }
-                else
-                {
-                    velocity.x = -jumpDistance / (jumpTime * 2);
-                }
+                velocity.z = (player.position.z - enemy.position.z) / (jumpTime * 2);
                 break;
             // New Enemy Type logic added here <STEP 2-3>
         }
@@ -233,23 +225,23 @@ public class JumpingEnemies : MonoBehaviour {
     /// <summary>
     /// Handles collision for this object
     /// then applies collision detection as needed
-    /// changes direction of "jumpingEnemy3" if it collides with a wall
     /// </summary>
     private void HandleCollisions()
     {
-        PawnAABB3D.CollisionResults results = enemyAABB.Move(velocity * Time.deltaTime);
-        if (results.hitTop || results.hitBottom) velocity.y = 0;
-        // THIS IF STATEMENT IS ONLY USED FOR OBJECTS WITH THE TAG: "jumpingEnemy3"
-        if (enemyType == JumpingEnemies.EnemyType.directionJumpingEnemy)
+        enemyBoxCollider = GetComponent<BoxCollider>();
+        Vector3 centerPoint = enemyBoxCollider.bounds.center;
+        float halfH = enemyBoxCollider.bounds.extents.y;
+
+        RaycastHit hit;
+        if (Physics.Raycast(centerPoint, Vector3.down, out hit, halfH, LayerMask.GetMask("Ground")))
         {
-            if (results.hitLeft || results.hitRight)
+            if(hit.distance < halfH)
             {
-                velocity.x = velocity.x * -1;
-                horizontalDirection = !horizontalDirection;
-            } 
+                enemy.position += new Vector3(0, Mathf.Abs(hit.distance - halfH), 0);
+            }
+            isGrounded = true;
         }
-        isGrounded = results.hitBottom || results.ascendSlope;
-        transform.position += results.distanceLocal;
+
     }
     /// <summary>
     /// applies damage to the player if colliding
@@ -299,19 +291,6 @@ public class JumpingEnemiesEditor : Editor
             case JumpingEnemies.EnemyType.playerJumpingEnemy:
                 editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
                 editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
-                editor.jumpHeight = EditorGUILayout.FloatField("Jump Height", editor.jumpHeight);
-                editor.jumpTime = EditorGUILayout.FloatField("Jump Time", editor.jumpTime);
-                editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
-                if (editor.useActivationDistance) editor.activationDistance = EditorGUILayout.FloatField("Activation Distance", editor.activationDistance);
-                break;
-			/// <summary>
-			/// this case controls what public variables you can see in the inspector for Direction Jumping Enemy
-			/// -CAUTION- you will not be able to edit public variables in the inspector without this logic
-			/// </summary>
-            case JumpingEnemies.EnemyType.directionJumpingEnemy:
-                editor.startDelay = EditorGUILayout.FloatField("Start Delay", editor.startDelay);
-                editor.jumpDelay = EditorGUILayout.FloatField("Jump Delay", editor.jumpDelay);
-                editor.jumpDistance = EditorGUILayout.FloatField("Jump Distance", editor.jumpDistance);
                 editor.jumpHeight = EditorGUILayout.FloatField("Jump Height", editor.jumpHeight);
                 editor.jumpTime = EditorGUILayout.FloatField("Jump Time", editor.jumpTime);
                 editor.useActivationDistance = EditorGUILayout.Toggle("Use Activation Distance", editor.useActivationDistance);
