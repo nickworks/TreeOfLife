@@ -47,7 +47,7 @@ public class HiveBehavior : MonoBehaviour
         playerTransform = GameObject.Find("Player").GetComponent<Transform>();
     }
 
-    // Update used to control the flies every scene
+    // Update is called once per frame
     void Update()
     {
 
@@ -69,9 +69,5 @@ public class HiveBehavior : MonoBehaviour
             }
             flies.Add(newFly);
         }
-    }
-}
-
-    // initialization
     }
 }
