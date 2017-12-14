@@ -2,6 +2,8 @@
 
 Shader "Custom/Lighting/EmissiveShader"
 {
+/// Properties
+/// Controls the color, diffuse, emmission maps, and threshold.
     Properties
     {
         [Header(Diffuse)]
