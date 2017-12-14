@@ -16,12 +16,10 @@ namespace Player
         override public PlayerState Update(PlayerController player)
         {
             base.Update(player);
-
             bool jumpActive = Jump(player.jumpVelocity);
             //ApplyGravity(jumpActive ? 1 : 2f);
             HandleInput();
             //DoCollisions();
-
             return null;
         }
         /// <summary>

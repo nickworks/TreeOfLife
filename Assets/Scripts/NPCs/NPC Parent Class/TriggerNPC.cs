@@ -11,7 +11,7 @@ public class TriggerNPC : MonoBehaviour {
 
    
 
-
+    //used to see if the player enters the trigger area
     private void OnTriggerEnter(Collider other)
     {
         if (other.tag == "Player")
@@ -20,7 +20,8 @@ public class TriggerNPC : MonoBehaviour {
             GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
         }
     }
-
+   
+    //used to see if the player is in the trigger area
     private void OnTriggerStay(Collider other)
     {
         if (other.tag == "Player")
@@ -28,8 +29,13 @@ public class TriggerNPC : MonoBehaviour {
             //print("Chase!");
             GetComponentInParent<BehaviorNPC>().FindsPlayer(other.GetComponent<PlayerController>());
         }
-    }//End of private void OnTriggerStay
+        else if (other.tag == "StickyWeb")
+        {
+            GetComponentInParent<BehaviorNPC>().IsStopped();
+        }
+    }
 
+     //used to see if the player leaves the trigger area
     private void OnTriggerExit(Collider other)
     {
         if (other.tag == "Player")
