@@ -5930,7 +5930,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &377297065
 ParticleSystemRenderer:
   serializedVersion: 4
@@ -6042,7 +6042,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: 1717635984
+  randomSeed: -336028519
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -6438,7 +6438,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
-    maxNumParticles: 50000
+    maxNumParticles: 5000
     size3D: 0
     rotation3D: 0
     gravityModifier:
@@ -6493,7 +6493,7 @@ ParticleSystem:
     donutRadius: 0.2
     m_Position: {x: 0, y: 0, z: 0}
     m_Rotation: {x: 0, y: 0, z: 0}
-    m_Scale: {x: 200, y: 200, z: 0}
+    m_Scale: {x: 100, y: 100, z: 0}
     placementMode: 0
     m_Mesh: {fileID: 0}
     m_MeshRenderer: {fileID: 0}
@@ -6602,7 +6602,7 @@ ParticleSystem:
     rateOverTime:
       serializedVersion: 2
       minMaxState: 0
-      scalar: 1000
+      scalar: 500
       minScalar: 10
       maxCurve:
         serializedVersion: 2
@@ -9258,7 +9258,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 377297064}
   m_LocalRotation: {x: 0.6834762, y: 0.18127422, z: -0.18127422, w: 0.6834762}
-  m_LocalPosition: {x: -88.7, y: -2.86, z: -261.7}
+  m_LocalPosition: {x: -40, y: -2.86, z: -168.3}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -13305,7 +13305,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!199 &731210486
 ParticleSystemRenderer:
   serializedVersion: 4
@@ -13417,7 +13417,7 @@ ParticleSystem:
   moveWithTransform: 0
   moveWithCustomTransform: {fileID: 0}
   scalingMode: 1
-  randomSeed: -1446670543
+  randomSeed: 539185987
   InitialModule:
     serializedVersion: 3
     enabled: 1
@@ -13813,7 +13813,7 @@ ParticleSystem:
         m_PostInfinity: 2
         m_RotationOrder: 4
     randomizeRotationDirection: 0
-    maxNumParticles: 50000
+    maxNumParticles: 5000
     size3D: 0
     rotation3D: 0
     gravityModifier:
@@ -36226,7 +36226,7 @@ Prefab:
         type: 2}
       propertyPath: currentNode
       value: 
-      objectReference: {fileID: 295631143}
+      objectReference: {fileID: 95374593}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: f028640214710694e91e5814722cac50, type: 2}
   m_IsPrefabParent: 0
