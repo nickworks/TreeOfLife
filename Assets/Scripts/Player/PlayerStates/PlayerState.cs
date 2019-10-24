@@ -152,7 +152,6 @@ namespace Player
 
             // convert local distance into world space
             Vector3 worldSpaceDistance = player.transform.TransformVector(results.distanceLocal);
-            player.worldSpace = worldSpaceDistance;
             // add to player position
             player.transform.position += worldSpaceDistance;
         }

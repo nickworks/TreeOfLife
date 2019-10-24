@@ -270,7 +270,11 @@ public class PathNode : MonoBehaviour
     public PathNode Split()
     {
         // spawn a new node:
-        PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetPrefabParent(this));
+
+        //PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetPrefabParent(this));
+        PathNode newNode = (PathNode)PrefabUtility.InstantiatePrefab(PrefabUtility.GetCorrespondingObjectFromSource(this));
+
+
         if (!newNode) return null; // FAILED TO SPAWN!
 
         // register the upcoming changes in the undo list: (this should also mark the objects as "dirty")

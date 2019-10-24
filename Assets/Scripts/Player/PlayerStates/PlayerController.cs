@@ -61,10 +61,6 @@ namespace Player
         /// The maximum speed of the player, in meters-per-second.
         /// </summary>
         public float maxSpeed = 10;
-        /// <summary>
-        /// A reference to the PawnAABB component on this object.
-        /// </summary>
-        public float swingStrength = 5;
         /// </summary>
         /// The strength of the swing.
         /// <summary>
@@ -72,37 +68,6 @@ namespace Player
         public Transform ropeTarget = null;
         public PawnAABB3D pawn { get; private set; }
 
-        /// <summary>
-        /// This int stores what state the player is currently in.
-        /// </summary>
-        public int currentState = 1;
-
-        /// <summary>
-        /// These constants represent what state the player is in, used only by currentState (above).
-        /// </summary>
-        public const int STATE_REGULAR = 1;
-        public const int STATE_CLIMBING = 2;
-        public const int STATE_SWINGING = 3;
-        public const int STATE_BUGGED = 4;
-
-        /// <summary>
-        ///  //A timer for the bugged status effect
-        /// </summary>
-        public float bugTimer = 3;
-        /// <summary>
-        ///A boolean to control when the timer is started
-        /// </summary>
-        public bool startTimer = false;
-
-        public Vector3 worldSpace;
-
-        //public SpawnTriggerMover sTM = new SpawnTriggerMover();
-        SpawnPointMover sTM;
-
-        /// <summary>
-        /// Reference to the SpawnPoint object in the scene
-        /// </summary>
-        GameObject spawnRef;
 
         #endregion
         #region Setup
@@ -118,7 +83,7 @@ namespace Player
             rigidBody = GetComponent<Rigidbody>();
             rigidBody.isKinematic = true;
             main = this;
-            spawnRef = GameObject.Find("SpawnPoint");
+            
         }
         /// <summary>
         /// This is called automatically when the values change in the inspector.
@@ -141,65 +106,19 @@ namespace Player
         /// <summary>
         /// This method is called each frame. 
         /// </summary>
-        void Update()
-        {
-            //If start timer is true
-            if (startTimer)
-            {
-                //we subtract the bug timer from time.deltatime
-                bugTimer -= Time.deltaTime;
-            }
-            
-            if (playerState == null)
-            {
-                playerState = new PlayerStateRegular();
-                currentState = STATE_REGULAR;
-            }
+        void Update() {
+            DoStateMachine();
+        }
 
+        private void DoStateMachine() {
+            if (playerState == null) {
+                playerState = new PlayerStateRegular();
+            }
             PlayerState nextState = playerState.Update(this);
-            if (nextState != null)
-            {
+            if (nextState != null) {
                 playerState.OnExit(this);
                 playerState = nextState;
                 playerState.OnEnter(this);
-            }
-
-            //If the player hits the respawn button
-            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("Respawn"))
-            {
-                FindObjectOfType<SceneDictionary>().RestartLevel();
-            }
-           
-            if (Input.GetButton("RightTrigger") && Input.GetButtonDown("LeftTrigger"))
-            {
-                gameObject.SetActive(false);
-                velocity = Vector3.zero;
-                transform.localPosition = spawnRef.transform.localPosition;
-                GetComponent<AlignWithPath>().currentNode = spawnRef.GetComponent<SpawnLocation>().spawnNode;
-                gameObject.SetActive(true);
-            }
-            if(Input.GetButton("RightTrigger") && Input.GetButtonDown("Circle"))
-            {
-                ImageEffect.active = !ImageEffect.active;
-            }
-            //resets currentstate when the player jumps
-            if (currentState == STATE_CLIMBING && Input.GetButtonDown("Jump"))
-            {
-                playerState = new PlayerStateRegular();
-                currentState = STATE_REGULAR;
-            }
-
-            //If bug timer is less than or equal to zero
-            if (bugTimer <= 0)
-            {
-                //we set the bug timer equal to 3
-                bugTimer = 3;
-                //we set startTimer to false so it doesn't keep subtracting
-                startTimer = false;
-                //we set player state to PlayerStateRegular
-                playerState = new PlayerStateRegular();
-                //We set current state to STATE_REGULAR
-                currentState = STATE_REGULAR;
             }
         }
 
@@ -253,45 +172,12 @@ namespace Player
                 {
                     case "StickyWeb":
                         playerState = new PlayerStateClimbing("StickyWeb"); // ID 1 = StickyWeb
-                        currentState = STATE_CLIMBING;
                         break;
                     case "Rope":
                         playerState = new PlayerStateClimbing("Rope"); // ID 2 = Rope
-                        currentState = STATE_CLIMBING;
                         break;
                    
                 }
-            }//End of Grab if statement
-            //These are switch statements for just hitting other colliders
-            switch (other.tag)
-            {
-                //For case bugging collider
-                case "BuggingCollider":
-                    //WE set the bug timer to 3
-                    bugTimer = 3;
-                    //We start the timer 
-                    startTimer = true;
-                    //we set playerState to PlayerStateBugged
-                    playerState = new PlayerStateBugged();
-                    //We set currentState to state bugged
-                    currentState = STATE_BUGGED;
-                    //WE break out of the case
-                    break;
-            }
-        }
-
-        /// <summary>
-        /// This message is called by the physics engine when the player enters a trigger volume.
-        /// </summary>
-        /// <param name="other">The trigger volume of the other object.</param>
-        void OnTriggerEnter(Collider other)
-        {
-            // allows the player to attach itself to the raft and passes in a reference to the player
-            switch (other.gameObject.tag)
-            {
-                case "Raft":
-                    other.transform.parent.gameObject.GetComponent<Raft>().Attach(this);
-                    break;
             }
         }
 
@@ -304,19 +190,12 @@ namespace Player
             // resets the raft's variables for next use
             switch (other.gameObject.tag)
             {
-                case "Raft":
-                    other.transform.parent.gameObject.GetComponent<Raft>().Detach();
-                    break;
                 case "StickyWeb":
                 case "Rope":
                 case "BuggingCollider":
                     playerState = new PlayerStateRegular();
-                    currentState = STATE_REGULAR;
-                    break;
-                
-                    
+                    break;    
             }
         }
     }
-
 }

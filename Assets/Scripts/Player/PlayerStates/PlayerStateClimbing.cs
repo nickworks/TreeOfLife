@@ -12,7 +12,7 @@ namespace Player
     public class PlayerStateClimbing : PlayerState
     {
 
-#region Variable Region
+        #region Variable Region
         /// <summary>
         /// A private float to handle the players climbspeed
         /// </summary>
@@ -26,8 +26,8 @@ namespace Player
         /// </summary>
         private string climbingVolumeID;
 
-        private bool doingStuff;
-#endregion
+        #endregion
+
         /// <summary>
         /// The class constructor. It's purpose is to set the ID of the climbing volume.
         /// </summary>
@@ -42,7 +42,6 @@ namespace Player
         /// </summary>
         public void Start()
         {
-            doingStuff = true;
             player.velocity.y = player.velocity.y * 0.05f;
         }
 
